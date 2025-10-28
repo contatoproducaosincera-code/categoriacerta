@@ -13,7 +13,7 @@ import BackButton from "@/components/BackButton";
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [cityFilter, setCityFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("all");
   const [pointsFilter, setPointsFilter] = useState("all");
 
   const { data: athletes, isLoading } = useQuery({
@@ -34,7 +34,7 @@ const Atletas = () => {
   const filteredAthletes = (athletes || []).filter(athlete => {
     const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || athlete.category === categoryFilter;
-    const matchesCity = !cityFilter || athlete.city === cityFilter;
+    const matchesCity = cityFilter === "all" || athlete.city === cityFilter;
     
     let matchesPoints = true;
     if (pointsFilter === "0-500") matchesPoints = athlete.points >= 0 && athlete.points < 500;
@@ -94,7 +94,7 @@ const Atletas = () => {
                   <SelectValue placeholder="Filtrar por cidade" />
                 </SelectTrigger>
                 <SelectContent className="bg-background z-50">
-                  <SelectItem value="">Todas as Cidades</SelectItem>
+                  <SelectItem value="all">Todas as Cidades</SelectItem>
                   {cities.map((city) => (
                     <SelectItem key={city} value={city}>{city}</SelectItem>
                   ))}
