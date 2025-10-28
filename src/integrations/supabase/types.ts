@@ -14,7 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          date: string
+          id: string
+          points_awarded: number
+          position: number
+          tournament_name: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          date: string
+          id?: string
+          points_awarded: number
+          position: number
+          tournament_name: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          points_awarded?: number
+          position?: number
+          tournament_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      athletes: {
+        Row: {
+          category: Database["public"]["Enums"]["category"]
+          city: string
+          created_at: string
+          email: string | null
+          id: string
+          instagram: string | null
+          name: string
+          points: number
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["category"]
+          city: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          instagram?: string | null
+          name: string
+          points?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["category"]
+          city?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          instagram?: string | null
+          name?: string
+          points?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      category_history: {
+        Row: {
+          athlete_id: string
+          changed_at: string
+          id: string
+          new_category: Database["public"]["Enums"]["category"]
+          old_category: Database["public"]["Enums"]["category"]
+          points_at_change: number
+        }
+        Insert: {
+          athlete_id: string
+          changed_at?: string
+          id?: string
+          new_category: Database["public"]["Enums"]["category"]
+          old_category: Database["public"]["Enums"]["category"]
+          points_at_change: number
+        }
+        Update: {
+          athlete_id?: string
+          changed_at?: string
+          id?: string
+          new_category?: Database["public"]["Enums"]["category"]
+          old_category?: Database["public"]["Enums"]["category"]
+          points_at_change?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_history_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          category: Database["public"]["Enums"]["category"]
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          location: string
+          name: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["category"]
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          location: string
+          name: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["category"]
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          location?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +161,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      category: "Iniciante" | "D" | "C" | "B" | "A"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +288,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      category: ["Iniciante", "D", "C", "B", "A"],
+    },
   },
 } as const
