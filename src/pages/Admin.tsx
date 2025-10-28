@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2 } from "lucide-react";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -22,9 +22,17 @@ const Admin = () => {
 
   const [openAddAthlete, setOpenAddAthlete] = useState(false);
   const [openAddPoints, setOpenAddPoints] = useState(false);
+  const [openEditAthlete, setOpenEditAthlete] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<any>(null);
 
   const [newAthlete, setNewAthlete] = useState({
+    name: "",
+    email: "",
+    city: "",
+    instagram: "",
+  });
+
+  const [editAthlete, setEditAthlete] = useState({
     name: "",
     email: "",
     city: "",
@@ -73,6 +81,63 @@ const Admin = () => {
       });
       setOpenAddAthlete(false);
       setNewAthlete({ name: "", email: "", city: "", instagram: "" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateAthleteMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("athletes")
+        .update({
+          name: editAthlete.name,
+          email: editAthlete.email || null,
+          city: editAthlete.city,
+          instagram: editAthlete.instagram || null,
+        })
+        .eq("id", selectedAthlete.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
+      toast({
+        title: "Atleta atualizado!",
+        description: "Os dados do atleta foram atualizados com sucesso",
+      });
+      setOpenEditAthlete(false);
+      setSelectedAthlete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteAthleteMutation = useMutation({
+    mutationFn: async (athleteId: string) => {
+      const { error } = await supabase
+        .from("athletes")
+        .delete()
+        .eq("id", athleteId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
+      toast({
+        title: "Atleta excluído!",
+        description: "O atleta foi removido do sistema",
+      });
     },
     onError: (error: any) => {
       toast({
@@ -303,71 +368,159 @@ const Admin = () => {
                       <TableCell className="font-bold text-primary">{athlete.points}</TableCell>
                       <TableCell>{athlete.city}</TableCell>
                       <TableCell>
-                        <Dialog open={openAddPoints && selectedAthlete?.id === athlete.id} onOpenChange={(open) => {
-                          setOpenAddPoints(open);
-                          if (!open) setSelectedAthlete(null);
-                        }}>
-                          <DialogTrigger asChild>
-                            <Button 
-                              size="sm" 
-                              onClick={() => setSelectedAthlete(athlete)}
-                            >
-                              <Plus className="mr-1 h-3 w-3" />
-                              Conquista
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Registrar Conquista</DialogTitle>
-                              <DialogDescription>
-                                Adicione uma conquista para {athlete.name}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label htmlFor="tournament">Nome do Torneio*</Label>
-                                <Input
-                                  id="tournament"
-                                  value={achievement.tournament_name}
-                                  onChange={(e) => setAchievement({ ...achievement, tournament_name: e.target.value })}
-                                  placeholder="Copa Verão 2025"
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="position">Posição*</Label>
-                                <Select 
-                                  value={achievement.position} 
-                                  onValueChange={(value) => setAchievement({ ...achievement, position: value })}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="1">1º Lugar (+100 pontos)</SelectItem>
-                                    <SelectItem value="2">2º Lugar (+80 pontos)</SelectItem>
-                                    <SelectItem value="3">3º Lugar (+60 pontos)</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div>
-                                <Label htmlFor="date">Data*</Label>
-                                <Input
-                                  id="date"
-                                  type="date"
-                                  value={achievement.date}
-                                  onChange={(e) => setAchievement({ ...achievement, date: e.target.value })}
-                                />
-                              </div>
+                        <div className="flex gap-2">
+                          <Dialog open={openAddPoints && selectedAthlete?.id === athlete.id} onOpenChange={(open) => {
+                            setOpenAddPoints(open);
+                            if (!open) setSelectedAthlete(null);
+                          }}>
+                            <DialogTrigger asChild>
                               <Button 
-                                className="w-full" 
-                                onClick={() => addPointsMutation.mutate()}
-                                disabled={!achievement.tournament_name || addPointsMutation.isPending}
+                                size="sm" 
+                                onClick={() => setSelectedAthlete(athlete)}
                               >
-                                {addPointsMutation.isPending ? "Registrando..." : "Registrar Conquista"}
+                                <Plus className="mr-1 h-3 w-3" />
+                                Conquista
                               </Button>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Registrar Conquista</DialogTitle>
+                                <DialogDescription>
+                                  Adicione uma conquista para {athlete.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="tournament">Nome do Torneio*</Label>
+                                  <Input
+                                    id="tournament"
+                                    value={achievement.tournament_name}
+                                    onChange={(e) => setAchievement({ ...achievement, tournament_name: e.target.value })}
+                                    placeholder="Copa Verão 2025"
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="position">Posição*</Label>
+                                  <Select 
+                                    value={achievement.position} 
+                                    onValueChange={(value) => setAchievement({ ...achievement, position: value })}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="1">1º Lugar (+100 pontos)</SelectItem>
+                                      <SelectItem value="2">2º Lugar (+80 pontos)</SelectItem>
+                                      <SelectItem value="3">3º Lugar (+60 pontos)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label htmlFor="date">Data*</Label>
+                                  <Input
+                                    id="date"
+                                    type="date"
+                                    value={achievement.date}
+                                    onChange={(e) => setAchievement({ ...achievement, date: e.target.value })}
+                                  />
+                                </div>
+                                <Button 
+                                  className="w-full" 
+                                  onClick={() => addPointsMutation.mutate()}
+                                  disabled={!achievement.tournament_name || addPointsMutation.isPending}
+                                >
+                                  {addPointsMutation.isPending ? "Registrando..." : "Registrar Conquista"}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+
+                          <Dialog open={openEditAthlete && selectedAthlete?.id === athlete.id} onOpenChange={(open) => {
+                            setOpenEditAthlete(open);
+                            if (!open) setSelectedAthlete(null);
+                          }}>
+                            <DialogTrigger asChild>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedAthlete(athlete);
+                                  setEditAthlete({
+                                    name: athlete.name,
+                                    email: athlete.email || "",
+                                    city: athlete.city,
+                                    instagram: athlete.instagram || "",
+                                  });
+                                }}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Editar Atleta</DialogTitle>
+                                <DialogDescription>
+                                  Atualize os dados de {athlete.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="edit-name">Nome Completo*</Label>
+                                  <Input
+                                    id="edit-name"
+                                    value={editAthlete.name}
+                                    onChange={(e) => setEditAthlete({ ...editAthlete, name: e.target.value })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-email">Email</Label>
+                                  <Input
+                                    id="edit-email"
+                                    type="email"
+                                    value={editAthlete.email}
+                                    onChange={(e) => setEditAthlete({ ...editAthlete, email: e.target.value })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-city">Cidade*</Label>
+                                  <Input
+                                    id="edit-city"
+                                    value={editAthlete.city}
+                                    onChange={(e) => setEditAthlete({ ...editAthlete, city: e.target.value })}
+                                  />
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-instagram">Instagram</Label>
+                                  <Input
+                                    id="edit-instagram"
+                                    value={editAthlete.instagram}
+                                    onChange={(e) => setEditAthlete({ ...editAthlete, instagram: e.target.value })}
+                                  />
+                                </div>
+                                <Button 
+                                  className="w-full" 
+                                  onClick={() => updateAthleteMutation.mutate()}
+                                  disabled={!editAthlete.name || !editAthlete.city || updateAthleteMutation.isPending}
+                                >
+                                  {updateAthleteMutation.isPending ? "Atualizando..." : "Atualizar Atleta"}
+                                </Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm(`Tem certeza que deseja excluir ${athlete.name}?`)) {
+                                deleteAthleteMutation.mutate(athlete.id);
+                              }
+                            }}
+                            disabled={deleteAthleteMutation.isPending}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
