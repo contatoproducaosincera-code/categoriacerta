@@ -8,7 +8,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <Trophy className="h-6 w-6 text-primary" />
-          <span className="font-bold text-xl">Ranking Beach Tennis</span>
+          <span className="font-bold text-xl">Categoria Certa</span>
         </Link>
         
         <div className="hidden md:flex items-center gap-6">
