@@ -545,12 +545,12 @@ const Admin = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="tournament-whatsapp">WhatsApp* (com DDD)</Label>
+                    <Label htmlFor="tournament-whatsapp">WhatsApp* (número com DDD ou link)</Label>
                     <Input
                       id="tournament-whatsapp"
                       value={newTournament.whatsapp}
                       onChange={(e) => setNewTournament({ ...newTournament, whatsapp: e.target.value })}
-                      placeholder="5521999999999"
+                      placeholder="5521999999999 ou https://wa.me/5521999999999"
                     />
                   </div>
                   <div>
@@ -887,12 +887,12 @@ const Admin = () => {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="tournament-whatsapp-2">WhatsApp* (com DDD)</Label>
+                          <Label htmlFor="tournament-whatsapp-2">WhatsApp* (número com DDD ou link)</Label>
                           <Input
                             id="tournament-whatsapp-2"
                             value={newTournament.whatsapp}
                             onChange={(e) => setNewTournament({ ...newTournament, whatsapp: e.target.value })}
-                            placeholder="5521999999999"
+                            placeholder="5521999999999 ou https://wa.me/5521999999999"
                           />
                         </div>
                         <div>
@@ -1012,12 +1012,12 @@ const Admin = () => {
                                     />
                                   </div>
                                   <div>
-                                    <Label htmlFor="edit-tournament-whatsapp">WhatsApp* (com DDD)</Label>
+                                    <Label htmlFor="edit-tournament-whatsapp">WhatsApp* (número com DDD ou link)</Label>
                                     <Input
                                       id="edit-tournament-whatsapp"
                                       value={editTournament.whatsapp}
                                       onChange={(e) => setEditTournament({ ...editTournament, whatsapp: e.target.value })}
-                                      placeholder="5521999999999"
+                                      placeholder="5521999999999 ou https://wa.me/5521999999999"
                                     />
                                   </div>
                                   <div>

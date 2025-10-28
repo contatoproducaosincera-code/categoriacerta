@@ -78,8 +78,14 @@ const Torneios = () => {
                       size="lg"
                       onClick={() => {
                         if (torneio.whatsapp) {
-                          const phone = torneio.whatsapp.replace(/\D/g, '');
-                          window.open(`https://wa.me/${phone}`, '_blank');
+                          // Se já for um link completo, usa diretamente
+                          if (torneio.whatsapp.startsWith('http')) {
+                            window.open(torneio.whatsapp, '_blank');
+                          } else {
+                            // Se for apenas o número, cria o link
+                            const phone = torneio.whatsapp.replace(/\D/g, '');
+                            window.open(`https://wa.me/${phone}`, '_blank');
+                          }
                         }
                       }}
                       disabled={!torneio.whatsapp}
