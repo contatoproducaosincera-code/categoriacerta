@@ -32,6 +32,7 @@ const Admin = () => {
     email: "",
     city: "",
     instagram: "",
+    category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
   });
 
   const [editAthlete, setEditAthlete] = useState({
@@ -82,7 +83,7 @@ const Admin = () => {
         description: "O atleta foi adicionado com sucesso",
       });
       setOpenAddAthlete(false);
-      setNewAthlete({ name: "", email: "", city: "", instagram: "" });
+      setNewAthlete({ name: "", email: "", city: "", instagram: "", category: "Iniciante" });
     },
     onError: (error: any) => {
       toast({
@@ -321,6 +322,24 @@ const Admin = () => {
                       onChange={(e) => setNewAthlete({ ...newAthlete, instagram: e.target.value })}
                       placeholder="@joaosilva"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="category">Categoria*</Label>
+                    <Select 
+                      value={newAthlete.category} 
+                      onValueChange={(value: any) => setNewAthlete({ ...newAthlete, category: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Iniciante">Iniciante</SelectItem>
+                        <SelectItem value="D">Categoria D</SelectItem>
+                        <SelectItem value="C">Categoria C</SelectItem>
+                        <SelectItem value="B">Categoria B</SelectItem>
+                        <SelectItem value="A">Categoria A</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <Button 
                     className="w-full" 
