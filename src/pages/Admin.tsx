@@ -42,6 +42,7 @@ const Admin = () => {
     email: "",
     city: "",
     instagram: "",
+    category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
   });
 
   const [achievement, setAchievement] = useState({
@@ -105,6 +106,7 @@ const Admin = () => {
           email: editAthlete.email || null,
           city: editAthlete.city,
           instagram: editAthlete.instagram || null,
+          category: editAthlete.category,
         })
         .eq("id", selectedAthlete.id);
 
@@ -481,6 +483,7 @@ const Admin = () => {
                                     email: athlete.email || "",
                                     city: athlete.city,
                                     instagram: athlete.instagram || "",
+                                    category: athlete.category,
                                   });
                                 }}
                               >
@@ -528,7 +531,25 @@ const Admin = () => {
                                     onChange={(e) => setEditAthlete({ ...editAthlete, instagram: e.target.value })}
                                   />
                                 </div>
-                                <Button 
+                                <div>
+                                  <Label htmlFor="edit-category">Categoria*</Label>
+                                  <Select 
+                                    value={editAthlete.category} 
+                                    onValueChange={(value: any) => setEditAthlete({ ...editAthlete, category: value })}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Iniciante">Iniciante</SelectItem>
+                                      <SelectItem value="D">Categoria D</SelectItem>
+                                      <SelectItem value="C">Categoria C</SelectItem>
+                                      <SelectItem value="B">Categoria B</SelectItem>
+                                      <SelectItem value="A">Categoria A</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <Button
                                   className="w-full" 
                                   onClick={() => updateAthleteMutation.mutate()}
                                   disabled={!editAthlete.name || !editAthlete.city || updateAthleteMutation.isPending}
