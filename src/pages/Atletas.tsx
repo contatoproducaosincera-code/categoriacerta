@@ -31,20 +31,22 @@ const Atletas = () => {
 
   const cities = [...new Set((athletes || []).map(a => a.city))].sort();
 
-  const filteredAthletes = (athletes || []).filter(athlete => {
-    const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || athlete.category === categoryFilter;
-    const matchesCity = cityFilter === "all" || athlete.city === cityFilter;
-    
-    let matchesPoints = true;
-    if (pointsFilter === "0-500") matchesPoints = athlete.points >= 0 && athlete.points < 500;
-    else if (pointsFilter === "500-1000") matchesPoints = athlete.points >= 500 && athlete.points < 1000;
-    else if (pointsFilter === "1000-1500") matchesPoints = athlete.points >= 1000 && athlete.points < 1500;
-    else if (pointsFilter === "1500-2000") matchesPoints = athlete.points >= 1500 && athlete.points < 2000;
-    else if (pointsFilter === "2000+") matchesPoints = athlete.points >= 2000;
-    
-    return matchesSearch && matchesCategory && matchesCity && matchesPoints;
-  });
+  const filteredAthletes = (athletes || [])
+    .filter(athlete => {
+      const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = categoryFilter === "all" || athlete.category === categoryFilter;
+      const matchesCity = cityFilter === "all" || athlete.city === cityFilter;
+      
+      let matchesPoints = true;
+      if (pointsFilter === "0-500") matchesPoints = athlete.points >= 0 && athlete.points < 500;
+      else if (pointsFilter === "500-1000") matchesPoints = athlete.points >= 500 && athlete.points < 1000;
+      else if (pointsFilter === "1000-1500") matchesPoints = athlete.points >= 1000 && athlete.points < 1500;
+      else if (pointsFilter === "1500-2000") matchesPoints = athlete.points >= 1500 && athlete.points < 2000;
+      else if (pointsFilter === "2000+") matchesPoints = athlete.points >= 2000;
+      
+      return matchesSearch && matchesCategory && matchesCity && matchesPoints;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="min-h-screen bg-background">
