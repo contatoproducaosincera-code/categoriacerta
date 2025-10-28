@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin, MessageCircle } from "lucide-react";
 import BackButton from "@/components/BackButton";
 
 const Torneios = () => {
@@ -35,7 +35,7 @@ const Torneios = () => {
               Próximos Torneios
             </h1>
             <p className="text-muted-foreground text-lg">
-              Inscreva-se e mostre seu talento nas quadras
+              Fale com o organizador pelo WhatsApp para se inscrever
             </p>
           </div>
 
@@ -73,9 +73,19 @@ const Torneios = () => {
                       <MapPin className="h-4 w-4 mr-2 text-primary" />
                       <span>{torneio.location}</span>
                     </div>
-                    <Button className="w-full" size="lg">
-                      <Users className="mr-2 h-4 w-4" />
-                      Inscrever-se
+                    <Button 
+                      className="w-full" 
+                      size="lg"
+                      onClick={() => {
+                        if (torneio.whatsapp) {
+                          const phone = torneio.whatsapp.replace(/\D/g, '');
+                          window.open(`https://wa.me/${phone}`, '_blank');
+                        }
+                      }}
+                      disabled={!torneio.whatsapp}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      {torneio.whatsapp ? 'Falar com Organizador' : 'WhatsApp não cadastrado'}
                     </Button>
                   </CardContent>
                 </Card>

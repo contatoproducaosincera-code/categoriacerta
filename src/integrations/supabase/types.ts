@@ -201,6 +201,7 @@ export type Database = {
           id: string
           location: string
           name: string
+          whatsapp: string | null
         }
         Insert: {
           category: Database["public"]["Enums"]["category"]
@@ -210,6 +211,7 @@ export type Database = {
           id?: string
           location: string
           name: string
+          whatsapp?: string | null
         }
         Update: {
           category?: Database["public"]["Enums"]["category"]
@@ -219,6 +221,7 @@ export type Database = {
           id?: string
           location?: string
           name?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }

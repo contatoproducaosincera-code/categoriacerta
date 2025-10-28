@@ -30,6 +30,9 @@ const Admin = () => {
   const [openEditAthlete, setOpenEditAthlete] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [openAddTournament, setOpenAddTournament] = useState(false);
+  const [openEditTournament, setOpenEditTournament] = useState(false);
+  const [selectedTournament, setSelectedTournament] = useState<any>(null);
 
   const [newAthlete, setNewAthlete] = useState({
     name: "",
@@ -45,6 +48,24 @@ const Admin = () => {
     city: "",
     instagram: "",
     category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
+  });
+
+  const [newTournament, setNewTournament] = useState({
+    name: "",
+    description: "",
+    date: new Date().toISOString().split('T')[0],
+    location: "",
+    category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
+    whatsapp: "",
+  });
+
+  const [editTournament, setEditTournament] = useState({
+    name: "",
+    description: "",
+    date: new Date().toISOString().split('T')[0],
+    location: "",
+    category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
+    whatsapp: "",
   });
 
   const [achievement, setAchievement] = useState({
@@ -66,6 +87,20 @@ const Admin = () => {
         .from("athletes")
         .select("*")
         .order("points", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: tournaments } = useQuery({
+    queryKey: ["admin-tournaments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournaments")
+        .select("*")
+        .order("date", { ascending: true });
 
       if (error) throw error;
       return data;
@@ -146,6 +181,98 @@ const Admin = () => {
       toast({
         title: "Atleta excluído!",
         description: "O atleta foi removido do sistema",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const addTournamentMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("tournaments")
+        .insert([newTournament]);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
+      toast({
+        title: "Torneio cadastrado!",
+        description: "O torneio foi adicionado com sucesso",
+      });
+      setOpenAddTournament(false);
+      setNewTournament({ 
+        name: "", 
+        description: "", 
+        date: new Date().toISOString().split('T')[0], 
+        location: "", 
+        category: "Iniciante",
+        whatsapp: "",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateTournamentMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("tournaments")
+        .update({
+          name: editTournament.name,
+          description: editTournament.description || null,
+          date: editTournament.date,
+          location: editTournament.location,
+          category: editTournament.category,
+          whatsapp: editTournament.whatsapp || null,
+        })
+        .eq("id", selectedTournament.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
+      toast({
+        title: "Torneio atualizado!",
+        description: "Os dados do torneio foram atualizados com sucesso",
+      });
+      setOpenEditTournament(false);
+      setSelectedTournament(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteTournamentMutation = useMutation({
+    mutationFn: async (tournamentId: string) => {
+      const { error } = await supabase
+        .from("tournaments")
+        .delete()
+        .eq("id", tournamentId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
+      toast({
+        title: "Torneio excluído!",
+        description: "O torneio foi removido do sistema",
       });
     },
     onError: (error: any) => {
@@ -598,6 +725,252 @@ const Admin = () => {
               </Table>
             </CardContent>
           </Card>
+
+          {/* Seção de Torneios */}
+          <div className="mt-12">
+            <h2 className="text-3xl font-bold mb-6">Gerenciar Torneios</h2>
+            
+            <div className="mb-6">
+              <Dialog open={openAddTournament} onOpenChange={setOpenAddTournament}>
+                <DialogTrigger asChild>
+                  <Button size="lg">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Cadastrar Torneio
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Cadastrar Novo Torneio</DialogTitle>
+                    <DialogDescription>
+                      Preencha os dados do torneio
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="tournament-name">Nome do Torneio*</Label>
+                      <Input
+                        id="tournament-name"
+                        value={newTournament.name}
+                        onChange={(e) => setNewTournament({ ...newTournament, name: e.target.value })}
+                        placeholder="Copa Verão 2025"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-description">Descrição</Label>
+                      <Input
+                        id="tournament-description"
+                        value={newTournament.description}
+                        onChange={(e) => setNewTournament({ ...newTournament, description: e.target.value })}
+                        placeholder="Descrição do torneio"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-date">Data*</Label>
+                      <Input
+                        id="tournament-date"
+                        type="date"
+                        value={newTournament.date}
+                        onChange={(e) => setNewTournament({ ...newTournament, date: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-location">Local*</Label>
+                      <Input
+                        id="tournament-location"
+                        value={newTournament.location}
+                        onChange={(e) => setNewTournament({ ...newTournament, location: e.target.value })}
+                        placeholder="Rio de Janeiro - RJ"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-whatsapp">WhatsApp* (com DDD)</Label>
+                      <Input
+                        id="tournament-whatsapp"
+                        value={newTournament.whatsapp}
+                        onChange={(e) => setNewTournament({ ...newTournament, whatsapp: e.target.value })}
+                        placeholder="5521999999999"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-category">Categoria*</Label>
+                      <Select 
+                        value={newTournament.category} 
+                        onValueChange={(value: any) => setNewTournament({ ...newTournament, category: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Iniciante">Iniciante</SelectItem>
+                          <SelectItem value="D">Categoria D</SelectItem>
+                          <SelectItem value="C">Categoria C</SelectItem>
+                          <SelectItem value="B">Categoria B</SelectItem>
+                          <SelectItem value="A">Categoria A</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button 
+                      className="w-full" 
+                      onClick={() => addTournamentMutation.mutate()}
+                      disabled={!newTournament.name || !newTournament.date || !newTournament.location || !newTournament.whatsapp || addTournamentMutation.isPending}
+                    >
+                      {addTournamentMutation.isPending ? "Cadastrando..." : "Cadastrar Torneio"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Torneios Cadastrados</CardTitle>
+                <CardDescription>Gerencie os torneios divulgados</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Local</TableHead>
+                      <TableHead>Categoria</TableHead>
+                      <TableHead>WhatsApp</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(tournaments || []).map((tournament) => (
+                      <TableRow key={tournament.id}>
+                        <TableCell className="font-medium">{tournament.name}</TableCell>
+                        <TableCell>{new Date(tournament.date).toLocaleDateString('pt-BR')}</TableCell>
+                        <TableCell>{tournament.location}</TableCell>
+                        <TableCell>{tournament.category}</TableCell>
+                        <TableCell>{tournament.whatsapp || '-'}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Dialog open={openEditTournament && selectedTournament?.id === tournament.id} onOpenChange={(open) => {
+                              setOpenEditTournament(open);
+                              if (!open) setSelectedTournament(null);
+                            }}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedTournament(tournament);
+                                    setEditTournament({
+                                      name: tournament.name,
+                                      description: tournament.description || "",
+                                      date: tournament.date,
+                                      location: tournament.location,
+                                      category: tournament.category,
+                                      whatsapp: tournament.whatsapp || "",
+                                    });
+                                  }}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-h-[90vh] overflow-y-auto">
+                                <DialogHeader>
+                                  <DialogTitle>Editar Torneio</DialogTitle>
+                                  <DialogDescription>
+                                    Atualize os dados de {tournament.name}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div>
+                                    <Label htmlFor="edit-tournament-name">Nome do Torneio*</Label>
+                                    <Input
+                                      id="edit-tournament-name"
+                                      value={editTournament.name}
+                                      onChange={(e) => setEditTournament({ ...editTournament, name: e.target.value })}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-tournament-description">Descrição</Label>
+                                    <Input
+                                      id="edit-tournament-description"
+                                      value={editTournament.description}
+                                      onChange={(e) => setEditTournament({ ...editTournament, description: e.target.value })}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-tournament-date">Data*</Label>
+                                    <Input
+                                      id="edit-tournament-date"
+                                      type="date"
+                                      value={editTournament.date}
+                                      onChange={(e) => setEditTournament({ ...editTournament, date: e.target.value })}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-tournament-location">Local*</Label>
+                                    <Input
+                                      id="edit-tournament-location"
+                                      value={editTournament.location}
+                                      onChange={(e) => setEditTournament({ ...editTournament, location: e.target.value })}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-tournament-whatsapp">WhatsApp* (com DDD)</Label>
+                                    <Input
+                                      id="edit-tournament-whatsapp"
+                                      value={editTournament.whatsapp}
+                                      onChange={(e) => setEditTournament({ ...editTournament, whatsapp: e.target.value })}
+                                      placeholder="5521999999999"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-tournament-category">Categoria*</Label>
+                                    <Select 
+                                      value={editTournament.category} 
+                                      onValueChange={(value: any) => setEditTournament({ ...editTournament, category: value })}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Iniciante">Iniciante</SelectItem>
+                                        <SelectItem value="D">Categoria D</SelectItem>
+                                        <SelectItem value="C">Categoria C</SelectItem>
+                                        <SelectItem value="B">Categoria B</SelectItem>
+                                        <SelectItem value="A">Categoria A</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <Button
+                                    className="w-full" 
+                                    onClick={() => updateTournamentMutation.mutate()}
+                                    disabled={!editTournament.name || !editTournament.date || !editTournament.location || !editTournament.whatsapp || updateTournamentMutation.isPending}
+                                  >
+                                    {updateTournamentMutation.isPending ? "Atualizando..." : "Atualizar Torneio"}
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => {
+                                if (confirm(`Tem certeza que deseja excluir o torneio ${tournament.name}?`)) {
+                                  deleteTournamentMutation.mutate(tournament.id);
+                                }
+                              }}
+                              disabled={deleteTournamentMutation.isPending}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
     </div>
