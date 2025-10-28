@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2 } from "lucide-react";
+import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -250,10 +251,13 @@ const Admin = () => {
               <h1 className="text-4xl font-bold mb-2">Painel Administrativo</h1>
               <p className="text-muted-foreground">Gerencie atletas e registre conquistas</p>
             </div>
-            <Button variant="outline" onClick={signOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sair
-            </Button>
+            <div className="flex gap-2">
+              <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
+              <Button variant="outline" onClick={signOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
+            </div>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 mb-8">
