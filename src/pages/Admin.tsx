@@ -17,6 +17,7 @@ import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
 import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import BulkAddAthletesDialog from "@/components/BulkAddAthletesDialog";
+import BulkEditAthletesDialog from "@/components/BulkEditAthletesDialog";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -263,6 +264,7 @@ const Admin = () => {
             <div className="flex gap-2">
               <ImportTutorialDialog />
               <BulkAddAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
+              <BulkEditAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
               <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
               <Button variant="outline" onClick={signOut}>
                 <LogOut className="mr-2 h-4 w-4" />
