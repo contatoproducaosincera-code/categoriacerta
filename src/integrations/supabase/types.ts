@@ -52,6 +52,42 @@ export type Database = {
           },
         ]
       }
+      athlete_badges: {
+        Row: {
+          athlete_id: string
+          badge_type_id: string
+          earned_at: string
+          id: string
+        }
+        Insert: {
+          athlete_id: string
+          badge_type_id: string
+          earned_at?: string
+          id?: string
+        }
+        Update: {
+          athlete_id?: string
+          badge_type_id?: string
+          earned_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_badges_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_badges_badge_type_id_fkey"
+            columns: ["badge_type_id"]
+            isOneToOne: false
+            referencedRelation: "badge_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       athletes: {
         Row: {
           category: Database["public"]["Enums"]["category"]
@@ -85,6 +121,39 @@ export type Database = {
           name?: string
           points?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      badge_types: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number | null
         }
         Relationships: []
       }

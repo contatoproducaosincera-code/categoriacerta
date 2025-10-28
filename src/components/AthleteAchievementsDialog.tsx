@@ -43,6 +43,23 @@ const AthleteAchievementsDialog = ({
     },
   });
 
+  const { data: badges } = useQuery({
+    queryKey: ["athlete-badges", athleteId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("athlete_badges")
+        .select(`
+          *,
+          badge_type:badge_types(*)
+        `)
+        .eq("athlete_id", athleteId)
+        .order("earned_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const podiumCount = achievements?.filter(
     (a) => a.position >= 1 && a.position <= 3
   ).length || 0;
@@ -115,6 +132,43 @@ const AthleteAchievementsDialog = ({
               </CardContent>
             </Card>
           </div>
+
+          {/* Conquistas/Badges Section */}
+          {badges && badges.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Award className="h-5 w-5 text-yellow-500" />
+                  Conquistas Desbloqueadas ({badges.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {badges.map((badge: any) => (
+                    <div
+                      key={badge.id}
+                      className="p-3 text-center rounded-lg border bg-gradient-to-br from-card to-muted/20 hover:scale-105 hover:shadow-lg transition-all cursor-pointer group"
+                      title={badge.badge_type.description}
+                    >
+                      <div className="text-5xl mb-2 group-hover:scale-110 transition-transform">
+                        {badge.badge_type.icon}
+                      </div>
+                      <div className="text-xs font-semibold line-clamp-2 min-h-[2rem] mb-1">
+                        {badge.badge_type.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(badge.earned_at).toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Distribuição de Pódios */}
           {podiumCount > 0 && (
