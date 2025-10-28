@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trophy } from "lucide-react";
+import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -95,7 +96,18 @@ const Ranking = () => {
                             `${index + 1}º`
                           )}
                         </TableCell>
-                        <TableCell className="font-medium">{athlete.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <AthleteAchievementsDialog
+                            athleteId={athlete.id}
+                            athleteName={athlete.name}
+                            athletePoints={athlete.points}
+                            athleteCategory={athlete.category}
+                          >
+                            <span className="cursor-pointer hover:text-primary transition-colors hover:underline">
+                              {athlete.name}
+                            </span>
+                          </AthleteAchievementsDialog>
+                        </TableCell>
                         <TableCell>
                           <Badge variant={
                             athlete.category === "A" || athlete.category === "B" || athlete.category === "C" ? "default" :

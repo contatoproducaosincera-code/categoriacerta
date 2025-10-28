@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin } from "lucide-react";
+import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -76,31 +77,36 @@ const Atletas = () => {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {filteredAthletes.map((athlete) => (
-                <Card 
+                <AthleteAchievementsDialog
                   key={athlete.id}
-                  className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                  athleteId={athlete.id}
+                  athleteName={athlete.name}
+                  athletePoints={athlete.points}
+                  athleteCategory={athlete.category}
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{athlete.name}</span>
-                      <Badge variant={
-                        athlete.category === "A" || athlete.category === "B" || athlete.category === "C" ? "default" :
-                        athlete.category === "D" ? "secondary" : "outline"
-                      }>
-                        {athlete.category}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center text-muted-foreground mb-2">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {athlete.city}
-                    </div>
-                    <div className="text-2xl font-bold text-primary">
-                      {athlete.points} pontos
-                    </div>
-                  </CardContent>
-                </Card>
+                  <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <span className="hover:text-primary transition-colors">{athlete.name}</span>
+                        <Badge variant={
+                          athlete.category === "A" || athlete.category === "B" || athlete.category === "C" ? "default" :
+                          athlete.category === "D" ? "secondary" : "outline"
+                        }>
+                          {athlete.category}
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center text-muted-foreground mb-2">
+                        <MapPin className="h-4 w-4 mr-2" />
+                        {athlete.city}
+                      </div>
+                      <div className="text-2xl font-bold text-primary">
+                        {athlete.points} pontos
+                      </div>
+                    </CardContent>
+                  </Card>
+                </AthleteAchievementsDialog>
               ))}
             </div>
           )}
