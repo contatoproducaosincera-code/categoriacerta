@@ -1,13 +1,37 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Trophy, Medal } from "lucide-react";
 
-const mockTopThree = [
-  { id: 1, name: "João Silva", points: 850, category: "C", city: "Rio de Janeiro" },
-  { id: 2, name: "Maria Santos", points: 780, category: "C", city: "São Paulo" },
-  { id: 3, name: "Pedro Costa", points: 720, category: "D", city: "Florianópolis" },
-];
-
 const TopThreeAthletes = () => {
+  const { data: athletes, isLoading } = useQuery({
+    queryKey: ["top-three-athletes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("athletes")
+        .select("*")
+        .order("points", { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <section className="py-16 bg-accent/30">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (!athletes || athletes.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-16 bg-accent/30">
       <div className="container mx-auto px-4">
@@ -21,7 +45,7 @@ const TopThreeAthletes = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {mockTopThree.map((athlete, index) => (
+          {athletes.map((athlete, index) => (
             <Card
               key={athlete.id}
               className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2"

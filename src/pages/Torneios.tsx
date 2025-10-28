@@ -1,45 +1,25 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Users } from "lucide-react";
 
-const mockTorneios = [
-  {
-    id: 1,
-    name: "Copa Verão Beach Tennis",
-    date: "15/01/2025",
-    location: "Rio de Janeiro - RJ",
-    category: "C",
-    description: "Torneio classificatório para categoria C"
-  },
-  {
-    id: 2,
-    name: "Circuito Praiano",
-    date: "22/01/2025",
-    location: "Florianópolis - SC",
-    category: "D",
-    description: "Aberto para atletas categoria D"
-  },
-  {
-    id: 3,
-    name: "Open de Beach Tennis",
-    date: "05/02/2025",
-    location: "São Paulo - SP",
-    category: "Iniciante",
-    description: "Torneio para iniciantes - Sem taxa de inscrição"
-  },
-  {
-    id: 4,
-    name: "Desafio das Quadras",
-    date: "18/02/2025",
-    location: "Curitiba - PR",
-    category: "C",
-    description: "Grande prêmio para os vencedores"
-  },
-];
-
 const Torneios = () => {
+  const { data: tournaments, isLoading } = useQuery({
+    queryKey: ["tournaments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tournaments")
+        .select("*")
+        .order("date", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -55,41 +35,49 @@ const Torneios = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-            {mockTorneios.map((torneio) => (
-              <Card 
-                key={torneio.id}
-                className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
-                    <CardTitle className="text-xl">{torneio.name}</CardTitle>
-                    <Badge variant={
-                      torneio.category === "C" ? "default" :
-                      torneio.category === "D" ? "secondary" : "outline"
-                    }>
-                      {torneio.category}
-                    </Badge>
-                  </div>
-                  <CardDescription>{torneio.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center text-sm">
-                    <Calendar className="h-4 w-4 mr-2 text-primary" />
-                    <span className="font-medium">{torneio.date}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <MapPin className="h-4 w-4 mr-2 text-primary" />
-                    <span>{torneio.location}</span>
-                  </div>
-                  <Button className="w-full" size="lg">
-                    <Users className="mr-2 h-4 w-4" />
-                    Inscrever-se
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Carregando torneios...</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+              {(tournaments || []).map((torneio) => (
+                <Card 
+                  key={torneio.id}
+                  className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-2">
+                      <CardTitle className="text-xl">{torneio.name}</CardTitle>
+                      <Badge variant={
+                        torneio.category === "A" || torneio.category === "B" || torneio.category === "C" ? "default" :
+                        torneio.category === "D" ? "secondary" : "outline"
+                      }>
+                        {torneio.category}
+                      </Badge>
+                    </div>
+                    <CardDescription>{torneio.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center text-sm">
+                      <Calendar className="h-4 w-4 mr-2 text-primary" />
+                      <span className="font-medium">
+                        {new Date(torneio.date).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <MapPin className="h-4 w-4 mr-2 text-primary" />
+                      <span>{torneio.location}</span>
+                    </div>
+                    <Button className="w-full" size="lg">
+                      <Users className="mr-2 h-4 w-4" />
+                      Inscrever-se
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
           <div className="mt-12 text-center">
             <p className="text-muted-foreground mb-4">

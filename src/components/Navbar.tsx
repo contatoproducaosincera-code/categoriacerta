@@ -25,13 +25,13 @@ const Navbar = () => {
             Torneios
           </Link>
           <Button variant="default" size="sm" asChild>
-            <Link to="/admin">Admin</Link>
+            <Link to="/auth">Admin</Link>
           </Button>
         </div>
 
         <div className="md:hidden">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/admin">Admin</Link>
+            <Link to="/auth">Admin</Link>
           </Button>
         </div>
       </div>
