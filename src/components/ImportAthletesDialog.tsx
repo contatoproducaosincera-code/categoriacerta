@@ -236,34 +236,34 @@ const ImportAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
           )}
 
           {previewRows.length > 0 && (
-            <div className="border rounded-lg">
-              <div className="bg-muted px-4 py-2">
+            <div className="border rounded-lg overflow-hidden bg-card">
+              <div className="bg-muted px-4 py-2 border-b">
                 <h4 className="font-semibold text-sm">
                   Preview (primeiras {previewRows.length} linhas)
                 </h4>
               </div>
-              <ScrollArea className="h-[300px]">
+              <div className="overflow-auto max-h-[300px]">
                 <Table>
-                  <TableHeader className="sticky top-0 bg-muted">
+                  <TableHeader className="sticky top-0 bg-muted z-10">
                     <TableRow>
-                      {Object.keys(previewRows[0]).map((header) => (
-                        <TableHead key={header}>{header}</TableHead>
+                      {Object.keys(previewRows[0] || {}).map((header) => (
+                        <TableHead key={header} className="whitespace-nowrap">{header}</TableHead>
                       ))}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {previewRows.map((row, idx) => (
                       <TableRow key={idx}>
-                        {Object.keys(previewRows[0]).map((key) => (
-                          <TableCell key={key} className="text-sm">
-                            {String(row[key])}
+                        {Object.keys(previewRows[0] || {}).map((key) => (
+                          <TableCell key={key} className="text-sm whitespace-nowrap">
+                            {String(row[key] || "")}
                           </TableCell>
                         ))}
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </ScrollArea>
+              </div>
             </div>
           )}
 
