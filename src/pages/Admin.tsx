@@ -586,16 +586,20 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-primary" />
-                  Sistema Automático
+                  Sistema Automático de Pontuação
                 </CardTitle>
                 <CardDescription>
                   Ao registrar conquistas, o sistema:
                   <ul className="list-disc list-inside mt-2 space-y-1">
                     <li>Calcula e adiciona pontos automaticamente</li>
-                    <li>Atualiza categoria ao atingir 500, 1000, 1500 ou 2000 pontos</li>
-                    <li>Envia email de notificação ao atleta</li>
+                    <li>A cada 500 pontos o atleta sobe de categoria</li>
+                    <li>Ao subir de categoria, os pontos são resetados e sobram apenas o excedente</li>
+                    <li>Envia email de notificação ao atleta quando sobe de categoria</li>
                     <li>Registra mudança no histórico</li>
                   </ul>
+                  <p className="mt-3 text-sm font-medium">
+                    📊 Exemplo: Atleta com 480 pts ganha 60 pts → sobe para próxima categoria com 40 pts
+                  </p>
                 </CardDescription>
               </CardHeader>
             </Card>
