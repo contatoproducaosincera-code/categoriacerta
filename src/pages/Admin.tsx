@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2 } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search } from "lucide-react";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
 import ImportTutorialDialog from "@/components/ImportTutorialDialog";
@@ -29,6 +29,7 @@ const Admin = () => {
   const [openAddPoints, setOpenAddPoints] = useState(false);
   const [openEditAthlete, setOpenEditAthlete] = useState(false);
   const [selectedAthlete, setSelectedAthlete] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [newAthlete, setNewAthlete] = useState({
     name: "",
@@ -385,6 +386,17 @@ const Admin = () => {
               <CardDescription>Clique em "Adicionar Conquista" para registrar pontos</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar atleta por nome..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -396,7 +408,11 @@ const Admin = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {(athletes || []).map((athlete) => (
+                  {(athletes || [])
+                    .filter(athlete => 
+                      athlete.name.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((athlete) => (
                     <TableRow key={athlete.id}>
                       <TableCell className="font-medium">{athlete.name}</TableCell>
                       <TableCell>{athlete.category}</TableCell>
