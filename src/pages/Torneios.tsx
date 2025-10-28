@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Users } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 const Torneios = () => {
   const { data: tournaments, isLoading } = useQuery({
@@ -26,6 +27,9 @@ const Torneios = () => {
       
       <section className="py-12 bg-gradient-to-b from-primary/10 to-transparent">
         <div className="container mx-auto px-4">
+          <div className="mb-6">
+            <BackButton />
+          </div>
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Próximos Torneios

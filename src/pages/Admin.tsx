@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2 } from "lucide-react";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
+import BackButton from "@/components/BackButton";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -246,6 +247,9 @@ const Admin = () => {
       
       <section className="py-12">
         <div className="container mx-auto px-4">
+          <div className="mb-6">
+            <BackButton />
+          </div>
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-4xl font-bold mb-2">Painel Administrativo</h1>

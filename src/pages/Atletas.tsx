@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
+import BackButton from "@/components/BackButton";
 
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +39,9 @@ const Atletas = () => {
       
       <section className="py-12 bg-gradient-to-b from-primary/10 to-transparent">
         <div className="container mx-auto px-4">
+          <div className="mb-6">
+            <BackButton />
+          </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">
             Atletas Cadastrados
           </h1>
