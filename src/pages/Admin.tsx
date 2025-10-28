@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2 } from "lucide-react";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
+import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -257,6 +258,7 @@ const Admin = () => {
               <p className="text-muted-foreground">Gerencie atletas e registre conquistas</p>
             </div>
             <div className="flex gap-2">
+              <ImportTutorialDialog />
               <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
               <Button variant="outline" onClick={signOut}>
                 <LogOut className="mr-2 h-4 w-4" />
