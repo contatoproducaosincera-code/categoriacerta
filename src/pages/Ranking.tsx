@@ -55,21 +55,22 @@ const Ranking = () => {
     },
   });
 
-  // Buscar histórico de ranking para calcular mudanças de posição
-  const { data: rankingChanges } = useQuery({
-    queryKey: ["ranking-changes"],
+  // Buscar histórico de posições para calcular mudanças
+  const { data: positionChanges } = useQuery({
+    queryKey: ["position-changes"],
     queryFn: async () => {
+      // Buscar as duas últimas entradas de ranking para cada atleta
       const { data, error } = await supabase
         .from("ranking_history")
         .select("athlete_id, position, recorded_at")
         .order("recorded_at", { ascending: false });
 
       if (error) throw error;
-
+      
       // Agrupar por atleta e pegar as duas últimas posições
       const changes: Record<string, number> = {};
       const athletePositions: Record<string, number[]> = {};
-
+      
       data?.forEach((record) => {
         if (!athletePositions[record.athlete_id]) {
           athletePositions[record.athlete_id] = [];
@@ -78,16 +79,16 @@ const Ranking = () => {
           athletePositions[record.athlete_id].push(record.position);
         }
       });
-
+      
       // Calcular mudança (posição anterior - posição atual)
-      // Negativo = subiu, Positivo = caiu
+      // Positivo = subiu, Negativo = caiu
       Object.keys(athletePositions).forEach((athleteId) => {
         const positions = athletePositions[athleteId];
         if (positions.length === 2) {
           changes[athleteId] = positions[1] - positions[0];
         }
       });
-
+      
       return changes;
     },
   });
@@ -97,31 +98,26 @@ const Ranking = () => {
   };
 
   const getRankingChange = (athleteId: string) => {
-    return rankingChanges?.[athleteId] || 0;
+    return positionChanges?.[athleteId] || 0;
   };
 
   const getRankingChangeIcon = (change: number) => {
     if (change > 0) {
       return (
-        <div className="flex items-center gap-1 text-green-600 animate-scale-in">
+        <div className="flex items-center gap-1 text-green-600 animate-fade-in">
           <ArrowUp className="h-3 w-3" />
           <span className="text-xs font-semibold">+{change}</span>
         </div>
       );
     } else if (change < 0) {
       return (
-        <div className="flex items-center gap-1 text-red-600 animate-scale-in">
+        <div className="flex items-center gap-1 text-red-600 animate-fade-in">
           <ArrowDown className="h-3 w-3" />
           <span className="text-xs font-semibold">{change}</span>
         </div>
       );
-    } else {
-      return (
-        <div className="flex items-center gap-1 text-muted-foreground animate-scale-in">
-          <Minus className="h-3 w-3" />
-        </div>
-      );
     }
+    return null;
   };
 
   // Filter athletes by search term
