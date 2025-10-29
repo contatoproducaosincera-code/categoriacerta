@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Trophy, Search } from "lucide-react";
+import { Trophy, Search, BadgeCheck } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 
@@ -33,6 +33,31 @@ const Ranking = () => {
       return data?.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')) || [];
     },
   });
+
+  // Buscar contagem de primeiros lugares para cada atleta
+  const { data: firstPlaceCounts } = useQuery({
+    queryKey: ["first-place-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("achievements")
+        .select("athlete_id")
+        .eq("position", 1);
+
+      if (error) throw error;
+      
+      // Contar quantos primeiros lugares cada atleta tem
+      const counts: Record<string, number> = {};
+      data?.forEach((achievement) => {
+        counts[achievement.athlete_id] = (counts[achievement.athlete_id] || 0) + 1;
+      });
+      
+      return counts;
+    },
+  });
+
+  const getAthleteFirstPlaces = (athleteId: string) => {
+    return firstPlaceCounts?.[athleteId] || 0;
+  };
 
   // Filter athletes by search term
   const filteredAthletes = athletes?.filter(athlete =>
@@ -124,8 +149,11 @@ const Ranking = () => {
                             athletePoints={athlete.points}
                             athleteCategory={athlete.category}
                           >
-                            <span className="cursor-pointer hover:text-primary transition-colors hover:underline">
+                            <span className="cursor-pointer hover:text-primary transition-colors hover:underline flex items-center gap-2">
                               {athlete.name}
+                              {getAthleteFirstPlaces(athlete.id) >= 3 && (
+                                <BadgeCheck className="h-4 w-4 text-primary animate-scale-in" />
+                              )}
                             </span>
                           </AthleteAchievementsDialog>
                         </TableCell>

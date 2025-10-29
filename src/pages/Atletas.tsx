@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Search, MapPin } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
+import { BadgeCheck } from "lucide-react";
 
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,6 +53,31 @@ const Atletas = () => {
       return data;
     },
   });
+
+  // Buscar contagem de primeiros lugares para cada atleta
+  const { data: firstPlaceCounts } = useQuery({
+    queryKey: ["first-place-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("achievements")
+        .select("athlete_id")
+        .eq("position", 1);
+
+      if (error) throw error;
+      
+      // Contar quantos primeiros lugares cada atleta tem
+      const counts: Record<string, number> = {};
+      data?.forEach((achievement) => {
+        counts[achievement.athlete_id] = (counts[achievement.athlete_id] || 0) + 1;
+      });
+      
+      return counts;
+    },
+  });
+
+  const getAthleteFirstPlaces = (athleteId: string) => {
+    return firstPlaceCounts?.[athleteId] || 0;
+  };
 
   const cities = [...new Set((athletes || []).map(a => a.city))].sort();
 
@@ -154,7 +180,12 @@ const Atletas = () => {
                   <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
-                        <span className="hover:text-primary transition-colors">{athlete.name}</span>
+                        <span className="hover:text-primary transition-colors flex items-center gap-2">
+                          {athlete.name}
+                          {getAthleteFirstPlaces(athlete.id) >= 3 && (
+                            <BadgeCheck className="h-5 w-5 text-primary animate-scale-in" />
+                          )}
+                        </span>
                         <Badge variant={
                           athlete.category === "C" ? "default" :
                           athlete.category === "D" ? "secondary" : "outline"

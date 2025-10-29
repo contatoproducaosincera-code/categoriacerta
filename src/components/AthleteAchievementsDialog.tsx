@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Award, Calendar, Medal } from "lucide-react";
+import { Trophy, Award, Calendar, Medal, BadgeCheck } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -67,6 +67,8 @@ const AthleteAchievementsDialog = ({
   const firstPlaces = achievements?.filter((a) => a.position === 1).length || 0;
   const secondPlaces = achievements?.filter((a) => a.position === 2).length || 0;
   const thirdPlaces = achievements?.filter((a) => a.position === 3).length || 0;
+  
+  const hasVerifiedBadge = firstPlaces >= 3;
 
   const getPositionBadge = (position: number) => {
     const variants: Record<number, "default" | "secondary" | "outline"> = {
@@ -95,6 +97,11 @@ const AthleteAchievementsDialog = ({
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <Trophy className="h-6 w-6 text-primary" />
             Conquistas de {athleteName}
+            {hasVerifiedBadge && (
+              <div title="Atleta Verificado - 3+ Primeiros Lugares">
+                <BadgeCheck className="h-6 w-6 text-primary animate-scale-in" />
+              </div>
+            )}
           </DialogTitle>
           <DialogDescription>
             Histórico completo de participações e conquistas
@@ -102,6 +109,92 @@ const AthleteAchievementsDialog = ({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Seção de Troféus */}
+          {podiumCount > 0 && (
+            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Trophy className="h-6 w-6 text-primary" />
+                  Troféus Conquistados
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-6">
+                  {/* Troféu de Ouro */}
+                  <div className="text-center group">
+                    <div className="relative inline-block mb-3">
+                      <div className="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl group-hover:bg-yellow-400/30 transition-all" />
+                      <div className="relative bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full p-6 shadow-lg group-hover:scale-110 transition-transform animate-scale-in">
+                        <Trophy className="h-12 w-12 text-white" strokeWidth={2.5} />
+                      </div>
+                    </div>
+                    <div className="text-4xl font-bold text-yellow-600 mb-1">
+                      {firstPlaces}
+                    </div>
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                      Ouro
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      1º Lugar
+                    </div>
+                  </div>
+
+                  {/* Troféu de Prata */}
+                  <div className="text-center group">
+                    <div className="relative inline-block mb-3">
+                      <div className="absolute inset-0 bg-gray-400/20 rounded-full blur-xl group-hover:bg-gray-400/30 transition-all" />
+                      <div className="relative bg-gradient-to-br from-gray-300 to-gray-500 rounded-full p-6 shadow-lg group-hover:scale-110 transition-transform animate-scale-in" style={{ animationDelay: '0.1s' }}>
+                        <Trophy className="h-12 w-12 text-white" strokeWidth={2.5} />
+                      </div>
+                    </div>
+                    <div className="text-4xl font-bold text-gray-600 mb-1">
+                      {secondPlaces}
+                    </div>
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                      Prata
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      2º Lugar
+                    </div>
+                  </div>
+
+                  {/* Troféu de Bronze */}
+                  <div className="text-center group">
+                    <div className="relative inline-block mb-3">
+                      <div className="absolute inset-0 bg-amber-600/20 rounded-full blur-xl group-hover:bg-amber-600/30 transition-all" />
+                      <div className="relative bg-gradient-to-br from-amber-600 to-amber-800 rounded-full p-6 shadow-lg group-hover:scale-110 transition-transform animate-scale-in" style={{ animationDelay: '0.2s' }}>
+                        <Trophy className="h-12 w-12 text-white" strokeWidth={2.5} />
+                      </div>
+                    </div>
+                    <div className="text-4xl font-bold text-amber-700 mb-1">
+                      {thirdPlaces}
+                    </div>
+                    <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                      Bronze
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      3º Lugar
+                    </div>
+                  </div>
+                </div>
+                
+                {hasVerifiedBadge && (
+                  <div className="mt-6 pt-6 border-t text-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full animate-fade-in">
+                      <BadgeCheck className="h-5 w-5 text-primary" />
+                      <span className="text-sm font-semibold text-primary">
+                        Atleta Verificado
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Conquistou 3 ou mais primeiros lugares
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Estatísticas Gerais */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
@@ -170,39 +263,6 @@ const AthleteAchievementsDialog = ({
             </Card>
           )}
 
-          {/* Distribuição de Pódios */}
-          {podiumCount > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Medal className="h-5 w-5" />
-                  Distribuição de Pódios
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900 border-2 border-yellow-500">
-                    <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                      {firstPlaces}
-                    </div>
-                    <div className="text-sm font-medium">🥇 1º Lugar</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-400">
-                    <div className="text-3xl font-bold text-gray-600 dark:text-gray-300">
-                      {secondPlaces}
-                    </div>
-                    <div className="text-sm font-medium">🥈 2º Lugar</div>
-                  </div>
-                  <div className="text-center p-4 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-2 border-amber-600">
-                    <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">
-                      {thirdPlaces}
-                    </div>
-                    <div className="text-sm font-medium">🥉 3º Lugar</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Lista de Conquistas */}
           <Card>
