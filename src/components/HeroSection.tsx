@@ -1,53 +1,46 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Trophy, Users, Sparkles } from "lucide-react";
+import { Trophy, Users } from "lucide-react";
+import heroImage from "@/assets/hero-beach-tennis.jpg";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-accent/20 to-background">
-      {/* Animated floating elements */}
-      <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-20 left-20 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+    <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden">
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${heroImage})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent" />
+      </div>
       
-      <div className="container relative z-10 px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-3 mb-6 animate-fade-in">
-            <div className="relative">
-              <Trophy className="h-16 w-16 text-primary" />
-              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-            </div>
-          </div>
-          
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-black mb-6 animate-fade-in-up leading-tight">
-            <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-              Categoria Certa
-            </span>
+      <div className="container relative z-10 px-4 py-20 text-white">
+        <div className="max-w-2xl">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            Acompanhe seu desempenho e suba de categoria
           </h1>
-          
-          <p className="text-xl md:text-2xl mb-10 text-muted-foreground animate-fade-in-up font-light leading-relaxed max-w-2xl mx-auto" style={{ animationDelay: "0.1s" }}>
-            Conquiste seu lugar no ranking e alcance novos patamares no beach tennis
+          <p className="text-xl md:text-2xl mb-8 text-white/90 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+            Mostre seu talento nas quadras. Conquiste seu lugar no ranking.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+          <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             <Button 
               size="lg" 
-              className="text-lg font-semibold shadow-medium hover:shadow-strong transition-all hover:scale-105 group"
+              variant="secondary"
+              className="text-lg font-semibold"
               asChild
             >
               <Link to="/ranking">
-                <Trophy className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                <Trophy className="mr-2 h-5 w-5" />
                 Ver Ranking
               </Link>
             </Button>
             <Button 
               size="lg" 
               variant="outline"
-              className="text-lg font-semibold shadow-soft hover:shadow-medium transition-all hover:scale-105 group"
+              className="text-lg font-semibold bg-white/10 border-white hover:bg-white hover:text-primary"
               asChild
             >
               <Link to="/atletas">
-                <Users className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                <Users className="mr-2 h-5 w-5" />
                 Ver Atletas
               </Link>
             </Button>

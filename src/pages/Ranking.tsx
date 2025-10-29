@@ -6,8 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trophy } from "lucide-react";
-import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
-import BackButton from "@/components/BackButton";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -36,9 +34,6 @@ const Ranking = () => {
       
       <section className="py-12">
         <div className="container mx-auto px-4">
-          <div className="mb-6">
-            <BackButton />
-          </div>
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Ranking Geral
@@ -100,18 +95,7 @@ const Ranking = () => {
                             `${index + 1}º`
                           )}
                         </TableCell>
-                        <TableCell className="font-medium">
-                          <AthleteAchievementsDialog
-                            athleteId={athlete.id}
-                            athleteName={athlete.name}
-                            athletePoints={athlete.points}
-                            athleteCategory={athlete.category}
-                          >
-                            <span className="cursor-pointer hover:text-primary transition-colors hover:underline">
-                              {athlete.name}
-                            </span>
-                          </AthleteAchievementsDialog>
-                        </TableCell>
+                        <TableCell className="font-medium">{athlete.name}</TableCell>
                         <TableCell>
                           <Badge variant={
                             athlete.category === "A" || athlete.category === "B" || athlete.category === "C" ? "default" :

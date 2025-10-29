@@ -4,8 +4,7 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, MessageCircle } from "lucide-react";
-import BackButton from "@/components/BackButton";
+import { Calendar, MapPin, Users } from "lucide-react";
 
 const Torneios = () => {
   const { data: tournaments, isLoading } = useQuery({
@@ -27,15 +26,12 @@ const Torneios = () => {
       
       <section className="py-12 bg-gradient-to-b from-primary/10 to-transparent">
         <div className="container mx-auto px-4">
-          <div className="mb-6">
-            <BackButton />
-          </div>
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Próximos Torneios
             </h1>
             <p className="text-muted-foreground text-lg">
-              Fale com o organizador pelo WhatsApp para se inscrever
+              Inscreva-se e mostre seu talento nas quadras
             </p>
           </div>
 
@@ -73,25 +69,9 @@ const Torneios = () => {
                       <MapPin className="h-4 w-4 mr-2 text-primary" />
                       <span>{torneio.location}</span>
                     </div>
-                    <Button 
-                      className="w-full" 
-                      size="lg"
-                      onClick={() => {
-                        if (torneio.whatsapp) {
-                          // Se já for um link completo, usa diretamente
-                          if (torneio.whatsapp.startsWith('http')) {
-                            window.open(torneio.whatsapp, '_blank');
-                          } else {
-                            // Se for apenas o número, cria o link
-                            const phone = torneio.whatsapp.replace(/\D/g, '');
-                            window.open(`https://wa.me/${phone}`, '_blank');
-                          }
-                        }
-                      }}
-                      disabled={!torneio.whatsapp}
-                    >
-                      <MessageCircle className="mr-2 h-4 w-4" />
-                      {torneio.whatsapp ? 'Falar com Organizador' : 'WhatsApp não cadastrado'}
+                    <Button className="w-full" size="lg">
+                      <Users className="mr-2 h-4 w-4" />
+                      Inscrever-se
                     </Button>
                   </CardContent>
                 </Card>

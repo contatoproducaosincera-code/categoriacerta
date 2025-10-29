@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Trophy, Medal } from "lucide-react";
-import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 
 const TopThreeAthletes = () => {
   const { data: athletes, isLoading } = useQuery({
@@ -47,43 +46,36 @@ const TopThreeAthletes = () => {
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {athletes.map((athlete, index) => (
-            <AthleteAchievementsDialog
+            <Card
               key={athlete.id}
-              athleteId={athlete.id}
-              athleteName={athlete.name}
-              athletePoints={athlete.points}
-              athleteCategory={athlete.category}
+              className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2"
+              style={{
+                background: index === 0 
+                  ? 'linear-gradient(145deg, hsl(45 90% 60%), hsl(45 80% 55%))'
+                  : index === 1
+                  ? 'linear-gradient(145deg, hsl(0 0% 85%), hsl(0 0% 75%))'
+                  : 'linear-gradient(145deg, hsl(25 50% 55%), hsl(25 40% 45%))'
+              }}
             >
-              <Card
-                className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2 cursor-pointer"
-                style={{
-                  background: index === 0 
-                    ? 'linear-gradient(145deg, hsl(45 90% 60%), hsl(45 80% 55%))'
-                    : index === 1
-                    ? 'linear-gradient(145deg, hsl(0 0% 85%), hsl(0 0% 75%))'
-                    : 'linear-gradient(145deg, hsl(25 50% 55%), hsl(25 40% 45%))'
-                }}
-              >
-                <div className="flex justify-center mb-4">
-                  {index === 0 ? (
-                    <Trophy className="h-16 w-16 text-yellow-100" />
-                  ) : (
-                    <Medal className="h-16 w-16 text-white" />
-                  )}
-                </div>
-                <div className="text-6xl font-bold text-white mb-2">
-                  {index + 1}º
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2 hover:scale-105 transition-transform">
-                  {athlete.name}
-                </h3>
-                <p className="text-white/90 mb-1">{athlete.city}</p>
-                <p className="text-white/90 mb-3">Categoria {athlete.category}</p>
-                <div className="text-2xl font-bold text-white">
-                  {athlete.points} pontos
-                </div>
-              </Card>
-            </AthleteAchievementsDialog>
+              <div className="flex justify-center mb-4">
+                {index === 0 ? (
+                  <Trophy className="h-16 w-16 text-yellow-100" />
+                ) : (
+                  <Medal className="h-16 w-16 text-white" />
+                )}
+              </div>
+              <div className="text-6xl font-bold text-white mb-2">
+                {index + 1}º
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                {athlete.name}
+              </h3>
+              <p className="text-white/90 mb-1">{athlete.city}</p>
+              <p className="text-white/90 mb-3">Categoria {athlete.category}</p>
+              <div className="text-2xl font-bold text-white">
+                {athlete.points} pontos
+              </div>
+            </Card>
           ))}
         </div>
       </div>
