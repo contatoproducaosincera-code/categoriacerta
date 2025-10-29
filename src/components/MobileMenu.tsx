@@ -55,13 +55,11 @@ const MobileMenu = () => {
               >
                 Torneios
               </Link>
-              {isAdmin && (
-                <Button className="mt-4" asChild>
-                  <Link to="/admin" onClick={() => setIsOpen(false)}>
-                    Admin
-                  </Link>
-                </Button>
-              )}
+              <Button className="mt-4" asChild>
+                <Link to={isAdmin ? "/admin" : "/auth"} onClick={() => setIsOpen(false)}>
+                  {isAdmin ? "Admin" : "Login Admin"}
+                </Link>
+              </Button>
             </nav>
           </div>
         </>

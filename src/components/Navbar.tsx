@@ -64,15 +64,15 @@ const Navbar = () => {
           >
             Torneios
           </Link>
-          {isAdmin && (
-            <Button 
-              className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
-              size="sm" 
-              asChild
-            >
-              <Link to="/admin">Admin</Link>
-            </Button>
-          )}
+          <Button 
+            className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
+            size="sm" 
+            asChild
+          >
+            <Link to={isAdmin ? "/admin" : "/auth"}>
+              {isAdmin ? "Admin" : "Login Admin"}
+            </Link>
+          </Button>
         </div>
 
         <MobileMenu />
