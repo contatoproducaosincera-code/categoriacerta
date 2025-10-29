@@ -5,12 +5,14 @@ import Navbar from "@/components/Navbar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Trophy, Search } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: athletes, isLoading } = useQuery({
     queryKey: ["ranking", categoryFilter],
@@ -26,9 +28,16 @@ const Ranking = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      
+      // Sort alphabetically by name
+      return data?.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')) || [];
     },
   });
+
+  // Filter athletes by search term
+  const filteredAthletes = athletes?.filter(athlete =>
+    athlete.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,9 +56,19 @@ const Ranking = () => {
               Acompanhe sua evolução e suba de categoria
             </p>
             
-            <div className="flex justify-center mb-8">
+            <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
+              <div className="relative w-full md:w-[300px]">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Buscar atleta..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[250px]">
+                <SelectTrigger className="w-full md:w-[250px]">
                   <SelectValue placeholder="Filtrar por categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -81,7 +100,7 @@ const Ranking = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(athletes || []).map((athlete, index) => (
+                    {(filteredAthletes || []).map((athlete, index) => (
                       <TableRow 
                         key={athlete.id}
                         className="hover:bg-accent/50 transition-colors"
