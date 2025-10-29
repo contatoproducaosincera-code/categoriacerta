@@ -18,7 +18,7 @@ const Ranking = () => {
       let query = supabase
         .from("athletes")
         .select("*")
-        .order("points", { ascending: false });
+        .order("name", { ascending: true });
 
       if (categoryFilter !== "all") {
         query = query.eq("category", categoryFilter as any);
@@ -29,6 +29,17 @@ const Ranking = () => {
       return data;
     },
   });
+
+  // Group athletes by category
+  const athletesByCategory = athletes?.reduce((acc, athlete) => {
+    if (!acc[athlete.category]) {
+      acc[athlete.category] = [];
+    }
+    acc[athlete.category].push(athlete);
+    return acc;
+  }, {} as Record<string, typeof athletes>);
+
+  const categories = ["A", "B", "C", "D", "Iniciante"];
 
   return (
     <div className="min-h-screen bg-background">
@@ -68,38 +79,96 @@ const Ranking = () => {
             <div className="text-center py-12">
               <p className="text-muted-foreground">Carregando ranking...</p>
             </div>
+          ) : categoryFilter === "all" ? (
+            <>
+              <div className="max-w-4xl mx-auto space-y-8">
+                {categories.map((category) => {
+                  const categoryAthletes = athletesByCategory?.[category] || [];
+                  if (categoryAthletes.length === 0) return null;
+                  
+                  return (
+                    <div key={category} className="bg-card rounded-lg border shadow-lg overflow-hidden">
+                      <div className="bg-primary/10 px-6 py-4 border-b">
+                        <h2 className="text-2xl font-bold">Categoria {category}</h2>
+                      </div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-primary/5">
+                            <TableHead className="font-bold">Nome</TableHead>
+                            <TableHead className="text-right font-bold">Pontuação</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {categoryAthletes.map((athlete) => (
+                            <TableRow 
+                              key={athlete.id}
+                              className="hover:bg-accent/50 transition-colors"
+                            >
+                              <TableCell className="font-medium">
+                                <AthleteAchievementsDialog
+                                  athleteId={athlete.id}
+                                  athleteName={athlete.name}
+                                  athletePoints={athlete.points}
+                                  athleteCategory={athlete.category}
+                                >
+                                  <span className="cursor-pointer hover:text-primary transition-colors hover:underline">
+                                    {athlete.name}
+                                  </span>
+                                </AthleteAchievementsDialog>
+                              </TableCell>
+                              <TableCell className="text-right font-bold text-primary">
+                                {athlete.points}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-8 max-w-4xl mx-auto bg-accent/30 border border-border rounded-lg p-6">
+                <h3 className="font-bold text-lg mb-3">Sistema de Pontuação e Categorias</h3>
+                <div className="grid md:grid-cols-3 gap-4 text-center mb-4">
+                  <div>
+                    <div className="text-3xl font-bold text-yellow-600">+100</div>
+                    <div className="text-sm text-muted-foreground">1º Lugar</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-gray-500">+80</div>
+                    <div className="text-sm text-muted-foreground">2º Lugar</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-amber-700">+60</div>
+                    <div className="text-sm text-muted-foreground">3º Lugar</div>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p>📊 <strong>500 pontos:</strong> Iniciante → D</p>
+                  <p>📊 <strong>1000 pontos:</strong> D → C</p>
+                  <p>📊 <strong>1500 pontos:</strong> C → B</p>
+                  <p>📊 <strong>2000 pontos:</strong> B → A</p>
+                </div>
+              </div>
+            </>
           ) : (
             <>
               <div className="max-w-4xl mx-auto bg-card rounded-lg border shadow-lg overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-primary/5">
-                      <TableHead className="w-[100px] text-center font-bold">Posição</TableHead>
                       <TableHead className="font-bold">Nome</TableHead>
                       <TableHead className="font-bold">Categoria</TableHead>
                       <TableHead className="text-right font-bold">Pontuação</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(athletes || []).map((athlete, index) => (
+                    {(athletes || []).map((athlete) => (
                       <TableRow 
                         key={athlete.id}
                         className="hover:bg-accent/50 transition-colors"
                       >
-                        <TableCell className="text-center font-bold">
-                          {index < 3 ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <Trophy className={`h-5 w-5 ${
-                                index === 0 ? 'text-yellow-500' :
-                                index === 1 ? 'text-gray-400' :
-                                'text-amber-600'
-                              }`} />
-                              {index + 1}º
-                            </div>
-                          ) : (
-                            `${index + 1}º`
-                          )}
-                        </TableCell>
                         <TableCell className="font-medium">
                           <AthleteAchievementsDialog
                             athleteId={athlete.id}
