@@ -54,7 +54,7 @@ const Torneios = () => {
                     <div className="flex items-start justify-between mb-2">
                       <CardTitle className="text-xl">{torneio.name}</CardTitle>
                       <Badge variant={
-                        torneio.category === "A" || torneio.category === "B" || torneio.category === "C" ? "default" :
+                        torneio.category === "C" ? "default" :
                         torneio.category === "D" ? "secondary" : "outline"
                       }>
                         {torneio.category}

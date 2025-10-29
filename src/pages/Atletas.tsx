@@ -19,11 +19,9 @@ const Atletas = () => {
 
   const getCategoryProgress = (points: number, category: string) => {
     const thresholds = {
-      'Iniciante': { current: 0, next: 500, nextCategory: 'D' },
-      'D': { current: 500, next: 1000, nextCategory: 'C' },
-      'C': { current: 1000, next: 1500, nextCategory: 'B' },
-      'B': { current: 1500, next: 2000, nextCategory: 'A' },
-      'A': { current: 2000, next: 2000, nextCategory: null }
+      'Iniciante': { next: 500, nextCategory: 'D' },
+      'D': { next: 500, nextCategory: 'C' },
+      'C': { next: 500, nextCategory: null }
     };
 
     const threshold = thresholds[category as keyof typeof thresholds];
@@ -31,9 +29,7 @@ const Atletas = () => {
       return { progress: 100, remaining: 0, nextCategory: null, percentage: 100 };
     }
 
-    const pointsInRange = points - threshold.current;
-    const rangeSize = threshold.next - threshold.current;
-    const percentage = Math.min((pointsInRange / rangeSize) * 100, 100);
+    const percentage = Math.min((points / threshold.next) * 100, 100);
     const remaining = Math.max(threshold.next - points, 0);
 
     return {
@@ -68,9 +64,7 @@ const Atletas = () => {
       let matchesPoints = true;
       if (pointsFilter === "0-500") matchesPoints = athlete.points >= 0 && athlete.points < 500;
       else if (pointsFilter === "500-1000") matchesPoints = athlete.points >= 500 && athlete.points < 1000;
-      else if (pointsFilter === "1000-1500") matchesPoints = athlete.points >= 1000 && athlete.points < 1500;
-      else if (pointsFilter === "1500-2000") matchesPoints = athlete.points >= 1500 && athlete.points < 2000;
-      else if (pointsFilter === "2000+") matchesPoints = athlete.points >= 2000;
+      else if (pointsFilter === "1000+") matchesPoints = athlete.points >= 1000;
       
       return matchesSearch && matchesCategory && matchesCity && matchesPoints;
     })
@@ -109,8 +103,6 @@ const Atletas = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-background z-50">
                   <SelectItem value="all">Todas Categorias</SelectItem>
-                  <SelectItem value="A">Categoria A</SelectItem>
-                  <SelectItem value="B">Categoria B</SelectItem>
                   <SelectItem value="C">Categoria C</SelectItem>
                   <SelectItem value="D">Categoria D</SelectItem>
                   <SelectItem value="Iniciante">Iniciante</SelectItem>
@@ -139,9 +131,7 @@ const Atletas = () => {
                   <SelectItem value="all">Todas Pontuações</SelectItem>
                   <SelectItem value="0-500">0 - 499 pontos (Iniciante)</SelectItem>
                   <SelectItem value="500-1000">500 - 999 pontos (D)</SelectItem>
-                  <SelectItem value="1000-1500">1000 - 1499 pontos (C)</SelectItem>
-                  <SelectItem value="1500-2000">1500 - 1999 pontos (B)</SelectItem>
-                  <SelectItem value="2000+">2000+ pontos (A)</SelectItem>
+                  <SelectItem value="1000+">1000+ pontos (C)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -166,7 +156,7 @@ const Atletas = () => {
                       <CardTitle className="flex items-center justify-between">
                         <span className="hover:text-primary transition-colors">{athlete.name}</span>
                         <Badge variant={
-                          athlete.category === "A" || athlete.category === "B" || athlete.category === "C" ? "default" :
+                          athlete.category === "C" ? "default" :
                           athlete.category === "D" ? "secondary" : "outline"
                         }>
                           {athlete.category}

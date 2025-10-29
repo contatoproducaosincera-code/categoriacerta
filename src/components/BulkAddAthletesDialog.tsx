@@ -16,7 +16,7 @@ interface AthleteFormData {
   email: string;
   city: string;
   instagram: string;
-  category: "A" | "B" | "C" | "D" | "Iniciante";
+  category: "C" | "D" | "Iniciante";
 }
 
 const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
@@ -197,8 +197,6 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                           <SelectItem value="Iniciante">Iniciante</SelectItem>
                           <SelectItem value="D">Categoria D</SelectItem>
                           <SelectItem value="C">Categoria C</SelectItem>
-                          <SelectItem value="B">Categoria B</SelectItem>
-                          <SelectItem value="A">Categoria A</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

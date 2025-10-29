@@ -73,8 +73,6 @@ const Ranking = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas Categorias</SelectItem>
-                  <SelectItem value="A">Categoria A</SelectItem>
-                  <SelectItem value="B">Categoria B</SelectItem>
                   <SelectItem value="C">Categoria C</SelectItem>
                   <SelectItem value="D">Categoria D</SelectItem>
                   <SelectItem value="Iniciante">Iniciante</SelectItem>
@@ -133,7 +131,7 @@ const Ranking = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant={
-                            athlete.category === "A" || athlete.category === "B" || athlete.category === "C" ? "default" :
+                            athlete.category === "C" ? "default" :
                             athlete.category === "D" ? "secondary" : "outline"
                           }>
                             {athlete.category}
@@ -166,9 +164,8 @@ const Ranking = () => {
                 </div>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p>📊 <strong>500 pontos:</strong> Iniciante → D</p>
-                  <p>📊 <strong>1000 pontos:</strong> D → C</p>
-                  <p>📊 <strong>1500 pontos:</strong> C → B</p>
-                  <p>📊 <strong>2000 pontos:</strong> B → A</p>
+                  <p>📊 <strong>500 pontos:</strong> D → C (categoria máxima)</p>
+                  <p className="text-xs mt-2">💡 A cada 500 pontos você sobe uma categoria!</p>
                 </div>
               </div>
             </>

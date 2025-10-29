@@ -39,7 +39,7 @@ const Admin = () => {
     email: "",
     city: "",
     instagram: "",
-    category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
+    category: "Iniciante" as "C" | "D" | "Iniciante",
   });
 
   const [editAthlete, setEditAthlete] = useState({
@@ -47,7 +47,7 @@ const Admin = () => {
     email: "",
     city: "",
     instagram: "",
-    category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
+    category: "Iniciante" as "C" | "D" | "Iniciante",
   });
 
   const [newTournament, setNewTournament] = useState({
@@ -55,7 +55,7 @@ const Admin = () => {
     description: "",
     date: new Date().toISOString().split('T')[0],
     location: "",
-    category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
+    category: "Iniciante" as "C" | "D" | "Iniciante",
     whatsapp: "",
   });
 
@@ -64,7 +64,7 @@ const Admin = () => {
     description: "",
     date: new Date().toISOString().split('T')[0],
     location: "",
-    category: "Iniciante" as "A" | "B" | "C" | "D" | "Iniciante",
+    category: "Iniciante" as "C" | "D" | "Iniciante",
     whatsapp: "",
   });
 
@@ -472,8 +472,6 @@ const Admin = () => {
                         <SelectItem value="Iniciante">Iniciante</SelectItem>
                         <SelectItem value="D">Categoria D</SelectItem>
                         <SelectItem value="C">Categoria C</SelectItem>
-                        <SelectItem value="B">Categoria B</SelectItem>
-                        <SelectItem value="A">Categoria A</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -566,8 +564,6 @@ const Admin = () => {
                         <SelectItem value="Iniciante">Iniciante</SelectItem>
                         <SelectItem value="D">Categoria D</SelectItem>
                         <SelectItem value="C">Categoria C</SelectItem>
-                        <SelectItem value="B">Categoria B</SelectItem>
-                        <SelectItem value="A">Categoria A</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -787,8 +783,6 @@ const Admin = () => {
                                       <SelectItem value="Iniciante">Iniciante</SelectItem>
                                       <SelectItem value="D">Categoria D</SelectItem>
                                       <SelectItem value="C">Categoria C</SelectItem>
-                                      <SelectItem value="B">Categoria B</SelectItem>
-                                      <SelectItem value="A">Categoria A</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -908,8 +902,6 @@ const Admin = () => {
                               <SelectItem value="Iniciante">Iniciante</SelectItem>
                               <SelectItem value="D">Categoria D</SelectItem>
                               <SelectItem value="C">Categoria C</SelectItem>
-                              <SelectItem value="B">Categoria B</SelectItem>
-                              <SelectItem value="A">Categoria A</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1033,8 +1025,6 @@ const Admin = () => {
                                         <SelectItem value="Iniciante">Iniciante</SelectItem>
                                         <SelectItem value="D">Categoria D</SelectItem>
                                         <SelectItem value="C">Categoria C</SelectItem>
-                                        <SelectItem value="B">Categoria B</SelectItem>
-                                        <SelectItem value="A">Categoria A</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
