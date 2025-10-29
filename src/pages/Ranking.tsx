@@ -179,6 +179,7 @@ const Ranking = () => {
                     <TableRow className="bg-primary/5">
                       <TableHead className="w-[100px] text-center font-bold">Posição</TableHead>
                       <TableHead className="font-bold">Nome</TableHead>
+                      <TableHead className="font-bold">Cidade</TableHead>
                       <TableHead className="font-bold">Categoria</TableHead>
                       <TableHead className="text-right font-bold">Pontuação</TableHead>
                     </TableRow>
@@ -218,6 +219,9 @@ const Ranking = () => {
                               {getRankingChangeIcon(getRankingChange(athlete.id))}
                             </span>
                           </AthleteAchievementsDialog>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {athlete.city}
                         </TableCell>
                         <TableCell>
                           <Badge variant={
