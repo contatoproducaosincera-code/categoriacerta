@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useAdmin } from "@/hooks/useAdmin";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -22,7 +21,6 @@ import BulkEditAthletesDialog from "@/components/BulkEditAthletesDialog";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
-  const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -79,15 +77,8 @@ const Admin = () => {
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
-    } else if (!loading && !adminLoading && user && !isAdmin) {
-      toast({
-        title: "Acesso negado",
-        description: "Você não tem permissão para acessar esta área",
-        variant: "destructive",
-      });
-      navigate("/");
     }
-  }, [user, loading, isAdmin, adminLoading, navigate, toast]);
+  }, [user, loading, navigate]);
 
   const { data: athletes } = useQuery({
     queryKey: ["admin-athletes"],
@@ -372,7 +363,7 @@ const Admin = () => {
     },
   });
 
-  if (loading || adminLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Carregando...</p>
@@ -380,7 +371,7 @@ const Admin = () => {
     );
   }
 
-  if (!user || !isAdmin) {
+  if (!user) {
     return null;
   }
 

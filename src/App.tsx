@@ -9,8 +9,6 @@ import Ranking from "./pages/Ranking";
 import Torneios from "./pages/Torneios";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
-import AuthAtleta from "./pages/AuthAtleta";
-import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,8 +26,6 @@ const App = () => (
           <Route path="/torneios" element={<Torneios />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/auth-atleta" element={<AuthAtleta />} />
-          <Route path="/perfil" element={<Perfil />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

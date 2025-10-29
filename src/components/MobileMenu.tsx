@@ -1,14 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAdmin } from "@/hooks/useAdmin";
-import { useAthlete } from "@/hooks/useAthlete";
 
 const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAdmin } = useAdmin();
-  const { isAthlete } = useAthlete();
 
   return (
     <div className="md:hidden">
@@ -57,29 +53,11 @@ const MobileMenu = () => {
               >
                 Torneios
               </Link>
-              {isAdmin && (
-                <Button className="mt-4" asChild>
-                  <Link to="/admin" onClick={() => setIsOpen(false)}>
-                    Admin
-                  </Link>
-                </Button>
-              )}
-              {!isAdmin && !isAthlete && (
-                <Button variant="outline" className="mt-4" asChild>
-                  <Link to="/auth-atleta" onClick={() => setIsOpen(false)}>
-                    <User className="mr-2 h-4 w-4" />
-                    Área do Atleta
-                  </Link>
-                </Button>
-              )}
-              {isAthlete && (
-                <Button className="mt-4" asChild>
-                  <Link to="/perfil" onClick={() => setIsOpen(false)}>
-                    <User className="mr-2 h-4 w-4" />
-                    Meu Perfil
-                  </Link>
-                </Button>
-              )}
+              <Button className="mt-4" asChild>
+                <Link to="/auth" onClick={() => setIsOpen(false)}>
+                  Admin
+                </Link>
+              </Button>
             </nav>
           </div>
         </>
