@@ -19,8 +19,7 @@ const Ranking = () => {
     queryFn: async () => {
       let query = supabase
         .from("athletes")
-        .select("*")
-        .order("points", { ascending: false });
+        .select("*");
 
       if (categoryFilter !== "all") {
         query = query.eq("category", categoryFilter as any);
@@ -29,8 +28,13 @@ const Ranking = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Sort alphabetically by name
-      return data?.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')) || [];
+      // Ordenar por pontuação (maior para menor) e depois por nome alfabético
+      return data?.sort((a, b) => {
+        if (b.points !== a.points) {
+          return b.points - a.points; // Maior pontuação primeiro
+        }
+        return a.name.localeCompare(b.name, 'pt-BR'); // Ordem alfabética em caso de empate
+      }) || [];
     },
   });
 
