@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Trophy, Search, BadgeCheck } from "lucide-react";
+import { Trophy, Search, BadgeCheck, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 
@@ -55,8 +55,73 @@ const Ranking = () => {
     },
   });
 
+  // Buscar histórico de ranking para calcular mudanças de posição
+  const { data: rankingChanges } = useQuery({
+    queryKey: ["ranking-changes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ranking_history")
+        .select("athlete_id, position, recorded_at")
+        .order("recorded_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Agrupar por atleta e pegar as duas últimas posições
+      const changes: Record<string, number> = {};
+      const athletePositions: Record<string, number[]> = {};
+
+      data?.forEach((record) => {
+        if (!athletePositions[record.athlete_id]) {
+          athletePositions[record.athlete_id] = [];
+        }
+        if (athletePositions[record.athlete_id].length < 2) {
+          athletePositions[record.athlete_id].push(record.position);
+        }
+      });
+
+      // Calcular mudança (posição anterior - posição atual)
+      // Negativo = subiu, Positivo = caiu
+      Object.keys(athletePositions).forEach((athleteId) => {
+        const positions = athletePositions[athleteId];
+        if (positions.length === 2) {
+          changes[athleteId] = positions[1] - positions[0];
+        }
+      });
+
+      return changes;
+    },
+  });
+
   const getAthleteFirstPlaces = (athleteId: string) => {
     return firstPlaceCounts?.[athleteId] || 0;
+  };
+
+  const getRankingChange = (athleteId: string) => {
+    return rankingChanges?.[athleteId] || 0;
+  };
+
+  const getRankingChangeIcon = (change: number) => {
+    if (change > 0) {
+      return (
+        <div className="flex items-center gap-1 text-green-600 animate-scale-in">
+          <ArrowUp className="h-3 w-3" />
+          <span className="text-xs font-semibold">+{change}</span>
+        </div>
+      );
+    } else if (change < 0) {
+      return (
+        <div className="flex items-center gap-1 text-red-600 animate-scale-in">
+          <ArrowDown className="h-3 w-3" />
+          <span className="text-xs font-semibold">{change}</span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center gap-1 text-muted-foreground animate-scale-in">
+          <Minus className="h-3 w-3" />
+        </div>
+      );
+    }
   };
 
   // Filter athletes by search term
@@ -154,6 +219,7 @@ const Ranking = () => {
                               {getAthleteFirstPlaces(athlete.id) >= 3 && (
                                 <BadgeCheck className="h-4 w-4 text-primary animate-scale-in" />
                               )}
+                              {getRankingChangeIcon(getRankingChange(athlete.id))}
                             </span>
                           </AthleteAchievementsDialog>
                         </TableCell>
