@@ -103,6 +103,12 @@ const Auth = () => {
               {loading ? "Carregando..." : "Entrar"}
             </Button>
           </form>
+          
+          <div className="mt-4 text-center">
+            <Button variant="link" onClick={() => navigate("/auth-atleta")}>
+              Você é atleta? Acesse aqui
+            </Button>
+          </div>
         </CardContent>
       </Card>
       </div>

@@ -90,6 +90,7 @@ export type Database = {
       }
       athletes: {
         Row: {
+          avatar_url: string | null
           category: Database["public"]["Enums"]["category"]
           city: string
           created_at: string
@@ -99,8 +100,10 @@ export type Database = {
           name: string
           points: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
+          avatar_url?: string | null
           category?: Database["public"]["Enums"]["category"]
           city: string
           created_at?: string
@@ -110,8 +113,10 @@ export type Database = {
           name: string
           points?: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          avatar_url?: string | null
           category?: Database["public"]["Enums"]["category"]
           city?: string
           created_at?: string
@@ -121,6 +126,7 @@ export type Database = {
           name?: string
           points?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -261,7 +267,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "athlete"
       category: "Iniciante" | "D" | "C" | "B" | "A"
     }
     CompositeTypes: {
@@ -390,7 +396,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "athlete"],
       category: ["Iniciante", "D", "C", "B", "A"],
     },
   },

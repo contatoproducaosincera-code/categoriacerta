@@ -1,12 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import { Trophy, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MobileMenu from "./MobileMenu";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useAthlete } from "@/hooks/useAthlete";
 
 const Navbar = () => {
   const location = useLocation();
   const { isAdmin } = useAdmin();
+  const { isAthlete } = useAthlete();
   
   const isActive = (path: string) => location.pathname === path;
 
@@ -71,6 +73,31 @@ const Navbar = () => {
               asChild
             >
               <Link to="/admin">Admin</Link>
+            </Button>
+          )}
+          {!isAdmin && !isAthlete && (
+            <Button 
+              variant="outline"
+              className="ml-2" 
+              size="sm" 
+              asChild
+            >
+              <Link to="/auth-atleta">
+                <User className="mr-2 h-4 w-4" />
+                Área do Atleta
+              </Link>
+            </Button>
+          )}
+          {isAthlete && (
+            <Button 
+              className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
+              size="sm" 
+              asChild
+            >
+              <Link to="/perfil">
+                <User className="mr-2 h-4 w-4" />
+                Meu Perfil
+              </Link>
             </Button>
           )}
         </div>
