@@ -12,12 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award } from "lucide-react";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
 import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import BulkAddAthletesDialog from "@/components/BulkAddAthletesDialog";
 import BulkEditAthletesDialog from "@/components/BulkEditAthletesDialog";
+import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -706,6 +707,23 @@ const Admin = () => {
                               </div>
                             </DialogContent>
                           </Dialog>
+
+                          <AthleteAchievementsDialog
+                            athleteId={athlete.id}
+                            athleteName={athlete.name}
+                            athletePoints={athlete.points}
+                            athleteCategory={athlete.category}
+                            isAdmin={true}
+                            onAchievementDeleted={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })}
+                          >
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              title="Ver e gerenciar conquistas"
+                            >
+                              <Award className="h-3 w-3" />
+                            </Button>
+                          </AthleteAchievementsDialog>
 
                           <Dialog open={openEditAthlete && selectedAthlete?.id === athlete.id} onOpenChange={(open) => {
                             setOpenEditAthlete(open);

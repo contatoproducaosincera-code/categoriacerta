@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -10,9 +11,21 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Award, Calendar, Medal, BadgeCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Award, Calendar, Medal, BadgeCheck, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AthleteAchievementsDialogProps {
   athleteId: string;
@@ -20,6 +33,8 @@ interface AthleteAchievementsDialogProps {
   athletePoints: number;
   athleteCategory: string;
   children: React.ReactNode;
+  isAdmin?: boolean;
+  onAchievementDeleted?: () => void;
 }
 
 const AthleteAchievementsDialog = ({
@@ -28,7 +43,13 @@ const AthleteAchievementsDialog = ({
   athletePoints,
   athleteCategory,
   children,
+  isAdmin = false,
+  onAchievementDeleted,
 }: AthleteAchievementsDialogProps) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [achievementToDelete, setAchievementToDelete] = useState<any>(null);
   const { data: achievements, isLoading } = useQuery({
     queryKey: ["athlete-achievements", athleteId],
     queryFn: async () => {
@@ -40,6 +61,54 @@ const AthleteAchievementsDialog = ({
 
       if (error) throw error;
       return data;
+    },
+  });
+
+  const deleteAchievementMutation = useMutation({
+    mutationFn: async (achievementId: string) => {
+      const achievement = achievements?.find(a => a.id === achievementId);
+      if (!achievement) throw new Error("Conquista não encontrada");
+
+      // Remove os pontos do atleta
+      const { data: athlete } = await supabase
+        .from("athletes")
+        .select("points")
+        .eq("id", athleteId)
+        .single();
+
+      if (athlete) {
+        const newPoints = Math.max(0, athlete.points - achievement.points_awarded);
+        await supabase
+          .from("athletes")
+          .update({ points: newPoints })
+          .eq("id", athleteId);
+      }
+
+      // Delete a conquista
+      const { error } = await supabase
+        .from("achievements")
+        .delete()
+        .eq("id", achievementId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["athlete-achievements", athleteId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
+      toast({
+        title: "Conquista removida!",
+        description: "A conquista foi removida e os pontos ajustados",
+      });
+      setDeleteConfirmOpen(false);
+      setAchievementToDelete(null);
+      onAchievementDeleted?.();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -303,6 +372,19 @@ const AthleteAchievementsDialog = ({
                           <div className="text-xs text-muted-foreground">pontos</div>
                         </div>
                         {getPositionBadge(achievement.position)}
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => {
+                              setAchievementToDelete(achievement);
+                              setDeleteConfirmOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -315,6 +397,30 @@ const AthleteAchievementsDialog = ({
             </CardContent>
           </Card>
         </div>
+
+        <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar remoção</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja remover esta conquista? Os pontos serão ajustados automaticamente.
+                <br /><br />
+                <strong>Torneio:</strong> {achievementToDelete?.tournament_name}
+                <br />
+                <strong>Pontos:</strong> -{achievementToDelete?.points_awarded}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => achievementToDelete && deleteAchievementMutation.mutate(achievementToDelete.id)}
+              >
+                Remover
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
