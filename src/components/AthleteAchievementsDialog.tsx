@@ -12,7 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Award, Calendar, Medal, BadgeCheck, Trash2 } from "lucide-react";
+import { Trophy, Award, Calendar, Medal, BadgeCheck, Trash2, UserPlus, UserMinus, Users } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AthleteAchievementsDialogProps {
   athleteId: string;
@@ -48,8 +49,66 @@ const AthleteAchievementsDialog = ({
 }: AthleteAchievementsDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [achievementToDelete, setAchievementToDelete] = useState<any>(null);
+
+  // Get current user's athlete ID
+  const { data: currentAthlete } = useQuery({
+    queryKey: ["current-athlete", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from("athletes")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Check if current user follows this athlete
+  const { data: isFollowing, isLoading: isLoadingFollow } = useQuery({
+    queryKey: ["is-following", currentAthlete?.id, athleteId],
+    queryFn: async () => {
+      if (!currentAthlete?.id || currentAthlete.id === athleteId) return false;
+      
+      const { data, error } = await supabase
+        .from("follows")
+        .select("id")
+        .eq("follower_id", currentAthlete.id)
+        .eq("following_id", athleteId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return !!data;
+    },
+    enabled: !!currentAthlete?.id && currentAthlete.id !== athleteId,
+  });
+
+  // Get follower and following counts
+  const { data: stats } = useQuery({
+    queryKey: ["athlete-stats", athleteId],
+    queryFn: async () => {
+      const { data: followersData } = await supabase
+        .from("follows")
+        .select("id", { count: "exact" })
+        .eq("following_id", athleteId);
+      
+      const { data: followingData } = await supabase
+        .from("follows")
+        .select("id", { count: "exact" })
+        .eq("follower_id", athleteId);
+      
+      return {
+        followers: followersData?.length || 0,
+        following: followingData?.length || 0,
+      };
+    },
+  });
   const { data: achievements, isLoading } = useQuery({
     queryKey: ["athlete-achievements", athleteId],
     queryFn: async () => {
@@ -102,6 +161,51 @@ const AthleteAchievementsDialog = ({
       setDeleteConfirmOpen(false);
       setAchievementToDelete(null);
       onAchievementDeleted?.();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Follow/Unfollow mutation
+  const followMutation = useMutation({
+    mutationFn: async () => {
+      if (!currentAthlete?.id) throw new Error("Você precisa estar logado");
+
+      if (isFollowing) {
+        // Unfollow
+        const { error } = await supabase
+          .from("follows")
+          .delete()
+          .eq("follower_id", currentAthlete.id)
+          .eq("following_id", athleteId);
+        
+        if (error) throw error;
+      } else {
+        // Follow
+        const { error } = await supabase
+          .from("follows")
+          .insert({
+            follower_id: currentAthlete.id,
+            following_id: athleteId,
+          });
+        
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["is-following"] });
+      queryClient.invalidateQueries({ queryKey: ["athlete-stats"] });
+      toast({
+        title: isFollowing ? "Deixou de seguir" : "Seguindo!",
+        description: isFollowing 
+          ? `Você deixou de seguir ${athleteName}` 
+          : `Agora você está seguindo ${athleteName}`,
+      });
     },
     onError: (error: any) => {
       toast({
@@ -175,6 +279,41 @@ const AthleteAchievementsDialog = ({
           <DialogDescription>
             Histórico completo de participações e conquistas
           </DialogDescription>
+          
+          {/* Stats and Follow Button */}
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold">{stats?.followers || 0}</div>
+                <div className="text-xs text-muted-foreground">Seguidores</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold">{stats?.following || 0}</div>
+                <div className="text-xs text-muted-foreground">Seguindo</div>
+              </div>
+            </div>
+            
+            {currentAthlete?.id && currentAthlete.id !== athleteId && (
+              <Button
+                onClick={() => followMutation.mutate()}
+                disabled={followMutation.isPending || isLoadingFollow}
+                variant={isFollowing ? "outline" : "default"}
+                className="transition-all duration-300 hover:scale-105"
+              >
+                {isFollowing ? (
+                  <>
+                    <UserMinus className="mr-2 h-4 w-4" />
+                    Deixar de Seguir
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Seguir
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">

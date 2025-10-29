@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import { Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MobileMenu from "./MobileMenu";
 
@@ -51,6 +51,17 @@ const Navbar = () => {
             }`}
           >
             Ranking
+          </Link>
+          <Link
+            to="/feed"
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 ${
+              isActive("/feed")
+                ? "bg-primary text-primary-foreground shadow-glow"
+                : "hover:bg-accent hover:text-accent-foreground"
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            Feed
           </Link>
           <Link
             to="/torneios"

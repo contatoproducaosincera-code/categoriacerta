@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const MobileMenu = () => {
@@ -45,6 +45,14 @@ const MobileMenu = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Ranking
+              </Link>
+              <Link
+                to="/feed"
+                className="px-4 py-3 rounded-lg text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
+                onClick={() => setIsOpen(false)}
+              >
+                <Users className="h-4 w-4" />
+                Feed
               </Link>
               <Link
                 to="/torneios"
