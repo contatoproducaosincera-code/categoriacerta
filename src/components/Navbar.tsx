@@ -2,9 +2,11 @@ import { Link, useLocation } from "react-router-dom";
 import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MobileMenu from "./MobileMenu";
+import { useAdmin } from "@/hooks/useAdmin";
 
 const Navbar = () => {
   const location = useLocation();
+  const { isAdmin } = useAdmin();
   
   const isActive = (path: string) => location.pathname === path;
 
@@ -62,13 +64,15 @@ const Navbar = () => {
           >
             Torneios
           </Link>
-          <Button 
-            className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
-            size="sm" 
-            asChild
-          >
-            <Link to="/auth">Admin</Link>
-          </Button>
+          {isAdmin && (
+            <Button 
+              className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
+              size="sm" 
+              asChild
+            >
+              <Link to="/admin">Admin</Link>
+            </Button>
+          )}
         </div>
 
         <MobileMenu />
