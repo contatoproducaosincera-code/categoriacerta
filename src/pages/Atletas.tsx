@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Search, MapPin } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
@@ -15,6 +16,33 @@ const Atletas = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
   const [pointsFilter, setPointsFilter] = useState("all");
+
+  const getCategoryProgress = (points: number, category: string) => {
+    const thresholds = {
+      'Iniciante': { current: 0, next: 500, nextCategory: 'D' },
+      'D': { current: 500, next: 1000, nextCategory: 'C' },
+      'C': { current: 1000, next: 1500, nextCategory: 'B' },
+      'B': { current: 1500, next: 2000, nextCategory: 'A' },
+      'A': { current: 2000, next: 2000, nextCategory: null }
+    };
+
+    const threshold = thresholds[category as keyof typeof thresholds];
+    if (!threshold || !threshold.nextCategory) {
+      return { progress: 100, remaining: 0, nextCategory: null, percentage: 100 };
+    }
+
+    const pointsInRange = points - threshold.current;
+    const rangeSize = threshold.next - threshold.current;
+    const percentage = Math.min((pointsInRange / rangeSize) * 100, 100);
+    const remaining = Math.max(threshold.next - points, 0);
+
+    return {
+      progress: percentage,
+      remaining,
+      nextCategory: threshold.nextCategory,
+      percentage: Math.round(percentage)
+    };
+  };
 
   const { data: athletes, isLoading } = useQuery({
     queryKey: ["athletes"],
@@ -150,9 +178,24 @@ const Atletas = () => {
                         <MapPin className="h-4 w-4 mr-2" />
                         {athlete.city}
                       </div>
-                      <div className="text-2xl font-bold text-primary">
+                      <div className="text-2xl font-bold text-primary mb-3">
                         {athlete.points} pontos
                       </div>
+                      {(() => {
+                        const progress = getCategoryProgress(athlete.points, athlete.category);
+                        return progress.nextCategory ? (
+                          <div className="space-y-2">
+                            <Progress value={progress.progress} className="h-2" />
+                            <p className="text-xs text-muted-foreground">
+                              Faltam <span className="font-semibold text-foreground">{progress.remaining} pts</span> para categoria {progress.nextCategory}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-xs font-medium text-primary">
+                            🏆 Categoria máxima alcançada
+                          </p>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 </AthleteAchievementsDialog>
