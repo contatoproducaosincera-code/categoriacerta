@@ -198,6 +198,38 @@ export type Database = {
           },
         ]
       }
+      ranking_history: {
+        Row: {
+          athlete_id: string
+          id: string
+          points: number
+          position: number
+          recorded_at: string
+        }
+        Insert: {
+          athlete_id: string
+          id?: string
+          points: number
+          position: number
+          recorded_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          id?: string
+          points?: number
+          position?: number
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ranking_history_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           category: Database["public"]["Enums"]["category"]
@@ -265,6 +297,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      update_ranking_history: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user" | "athlete"
