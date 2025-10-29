@@ -81,30 +81,34 @@ const Index = () => {
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">
               Plataforma oficial para acompanhar atletas de beach tennis, 
               registrar conquistas e acompanhar a evolução de cada jogador. 
-              Com sistema automático de upgrade de categorias baseado em pontuação:
+              Sistema simples de categorias: a cada 500 pontos você sobe uma categoria!
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-3xl mx-auto">
               {[
-                { points: "500", category: "D" },
-                { points: "1000", category: "C" },
-                { points: "1500", category: "B" },
-                { points: "2000", category: "A" },
-              ].map((milestone, index) => (
+                { title: "Iniciante", description: "Categoria inicial", icon: "🎾" },
+                { title: "Categoria D", description: "500 pontos", icon: "⭐" },
+                { title: "Categoria C", description: "1000 pontos", icon: "🏆" },
+              ].map((category, index) => (
                 <div
                   key={index}
-                  className="p-6 rounded-2xl bg-gradient-to-br from-accent to-accent/50 border border-border shadow-soft hover:shadow-medium transition-all hover:scale-105 animate-fade-in"
+                  className="p-8 rounded-2xl bg-gradient-to-br from-accent to-accent/50 border-2 border-border shadow-soft hover:shadow-strong transition-all hover:scale-105 animate-fade-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="text-3xl font-display font-bold text-primary mb-1">
-                    {milestone.points}
+                  <div className="text-5xl mb-3">
+                    {category.icon}
                   </div>
-                  <div className="text-sm text-muted-foreground">pontos</div>
-                  <div className="text-2xl font-display font-bold mt-2">
-                    Categoria {milestone.category}
+                  <div className="text-2xl font-display font-bold mb-2">
+                    {category.title}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {category.description}
                   </div>
                 </div>
               ))}
             </div>
+            <p className="text-sm text-muted-foreground mt-8">
+              💡 A cada 500 pontos conquistados, você avança automaticamente para a próxima categoria!
+            </p>
           </div>
         </div>
       </section>
