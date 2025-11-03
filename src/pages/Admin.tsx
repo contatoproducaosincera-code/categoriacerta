@@ -35,6 +35,8 @@ const Admin = () => {
   const [openAddTournament, setOpenAddTournament] = useState(false);
   const [openEditTournament, setOpenEditTournament] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
+  const [adminGenderFilter, setAdminGenderFilter] = useState<string>("all");
+  const [adminCityFilter, setAdminCityFilter] = useState<string>("all");
 
   const [newAthlete, setNewAthlete] = useState({
     name: "",
@@ -524,8 +526,8 @@ const Admin = () => {
                   <CardDescription>Gerencie atletas e registre conquistas</CardDescription>
                 </CardHeader>
                 <CardContent>
-              <div className="mb-4">
-                <div className="relative">
+              <div className="mb-4 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Buscar atleta por nome..."
@@ -534,6 +536,27 @@ const Admin = () => {
                     className="pl-10"
                   />
                 </div>
+                <Select value={adminGenderFilter} onValueChange={setAdminGenderFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Gênero" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="all">Todos os Gêneros</SelectItem>
+                    <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                    <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={adminCityFilter} onValueChange={setAdminCityFilter}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue placeholder="Cidade" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="all">Todas as Cidades</SelectItem>
+                    {[...new Set((athletes || []).map(a => a.city))].sort().map(city => (
+                      <SelectItem key={city} value={city}>{city}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <Table>
                 <TableHeader>
@@ -548,9 +571,12 @@ const Admin = () => {
                 </TableHeader>
                 <TableBody>
                   {(athletes || [])
-                    .filter(athlete => 
-                      athlete.name.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
+                    .filter(athlete => {
+                      const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
+                      const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
+                      const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
+                      return matchesSearch && matchesGender && matchesCity;
+                    })
                     .map((athlete) => (
                     <TableRow key={athlete.id}>
                       <TableCell className="font-medium">{athlete.name}</TableCell>
