@@ -11,13 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar } from "lucide-react";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
 import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import BulkAddAthletesDialog from "@/components/BulkAddAthletesDialog";
-import BulkEditAthletesDialog from "@/components/BulkEditAthletesDialog";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 
 const Admin = () => {
@@ -380,234 +380,131 @@ const Admin = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="mb-6">
+      <section className="py-8">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="mb-6 flex justify-between items-center">
             <BackButton />
-          </div>
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Painel Administrativo</h1>
-              <p className="text-muted-foreground">Gerencie atletas e registre conquistas</p>
-            </div>
-            <div className="flex gap-2">
-              <ImportTutorialDialog />
-              <BulkAddAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
-              <BulkEditAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
-              <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
-              <Button variant="outline" onClick={signOut}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Sair
-              </Button>
-            </div>
+            <Button variant="outline" onClick={signOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </Button>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3 mb-8">
-            <Dialog open={openAddAthlete} onOpenChange={setOpenAddAthlete}>
-              <DialogTrigger asChild>
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <UserPlus className="h-5 w-5" />
-                      Cadastrar Atleta
-                    </CardTitle>
-                    <CardDescription>Adicione um novo atleta ao sistema</CardDescription>
-                  </CardHeader>
-                </Card>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Cadastrar Novo Atleta</DialogTitle>
-                  <DialogDescription>
-                    Preencha os dados do atleta
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Nome Completo*</Label>
-                    <Input
-                      id="name"
-                      value={newAthlete.name}
-                      onChange={(e) => setNewAthlete({ ...newAthlete, name: e.target.value })}
-                      placeholder="João Silva"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email (para notificações)</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newAthlete.email}
-                      onChange={(e) => setNewAthlete({ ...newAthlete, email: e.target.value })}
-                      placeholder="joao@email.com"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="city">Cidade*</Label>
-                    <Input
-                      id="city"
-                      value={newAthlete.city}
-                      onChange={(e) => setNewAthlete({ ...newAthlete, city: e.target.value })}
-                      placeholder="Rio de Janeiro"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="instagram">Instagram</Label>
-                    <Input
-                      id="instagram"
-                      value={newAthlete.instagram}
-                      onChange={(e) => setNewAthlete({ ...newAthlete, instagram: e.target.value })}
-                      placeholder="@joaosilva"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="category">Categoria*</Label>
-                    <Select 
-                      value={newAthlete.category} 
-                      onValueChange={(value: any) => setNewAthlete({ ...newAthlete, category: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Iniciante">Iniciante</SelectItem>
-                        <SelectItem value="D">Categoria D</SelectItem>
-                        <SelectItem value="C">Categoria C</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => addAthleteMutation.mutate()}
-                    disabled={!newAthlete.name || !newAthlete.city || addAthleteMutation.isPending}
-                  >
-                    {addAthleteMutation.isPending ? "Cadastrando..." : "Cadastrar Atleta"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={openAddTournament} onOpenChange={setOpenAddTournament}>
-              <DialogTrigger asChild>
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5" />
-                      Gerenciar Torneios
-                    </CardTitle>
-                    <CardDescription>Cadastre e gerencie torneios</CardDescription>
-                  </CardHeader>
-                </Card>
-              </DialogTrigger>
-              <DialogContent className="max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Cadastrar Novo Torneio</DialogTitle>
-                  <DialogDescription>
-                    Preencha os dados do torneio
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="tournament-name">Nome do Torneio*</Label>
-                    <Input
-                      id="tournament-name"
-                      value={newTournament.name}
-                      onChange={(e) => setNewTournament({ ...newTournament, name: e.target.value })}
-                      placeholder="Copa Verão 2025"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tournament-description">Descrição</Label>
-                    <Input
-                      id="tournament-description"
-                      value={newTournament.description}
-                      onChange={(e) => setNewTournament({ ...newTournament, description: e.target.value })}
-                      placeholder="Descrição do torneio"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tournament-date">Data*</Label>
-                    <Input
-                      id="tournament-date"
-                      type="date"
-                      value={newTournament.date}
-                      onChange={(e) => setNewTournament({ ...newTournament, date: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tournament-location">Local*</Label>
-                    <Input
-                      id="tournament-location"
-                      value={newTournament.location}
-                      onChange={(e) => setNewTournament({ ...newTournament, location: e.target.value })}
-                      placeholder="Rio de Janeiro - RJ"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tournament-whatsapp">WhatsApp* (número com DDD ou link)</Label>
-                    <Input
-                      id="tournament-whatsapp"
-                      value={newTournament.whatsapp}
-                      onChange={(e) => setNewTournament({ ...newTournament, whatsapp: e.target.value })}
-                      placeholder="5521999999999 ou https://wa.me/5521999999999"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="tournament-category">Categoria*</Label>
-                    <Select 
-                      value={newTournament.category} 
-                      onValueChange={(value: any) => setNewTournament({ ...newTournament, category: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Iniciante">Iniciante</SelectItem>
-                        <SelectItem value="D">Categoria D</SelectItem>
-                        <SelectItem value="C">Categoria C</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => addTournamentMutation.mutate()}
-                    disabled={!newTournament.name || !newTournament.date || !newTournament.location || !newTournament.whatsapp || addTournamentMutation.isPending}
-                  >
-                    {addTournamentMutation.isPending ? "Cadastrando..." : "Cadastrar Torneio"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-primary" />
-                  Sistema Automático de Pontuação
-                </CardTitle>
-                <CardDescription>
-                  Ao registrar conquistas, o sistema:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Calcula e adiciona pontos automaticamente</li>
-                    <li>A cada 500 pontos o atleta sobe de categoria</li>
-                    <li>Ao subir de categoria, os pontos são resetados e sobram apenas o excedente</li>
-                    <li>Envia email de notificação ao atleta quando sobe de categoria</li>
-                    <li>Registra mudança no histórico</li>
-                  </ul>
-                  <p className="mt-3 text-sm font-medium">
-                    📊 Exemplo: Atleta com 480 pts ganha 60 pts → sobe para próxima categoria com 40 pts
-                  </p>
-                </CardDescription>
-              </CardHeader>
-            </Card>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">Painel Administrativo</h1>
+            <p className="text-muted-foreground">Gerencie atletas e torneios</p>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Atletas Cadastrados</CardTitle>
-              <CardDescription>Clique em "Adicionar Conquista" para registrar pontos</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <Tabs defaultValue="athletes" className="space-y-6">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="athletes">Atletas</TabsTrigger>
+              <TabsTrigger value="tournaments">Torneios</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="athletes" className="space-y-6">
+              <div className="flex gap-3 flex-wrap">
+                <Dialog open={openAddAthlete} onOpenChange={setOpenAddAthlete}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Novo Atleta
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Cadastrar Novo Atleta</DialogTitle>
+                      <DialogDescription>Preencha os dados do atleta</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="name">Nome Completo*</Label>
+                        <Input
+                          id="name"
+                          value={newAthlete.name}
+                          onChange={(e) => setNewAthlete({ ...newAthlete, name: e.target.value })}
+                          placeholder="João Silva"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="email">Email (para notificações)</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={newAthlete.email}
+                          onChange={(e) => setNewAthlete({ ...newAthlete, email: e.target.value })}
+                          placeholder="joao@email.com"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="city">Cidade*</Label>
+                        <Input
+                          id="city"
+                          value={newAthlete.city}
+                          onChange={(e) => setNewAthlete({ ...newAthlete, city: e.target.value })}
+                          placeholder="Rio de Janeiro"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="instagram">Instagram</Label>
+                        <Input
+                          id="instagram"
+                          value={newAthlete.instagram}
+                          onChange={(e) => setNewAthlete({ ...newAthlete, instagram: e.target.value })}
+                          placeholder="@joaosilva"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="category">Categoria*</Label>
+                        <Select 
+                          value={newAthlete.category} 
+                          onValueChange={(value: any) => setNewAthlete({ ...newAthlete, category: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Iniciante">Iniciante</SelectItem>
+                            <SelectItem value="D">Categoria D</SelectItem>
+                            <SelectItem value="C">Categoria C</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button 
+                        className="w-full" 
+                        onClick={() => addAthleteMutation.mutate()}
+                        disabled={!newAthlete.name || !newAthlete.city || addAthleteMutation.isPending}
+                      >
+                        {addAthleteMutation.isPending ? "Cadastrando..." : "Cadastrar"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <BulkAddAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
+                <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
+                <ImportTutorialDialog />
+              </div>
+
+              <Card className="border-primary/20">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Trophy className="h-5 w-5 text-primary" />
+                    Sistema de Pontuação
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    1º lugar: <strong>+100 pts</strong> · 2º lugar: <strong>+80 pts</strong> · 3º lugar: <strong>+60 pts</strong>
+                    <br />
+                    A cada 500 pontos o atleta sobe de categoria automaticamente.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Atletas Cadastrados</CardTitle>
+                  <CardDescription>Gerencie atletas e registre conquistas</CardDescription>
+                </CardHeader>
+                <CardContent>
               <div className="mb-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -836,106 +733,100 @@ const Admin = () => {
             </CardContent>
           </Card>
 
-          {/* Seção de Torneios */}
-          <div className="mt-12">
-            <h2 className="text-3xl font-bold mb-6">Torneios Cadastrados</h2>
-            
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Torneios Cadastrados</CardTitle>
-                    <CardDescription>Gerencie os torneios divulgados</CardDescription>
+            </TabsContent>
+
+            <TabsContent value="tournaments" className="space-y-6">
+              <Dialog open={openAddTournament} onOpenChange={setOpenAddTournament}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Trophy className="mr-2 h-4 w-4" />
+                    Novo Torneio
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Cadastrar Novo Torneio</DialogTitle>
+                    <DialogDescription>Preencha os dados do torneio</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="tournament-name-2">Nome do Torneio*</Label>
+                      <Input
+                        id="tournament-name-2"
+                        value={newTournament.name}
+                        onChange={(e) => setNewTournament({ ...newTournament, name: e.target.value })}
+                        placeholder="Copa Verão 2025"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-description-2">Descrição</Label>
+                      <Input
+                        id="tournament-description-2"
+                        value={newTournament.description}
+                        onChange={(e) => setNewTournament({ ...newTournament, description: e.target.value })}
+                        placeholder="Descrição do torneio"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-date-2">Data*</Label>
+                      <Input
+                        id="tournament-date-2"
+                        type="date"
+                        value={newTournament.date}
+                        onChange={(e) => setNewTournament({ ...newTournament, date: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-location-2">Local*</Label>
+                      <Input
+                        id="tournament-location-2"
+                        value={newTournament.location}
+                        onChange={(e) => setNewTournament({ ...newTournament, location: e.target.value })}
+                        placeholder="Rio de Janeiro - RJ"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-whatsapp-2">WhatsApp* (número com DDD ou link)</Label>
+                      <Input
+                        id="tournament-whatsapp-2"
+                        value={newTournament.whatsapp}
+                        onChange={(e) => setNewTournament({ ...newTournament, whatsapp: e.target.value })}
+                        placeholder="5521999999999 ou https://wa.me/5521999999999"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tournament-category-2">Categoria*</Label>
+                      <Select 
+                        value={newTournament.category} 
+                        onValueChange={(value: any) => setNewTournament({ ...newTournament, category: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Iniciante">Iniciante</SelectItem>
+                          <SelectItem value="D">Categoria D</SelectItem>
+                          <SelectItem value="C">Categoria C</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button 
+                      className="w-full" 
+                      onClick={() => addTournamentMutation.mutate()}
+                      disabled={!newTournament.name || !newTournament.date || !newTournament.location || !newTournament.whatsapp || addTournamentMutation.isPending}
+                    >
+                      {addTournamentMutation.isPending ? "Cadastrando..." : "Cadastrar"}
+                    </Button>
                   </div>
-                  <Dialog open={openAddTournament} onOpenChange={setOpenAddTournament}>
-                    <DialogTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Novo Torneio
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Cadastrar Novo Torneio</DialogTitle>
-                        <DialogDescription>
-                          Preencha os dados do torneio
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="tournament-name-2">Nome do Torneio*</Label>
-                          <Input
-                            id="tournament-name-2"
-                            value={newTournament.name}
-                            onChange={(e) => setNewTournament({ ...newTournament, name: e.target.value })}
-                            placeholder="Copa Verão 2025"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="tournament-description-2">Descrição</Label>
-                          <Input
-                            id="tournament-description-2"
-                            value={newTournament.description}
-                            onChange={(e) => setNewTournament({ ...newTournament, description: e.target.value })}
-                            placeholder="Descrição do torneio"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="tournament-date-2">Data*</Label>
-                          <Input
-                            id="tournament-date-2"
-                            type="date"
-                            value={newTournament.date}
-                            onChange={(e) => setNewTournament({ ...newTournament, date: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="tournament-location-2">Local*</Label>
-                          <Input
-                            id="tournament-location-2"
-                            value={newTournament.location}
-                            onChange={(e) => setNewTournament({ ...newTournament, location: e.target.value })}
-                            placeholder="Rio de Janeiro - RJ"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="tournament-whatsapp-2">WhatsApp* (número com DDD ou link)</Label>
-                          <Input
-                            id="tournament-whatsapp-2"
-                            value={newTournament.whatsapp}
-                            onChange={(e) => setNewTournament({ ...newTournament, whatsapp: e.target.value })}
-                            placeholder="5521999999999 ou https://wa.me/5521999999999"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="tournament-category-2">Categoria*</Label>
-                          <Select 
-                            value={newTournament.category} 
-                            onValueChange={(value: any) => setNewTournament({ ...newTournament, category: value })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Iniciante">Iniciante</SelectItem>
-                              <SelectItem value="D">Categoria D</SelectItem>
-                              <SelectItem value="C">Categoria C</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <Button 
-                          className="w-full" 
-                          onClick={() => addTournamentMutation.mutate()}
-                          disabled={!newTournament.name || !newTournament.date || !newTournament.location || !newTournament.whatsapp || addTournamentMutation.isPending}
-                        >
-                          {addTournamentMutation.isPending ? "Cadastrando..." : "Cadastrar Torneio"}
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </CardHeader>
-              <CardContent>
+                </DialogContent>
+              </Dialog>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Torneios Cadastrados</CardTitle>
+                  <CardDescription>Gerencie os torneios divulgados</CardDescription>
+                </CardHeader>
+                <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -956,30 +847,30 @@ const Admin = () => {
                         <TableCell>{tournament.category}</TableCell>
                         <TableCell>{tournament.whatsapp || '-'}</TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
-                            <Dialog open={openEditTournament && selectedTournament?.id === tournament.id} onOpenChange={(open) => {
-                              setOpenEditTournament(open);
-                              if (!open) setSelectedTournament(null);
-                            }}>
-                              <DialogTrigger asChild>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedTournament(tournament);
-                                    setEditTournament({
-                                      name: tournament.name,
-                                      description: tournament.description || "",
-                                      date: tournament.date,
-                                      location: tournament.location,
-                                      category: tournament.category,
-                                      whatsapp: tournament.whatsapp || "",
-                                    });
-                                  }}
-                                >
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                              </DialogTrigger>
+                            <div className="flex gap-2">
+                              <Dialog open={openEditTournament && selectedTournament?.id === tournament.id} onOpenChange={(open) => {
+                                setOpenEditTournament(open);
+                                if (!open) setSelectedTournament(null);
+                              }}>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedTournament(tournament);
+                                      setEditTournament({
+                                        name: tournament.name,
+                                        description: tournament.description || "",
+                                        date: tournament.date,
+                                        location: tournament.location,
+                                        category: tournament.category,
+                                        whatsapp: tournament.whatsapp || "",
+                                      });
+                                    }}
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                </DialogTrigger>
                               <DialogContent className="max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
                                   <DialogTitle>Editar Torneio</DialogTitle>
@@ -1077,7 +968,8 @@ const Admin = () => {
                 </Table>
               </CardContent>
             </Card>
-          </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
     </div>
