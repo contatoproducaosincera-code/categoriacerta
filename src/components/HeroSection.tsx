@@ -5,17 +5,17 @@ import { Trophy, Users, Sparkles } from "lucide-react";
 const HeroSection = () => {
   return (
     <section className="relative min-h-[600px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-accent/20 to-background">
-      {/* Animated floating elements */}
-      <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-20 left-20 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+      {/* Animated floating elements - decorative only */}
+      <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float" aria-hidden="true" />
+      <div className="absolute bottom-20 left-20 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} aria-hidden="true" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl" aria-hidden="true" />
       
       <div className="container relative z-10 px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-3 mb-6 animate-fade-in">
-            <div className="relative">
-              <Trophy className="h-16 w-16 text-primary" />
-              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+            <div className="relative" aria-label="Troféu - Ícone do Beach Tennis">
+              <Trophy className="h-16 w-16 text-primary" aria-hidden="true" />
+              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" aria-hidden="true" />
             </div>
           </div>
           
@@ -36,7 +36,7 @@ const HeroSection = () => {
               asChild
             >
               <Link to="/ranking">
-                <Trophy className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                <Trophy className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" aria-hidden="true" />
                 Ver Ranking
               </Link>
             </Button>
@@ -47,7 +47,7 @@ const HeroSection = () => {
               asChild
             >
               <Link to="/atletas">
-                <Users className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                <Users className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" aria-hidden="true" />
                 Ver Atletas
               </Link>
             </Button>

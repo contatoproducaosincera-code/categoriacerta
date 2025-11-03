@@ -63,12 +63,14 @@ const TopThreeAthletes = () => {
                     ? 'linear-gradient(145deg, hsl(0 0% 85%), hsl(0 0% 75%))'
                     : 'linear-gradient(145deg, hsl(25 50% 55%), hsl(25 40% 45%))'
                 }}
+                role="article"
+                aria-label={`${athlete.name} - ${index + 1}º lugar no ranking`}
               >
                 <div className="flex justify-center mb-4">
                   {index === 0 ? (
-                    <Trophy className="h-16 w-16 text-yellow-100" />
+                    <Trophy className="h-16 w-16 text-yellow-100" aria-label="Troféu de ouro - Primeiro lugar" />
                   ) : (
-                    <Medal className="h-16 w-16 text-white" />
+                    <Medal className="h-16 w-16 text-white" aria-label={`Medalha - ${index + 1}º lugar`} />
                   )}
                 </div>
                 <div className="text-6xl font-bold text-white mb-2">

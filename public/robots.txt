@@ -1,8 +1,22 @@
+# robots.txt para Categoria Certa - Beach Tennis Ranking
+# Otimizado para SEO e proteção de páginas administrativas
+
+# Permitir todos os crawlers principais
 User-agent: Googlebot
 Allow: /
+Allow: /ranking
+Allow: /atletas
+Allow: /torneios
+Disallow: /admin
+Disallow: /auth
 
 User-agent: Bingbot
 Allow: /
+Allow: /ranking
+Allow: /atletas
+Allow: /torneios
+Disallow: /admin
+Disallow: /auth
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +24,14 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# Todos os outros crawlers
 User-agent: *
 Allow: /
+Allow: /ranking
+Allow: /atletas
+Allow: /torneios
+Disallow: /admin
+Disallow: /auth
+
+# Sitemap (quando disponível)
+# Sitemap: https://categoria-certa.lovable.app/sitemap.xml

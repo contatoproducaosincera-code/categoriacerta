@@ -9,12 +9,12 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl shadow-soft">
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl shadow-soft" role="navigation" aria-label="Menu principal">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2 group" aria-label="Categoria Certa - Página inicial">
           <div className="relative">
-            <Trophy className="h-7 w-7 text-primary transition-transform group-hover:scale-110 group-hover:rotate-12" />
-            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-0 group-hover:scale-150 transition-transform" />
+            <Trophy className="h-7 w-7 text-primary transition-transform group-hover:scale-110 group-hover:rotate-12" aria-hidden="true" />
+            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-0 group-hover:scale-150 transition-transform" aria-hidden="true" />
           </div>
           <span className="font-display font-bold text-xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             Categoria Certa
