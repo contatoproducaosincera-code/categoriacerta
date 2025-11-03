@@ -12,10 +12,11 @@ import BackButton from "@/components/BackButton";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: athletes, isLoading } = useQuery({
-    queryKey: ["ranking", categoryFilter],
+    queryKey: ["ranking", categoryFilter, genderFilter],
     queryFn: async () => {
       let query = supabase
         .from("athletes")
@@ -23,6 +24,10 @@ const Ranking = () => {
 
       if (categoryFilter !== "all") {
         query = query.eq("category", categoryFilter as any);
+      }
+      
+      if (genderFilter !== "all") {
+        query = query.eq("gender", genderFilter as any);
       }
 
       const { data, error } = await query;
@@ -157,6 +162,16 @@ const Ranking = () => {
                   className="pl-10"
                 />
               </div>
+              <Select value={genderFilter} onValueChange={setGenderFilter}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Gênero" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Gêneros</SelectItem>
+                  <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                  <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full md:w-[250px]">
                   <SelectValue placeholder="Filtrar por categoria" />

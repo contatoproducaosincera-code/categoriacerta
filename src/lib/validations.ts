@@ -31,6 +31,11 @@ export const athleteSchema = z.object({
     z.literal("C")
   ]),
   
+  gender: z.union([
+    z.literal("Masculino"),
+    z.literal("Feminino")
+  ]),
+  
   points: z.number()
     .min(0, "Pontos não podem ser negativos")
     .max(10000, "Pontos muito altos")

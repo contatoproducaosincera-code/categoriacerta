@@ -17,12 +17,13 @@ interface AthleteFormData {
   city: string;
   instagram: string;
   category: "C" | "D" | "Iniciante";
+  gender: "Masculino" | "Feminino";
 }
 
 const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
   const [athletes, setAthletes] = useState<AthleteFormData[]>([
-    { id: "1", name: "", email: "", city: "", instagram: "", category: "Iniciante" },
+    { id: "1", name: "", email: "", city: "", instagram: "", category: "Iniciante", gender: "Masculino" },
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
@@ -31,7 +32,7 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     const newId = String(Date.now());
     setAthletes([
       ...athletes,
-      { id: newId, name: "", email: "", city: "", instagram: "", category: "Iniciante" },
+      { id: newId, name: "", email: "", city: "", instagram: "", category: "Iniciante", gender: "Masculino" },
     ]);
   };
 
@@ -72,6 +73,7 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         name: athlete.name.trim(),
         city: athlete.city.trim(),
         category: athlete.category,
+        gender: athlete.gender,
         email: athlete.email.trim() || null,
         instagram: athlete.instagram.trim() || null,
         points: 0,
@@ -88,7 +90,7 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
 
       setOpen(false);
       setAthletes([
-        { id: "1", name: "", email: "", city: "", instagram: "", category: "Iniciante" },
+        { id: "1", name: "", email: "", city: "", instagram: "", category: "Iniciante", gender: "Masculino" },
       ]);
       onSuccess();
     } catch (error: any) {
@@ -180,6 +182,24 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                         onChange={(e) => updateAthlete(athlete.id, "instagram", e.target.value)}
                         placeholder="@joaosilva"
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor={`gender-${athlete.id}`}>Gênero*</Label>
+                      <Select
+                        value={athlete.gender}
+                        onValueChange={(value: any) =>
+                          updateAthlete(athlete.id, "gender", value)
+                        }
+                      >
+                        <SelectTrigger id={`gender-${athlete.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                          <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div>

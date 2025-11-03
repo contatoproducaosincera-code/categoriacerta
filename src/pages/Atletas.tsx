@@ -15,6 +15,7 @@ import { BadgeCheck } from "lucide-react";
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState<string>("all");
   const [cityFilter, setCityFilter] = useState("all");
   const [pointsFilter, setPointsFilter] = useState("all");
 
@@ -85,6 +86,7 @@ const Atletas = () => {
     .filter(athlete => {
       const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = categoryFilter === "all" || athlete.category === categoryFilter;
+      const matchesGender = genderFilter === "all" || athlete.gender === genderFilter;
       const matchesCity = cityFilter === "all" || athlete.city === cityFilter;
       
       let matchesPoints = true;
@@ -92,7 +94,7 @@ const Atletas = () => {
       else if (pointsFilter === "500-1000") matchesPoints = athlete.points >= 500 && athlete.points < 1000;
       else if (pointsFilter === "1000+") matchesPoints = athlete.points >= 1000;
       
-      return matchesSearch && matchesCategory && matchesCity && matchesPoints;
+      return matchesSearch && matchesCategory && matchesGender && matchesCity && matchesPoints;
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -123,6 +125,16 @@ const Atletas = () => {
                   className="pl-10"
                 />
               </div>
+              <Select value={genderFilter} onValueChange={setGenderFilter}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Gênero" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">Todos os Gêneros</SelectItem>
+                  <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                  <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="Categoria" />

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,7 @@ const Admin = () => {
     city: "",
     instagram: "",
     category: "Iniciante" as "C" | "D" | "Iniciante",
+    gender: "Masculino" as "Masculino" | "Feminino",
   });
 
   const [editAthlete, setEditAthlete] = useState({
@@ -49,6 +51,7 @@ const Admin = () => {
     city: "",
     instagram: "",
     category: "Iniciante" as "C" | "D" | "Iniciante",
+    gender: "Masculino" as "Masculino" | "Feminino",
   });
 
   const [newTournament, setNewTournament] = useState({
@@ -124,7 +127,7 @@ const Admin = () => {
         description: "O atleta foi adicionado com sucesso",
       });
       setOpenAddAthlete(false);
-      setNewAthlete({ name: "", email: "", city: "", instagram: "", category: "Iniciante" });
+      setNewAthlete({ name: "", email: "", city: "", instagram: "", category: "Iniciante", gender: "Masculino" });
     },
     onError: (error: any) => {
       toast({
@@ -145,6 +148,7 @@ const Admin = () => {
           city: editAthlete.city,
           instagram: editAthlete.instagram || null,
           category: editAthlete.category,
+          gender: editAthlete.gender,
         })
         .eq("id", selectedAthlete.id);
 
@@ -454,6 +458,21 @@ const Admin = () => {
                         />
                       </div>
                       <div>
+                        <Label htmlFor="gender">Gênero*</Label>
+                        <Select 
+                          value={newAthlete.gender} 
+                          onValueChange={(value: any) => setNewAthlete({ ...newAthlete, gender: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                            <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
                         <Label htmlFor="category">Categoria*</Label>
                         <Select 
                           value={newAthlete.category} 
@@ -520,6 +539,7 @@ const Admin = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead>Gênero</TableHead>
                     <TableHead>Categoria</TableHead>
                     <TableHead>Pontos</TableHead>
                     <TableHead>Cidade</TableHead>
@@ -534,6 +554,11 @@ const Admin = () => {
                     .map((athlete) => (
                     <TableRow key={athlete.id}>
                       <TableCell className="font-medium">{athlete.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {athlete.gender === "Feminino" ? "👩" : "🧔"} {athlete.gender}
+                        </Badge>
+                      </TableCell>
                       <TableCell>{athlete.category}</TableCell>
                       <TableCell className="font-bold text-primary">{athlete.points}</TableCell>
                       <TableCell>{athlete.city}</TableCell>
@@ -638,6 +663,7 @@ const Admin = () => {
                                     city: athlete.city,
                                     instagram: athlete.instagram || "",
                                     category: athlete.category,
+                                    gender: athlete.gender || "Masculino",
                                   });
                                 }}
                               >
@@ -684,6 +710,21 @@ const Admin = () => {
                                     value={editAthlete.instagram}
                                     onChange={(e) => setEditAthlete({ ...editAthlete, instagram: e.target.value })}
                                   />
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-gender">Gênero*</Label>
+                                  <Select 
+                                    value={editAthlete.gender} 
+                                    onValueChange={(value: any) => setEditAthlete({ ...editAthlete, gender: value })}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                                      <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                 </div>
                                 <div>
                                   <Label htmlFor="edit-category">Categoria*</Label>

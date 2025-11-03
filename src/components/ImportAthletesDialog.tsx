@@ -110,6 +110,7 @@ const ImportAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         nome: row.nome || row.Nome || row.name || row.Name || "",
         cidade: row.cidade || row.Cidade || row.city || row.City || "",
         categoria: row.categoria || row.Categoria || row.category || "",
+        genero: row.genero || row.Genero || row.gender || row.Gender || "Masculino",
         email: row.email || row.Email || "",
         instagram: row.instagram || row.Instagram || "",
       }));
@@ -130,6 +131,7 @@ const ImportAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         name: athlete.nome.trim(),
         city: athlete.cidade.trim(),
         category: validateCategory(athlete.categoria),
+        gender: validateGender(athlete.genero),
         email: athlete.email?.trim() || null,
         instagram: athlete.instagram?.trim() || null,
         points: 0,
@@ -164,6 +166,13 @@ const ImportAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     if (!cat) return "Iniciante";
     const normalized = cat.trim();
     return validCats.includes(normalized) ? normalized as any : "Iniciante";
+  };
+  
+  const validateGender = (gender?: string): "Masculino" | "Feminino" => {
+    if (!gender) return "Masculino";
+    const normalized = gender.trim().toLowerCase();
+    if (normalized.includes("fem") || normalized === "f") return "Feminino";
+    return "Masculino";
   };
 
   const parseCSV = async (file: File): Promise<any[]> => {

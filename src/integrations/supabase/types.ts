@@ -95,6 +95,7 @@ export type Database = {
           city: string
           created_at: string
           email: string | null
+          gender: Database["public"]["Enums"]["gender"]
           id: string
           instagram: string | null
           name: string
@@ -108,6 +109,7 @@ export type Database = {
           city: string
           created_at?: string
           email?: string | null
+          gender?: Database["public"]["Enums"]["gender"]
           id?: string
           instagram?: string | null
           name: string
@@ -121,6 +123,7 @@ export type Database = {
           city?: string
           created_at?: string
           email?: string | null
+          gender?: Database["public"]["Enums"]["gender"]
           id?: string
           instagram?: string | null
           name?: string
@@ -378,6 +381,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user" | "athlete"
       category: "Iniciante" | "D" | "C"
+      gender: "Masculino" | "Feminino"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -507,6 +511,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user", "athlete"],
       category: ["Iniciante", "D", "C"],
+      gender: ["Masculino", "Feminino"],
     },
   },
 } as const
