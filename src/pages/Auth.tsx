@@ -7,13 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Lock } from "lucide-react";
+import { Lock, UserPlus } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
@@ -30,18 +32,36 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/admin`,
+          },
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Login realizado!",
-        description: "Bem-vindo de volta",
-      });
-      navigate("/admin");
+        toast({
+          title: "Conta criada!",
+          description: "Você foi automaticamente logado",
+        });
+        navigate("/admin");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Login realizado!",
+          description: "Bem-vindo de volta",
+        });
+        navigate("/admin");
+      }
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -70,14 +90,28 @@ const Auth = () => {
         <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <Lock className="h-12 w-12 text-primary" />
+            {isSignUp ? (
+              <UserPlus className="h-12 w-12 text-primary" />
+            ) : (
+              <Lock className="h-12 w-12 text-primary" />
+            )}
           </div>
-          <CardTitle>Fazer Login</CardTitle>
+          <CardTitle>{isSignUp ? "Criar Conta" : "Fazer Login"}</CardTitle>
           <CardDescription>
-            Entre para acessar o painel administrativo
+            {isSignUp 
+              ? "O primeiro usuário cadastrado será automaticamente administrador"
+              : "Entre para acessar o painel administrativo"
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isSignUp && (
+            <Alert className="mb-4">
+              <AlertDescription>
+                <strong>Importante:</strong> O primeiro usuário cadastrado terá privilégios de administrador completo.
+              </AlertDescription>
+            </Alert>
+          )}
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -103,17 +137,20 @@ const Auth = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Carregando..." : "Entrar"}
+              {loading ? "Carregando..." : (isSignUp ? "Criar Conta" : "Entrar")}
             </Button>
-            <div className="text-center text-sm text-muted-foreground">
-              Não tem uma conta?{" "}
-              <button
+            <div className="text-center mt-4">
+              <Button
                 type="button"
-                onClick={() => navigate("/signup")}
-                className="text-primary hover:underline"
+                variant="link"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm"
               >
-                Criar conta
-              </button>
+                {isSignUp 
+                  ? "Já tem uma conta? Faça login" 
+                  : "Não tem uma conta? Cadastre-se"
+                }
+              </Button>
             </div>
           </form>
         </CardContent>
