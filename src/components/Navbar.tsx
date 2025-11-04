@@ -1,12 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Users } from "lucide-react";
+import { Trophy, Users, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import MobileMenu from "./MobileMenu";
 
 const Navbar = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
+
+  const handleAuthAction = async () => {
+    if (user) {
+      await signOut();
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl shadow-soft" role="navigation" aria-label="Menu principal">
@@ -73,13 +81,37 @@ const Navbar = () => {
           >
             Torneios
           </Link>
-          <Button 
-            className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
-            size="sm" 
-            asChild
-          >
-            <Link to="/auth">Admin</Link>
-          </Button>
+          {user ? (
+            <>
+              <Button 
+                className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
+                size="sm" 
+                asChild
+              >
+                <Link to="/admin">Admin</Link>
+              </Button>
+              <Button 
+                className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
+                size="sm"
+                variant="outline"
+                onClick={handleAuthAction}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </>
+          ) : (
+            <Button 
+              className="ml-2 shadow-medium hover:shadow-strong transition-shadow" 
+              size="sm" 
+              asChild
+            >
+              <Link to="/auth">
+                <LogIn className="h-4 w-4 mr-2" />
+                Login
+              </Link>
+            </Button>
+          )}
         </div>
 
         <MobileMenu />

@@ -9,6 +9,7 @@ import Ranking from "./pages/Ranking";
 import Torneios from "./pages/Torneios";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import Signup from "./pages/Signup";
 import Feed from "./pages/Feed";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -33,6 +34,7 @@ const App = () => (
             </ProtectedRoute>
           } />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/signup" element={<Signup />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

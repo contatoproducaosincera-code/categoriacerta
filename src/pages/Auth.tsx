@@ -105,6 +105,16 @@ const Auth = () => {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Carregando..." : "Entrar"}
             </Button>
+            <div className="text-center text-sm text-muted-foreground">
+              Não tem uma conta?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/signup")}
+                className="text-primary hover:underline"
+              >
+                Criar conta
+              </button>
+            </div>
           </form>
         </CardContent>
       </Card>

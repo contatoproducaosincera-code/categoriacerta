@@ -1,10 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Users } from "lucide-react";
+import { Menu, X, Users, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const handleAuthAction = async () => {
+    if (user) {
+      await signOut();
+    }
+    setIsOpen(false);
+  };
 
   return (
     <div className="md:hidden">
@@ -61,11 +70,30 @@ const MobileMenu = () => {
               >
                 Torneios
               </Link>
-              <Button className="mt-4" asChild>
-                <Link to="/auth" onClick={() => setIsOpen(false)}>
-                  Admin
-                </Link>
-              </Button>
+              {user ? (
+                <>
+                  <Button className="mt-4" asChild>
+                    <Link to="/admin" onClick={() => setIsOpen(false)}>
+                      Admin
+                    </Link>
+                  </Button>
+                  <Button 
+                    className="mt-2" 
+                    variant="outline"
+                    onClick={handleAuthAction}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </Button>
+                </>
+              ) : (
+                <Button className="mt-4" asChild>
+                  <Link to="/auth" onClick={() => setIsOpen(false)}>
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Login
+                  </Link>
+                </Button>
+              )}
             </nav>
           </div>
         </>
