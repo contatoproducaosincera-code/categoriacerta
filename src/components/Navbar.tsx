@@ -1,14 +1,22 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Users, LogIn, LogOut } from "lucide-react";
+import { Trophy, Users, LogIn, LogOut, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
 import MobileMenu from "./MobileMenu";
 
 const Navbar = () => {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const [showInstallButton, setShowInstallButton] = useState(false);
   
   const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    // Check if app is not installed and can be installed
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    setShowInstallButton(!isStandalone && location.pathname !== '/install');
+  }, [location.pathname]);
 
   const handleAuthAction = async () => {
     if (user) {
@@ -81,6 +89,15 @@ const Navbar = () => {
           >
             Torneios
           </Link>
+          {showInstallButton && (
+            <Link
+              to="/install"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-1 hover:bg-secondary/20 hover:text-secondary border border-secondary/30"
+            >
+              <Download className="h-4 w-4" />
+              Instalar
+            </Link>
+          )}
           {user ? (
             <>
               <Button 

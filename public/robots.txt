@@ -30,8 +30,11 @@ Allow: /
 Allow: /ranking
 Allow: /atletas
 Allow: /torneios
+Allow: /feed
+Allow: /install
 Disallow: /admin
 Disallow: /auth
+Disallow: /offline
 
 # Sitemap (quando disponível)
 # Sitemap: https://categoria-certa.lovable.app/sitemap.xml

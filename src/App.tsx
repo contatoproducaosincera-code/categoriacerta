@@ -11,6 +11,8 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import Signup from "./pages/Signup";
 import Feed from "./pages/Feed";
+import Install from "./pages/Install";
+import Offline from "./pages/Offline";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/torneios" element={<Torneios />} />
           <Route path="/feed" element={<Feed />} />
+          <Route path="/install" element={<Install />} />
+          <Route path="/offline" element={<Offline />} />
           <Route path="/admin" element={
             <ProtectedRoute>
               <Admin />
