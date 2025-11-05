@@ -14,7 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
 import ImportTutorialDialog from "@/components/ImportTutorialDialog";
@@ -37,6 +38,9 @@ const Admin = () => {
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
   const [adminGenderFilter, setAdminGenderFilter] = useState<string>("all");
   const [adminCityFilter, setAdminCityFilter] = useState<string>("all");
+  const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set());
+  const [openBulkCategory, setOpenBulkCategory] = useState(false);
+  const [bulkCategory, setBulkCategory] = useState<"C" | "D" | "Iniciante">("Iniciante");
 
   const [newAthlete, setNewAthlete] = useState({
     name: "",
@@ -370,6 +374,60 @@ const Admin = () => {
     },
   });
 
+  const bulkUpdateCategoryMutation = useMutation({
+    mutationFn: async () => {
+      const athleteIds = Array.from(selectedAthletes);
+      
+      const { error } = await supabase
+        .from("athletes")
+        .update({ category: bulkCategory })
+        .in("id", athleteIds);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
+      toast({
+        title: "Categorias atualizadas!",
+        description: `${selectedAthletes.size} atleta(s) atualizado(s) para categoria ${bulkCategory}`,
+      });
+      setOpenBulkCategory(false);
+      setSelectedAthletes(new Set());
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleSelectAll = () => {
+    const filteredAthletes = (athletes || []).filter(athlete => {
+      const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
+      const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
+      return matchesSearch && matchesGender && matchesCity;
+    });
+
+    if (selectedAthletes.size === filteredAthletes.length) {
+      setSelectedAthletes(new Set());
+    } else {
+      setSelectedAthletes(new Set(filteredAthletes.map(a => a.id)));
+    }
+  };
+
+  const toggleAthleteSelection = (athleteId: string) => {
+    const newSelection = new Set(selectedAthletes);
+    if (newSelection.has(athleteId)) {
+      newSelection.delete(athleteId);
+    } else {
+      newSelection.add(athleteId);
+    }
+    setSelectedAthletes(newSelection);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -408,7 +466,7 @@ const Admin = () => {
             </TabsList>
 
             <TabsContent value="athletes" className="space-y-6">
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-3 flex-wrap items-center">
                 <Dialog open={openAddAthlete} onOpenChange={setOpenAddAthlete}>
                   <DialogTrigger asChild>
                     <Button>
@@ -504,6 +562,50 @@ const Admin = () => {
                 <BulkAddAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
                 <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
                 <ImportTutorialDialog />
+                
+                {selectedAthletes.size > 0 && (
+                  <Dialog open={openBulkCategory} onOpenChange={setOpenBulkCategory}>
+                    <DialogTrigger asChild>
+                      <Button variant="secondary">
+                        <Users className="mr-2 h-4 w-4" />
+                        Alterar Categoria ({selectedAthletes.size})
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Alteração em Massa de Categoria</DialogTitle>
+                        <DialogDescription>
+                          Alterar categoria de {selectedAthletes.size} atleta(s) selecionado(s)
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="bulk-category">Nova Categoria*</Label>
+                          <Select 
+                            value={bulkCategory} 
+                            onValueChange={(value: any) => setBulkCategory(value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Iniciante">Iniciante</SelectItem>
+                              <SelectItem value="D">Categoria D</SelectItem>
+                              <SelectItem value="C">Categoria C</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button 
+                          className="w-full" 
+                          onClick={() => bulkUpdateCategoryMutation.mutate()}
+                          disabled={bulkUpdateCategoryMutation.isPending}
+                        >
+                          {bulkUpdateCategoryMutation.isPending ? "Atualizando..." : `Atualizar ${selectedAthletes.size} Atleta(s)`}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
 
               <Card className="border-primary/20">
@@ -561,6 +663,22 @@ const Admin = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={(athletes || []).filter(athlete => {
+                          const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
+                          const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
+                          const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
+                          return matchesSearch && matchesGender && matchesCity;
+                        }).length > 0 && selectedAthletes.size === (athletes || []).filter(athlete => {
+                          const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
+                          const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
+                          const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
+                          return matchesSearch && matchesGender && matchesCity;
+                        }).length}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>Gênero</TableHead>
                     <TableHead>Categoria</TableHead>
@@ -579,6 +697,12 @@ const Admin = () => {
                     })
                     .map((athlete) => (
                     <TableRow key={athlete.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedAthletes.has(athlete.id)}
+                          onCheckedChange={() => toggleAthleteSelection(athlete.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{athlete.name}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
