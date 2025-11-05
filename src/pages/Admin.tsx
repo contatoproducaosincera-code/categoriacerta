@@ -42,7 +42,9 @@ const Admin = () => {
   const [adminCityFilter, setAdminCityFilter] = useState<string>("all");
   const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set());
   const [openBulkCategory, setOpenBulkCategory] = useState(false);
+  const [openBulkGender, setOpenBulkGender] = useState(false);
   const [bulkCategory, setBulkCategory] = useState<"C" | "D" | "Iniciante">("Iniciante");
+  const [bulkGender, setBulkGender] = useState<"Masculino" | "Feminino">("Masculino");
 
   const [newAthlete, setNewAthlete] = useState({
     name: "",
@@ -462,6 +464,35 @@ const Admin = () => {
     },
   });
 
+  const bulkUpdateGenderMutation = useMutation({
+    mutationFn: async () => {
+      const athleteIds = Array.from(selectedAthletes);
+      
+      const { error } = await supabase
+        .from("athletes")
+        .update({ gender: bulkGender })
+        .in("id", athleteIds);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
+      toast({
+        title: "Gêneros atualizados!",
+        description: `${selectedAthletes.size} atleta(s) atualizado(s) para gênero ${bulkGender}`,
+      });
+      setOpenBulkGender(false);
+      setSelectedAthletes(new Set());
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const toggleSelectAll = () => {
     const filteredAthletes = (athletes || []).filter(athlete => {
       const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -623,47 +654,90 @@ const Admin = () => {
                 <ImportTutorialDialog />
                 
                 {selectedAthletes.size > 0 && (
-                  <Dialog open={openBulkCategory} onOpenChange={setOpenBulkCategory}>
-                    <DialogTrigger asChild>
-                      <Button variant="secondary">
-                        <Users className="mr-2 h-4 w-4" />
-                        Alterar Categoria ({selectedAthletes.size})
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Alteração em Massa de Categoria</DialogTitle>
-                        <DialogDescription>
-                          Alterar categoria de {selectedAthletes.size} atleta(s) selecionado(s)
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="bulk-category">Nova Categoria*</Label>
-                          <Select 
-                            value={bulkCategory} 
-                            onValueChange={(value: any) => setBulkCategory(value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Iniciante">Iniciante</SelectItem>
-                              <SelectItem value="D">Categoria D</SelectItem>
-                              <SelectItem value="C">Categoria C</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <Button 
-                          className="w-full" 
-                          onClick={() => bulkUpdateCategoryMutation.mutate()}
-                          disabled={bulkUpdateCategoryMutation.isPending}
-                        >
-                          {bulkUpdateCategoryMutation.isPending ? "Atualizando..." : `Atualizar ${selectedAthletes.size} Atleta(s)`}
+                  <>
+                    <Dialog open={openBulkCategory} onOpenChange={setOpenBulkCategory}>
+                      <DialogTrigger asChild>
+                        <Button variant="secondary">
+                          <Users className="mr-2 h-4 w-4" />
+                          Alterar Categoria ({selectedAthletes.size})
                         </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Alteração em Massa de Categoria</DialogTitle>
+                          <DialogDescription>
+                            Alterar categoria de {selectedAthletes.size} atleta(s) selecionado(s)
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="bulk-category">Nova Categoria*</Label>
+                            <Select 
+                              value={bulkCategory} 
+                              onValueChange={(value: any) => setBulkCategory(value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Iniciante">Iniciante</SelectItem>
+                                <SelectItem value="D">Categoria D</SelectItem>
+                                <SelectItem value="C">Categoria C</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button 
+                            className="w-full" 
+                            onClick={() => bulkUpdateCategoryMutation.mutate()}
+                            disabled={bulkUpdateCategoryMutation.isPending}
+                          >
+                            {bulkUpdateCategoryMutation.isPending ? "Atualizando..." : `Atualizar ${selectedAthletes.size} Atleta(s)`}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={openBulkGender} onOpenChange={setOpenBulkGender}>
+                      <DialogTrigger asChild>
+                        <Button variant="secondary">
+                          <Users className="mr-2 h-4 w-4" />
+                          Alterar Gênero ({selectedAthletes.size})
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Alteração em Massa de Gênero</DialogTitle>
+                          <DialogDescription>
+                            Alterar gênero de {selectedAthletes.size} atleta(s) selecionado(s)
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="bulk-gender">Novo Gênero*</Label>
+                            <Select 
+                              value={bulkGender} 
+                              onValueChange={(value: any) => setBulkGender(value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                                <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button 
+                            className="w-full" 
+                            onClick={() => bulkUpdateGenderMutation.mutate()}
+                            disabled={bulkUpdateGenderMutation.isPending}
+                          >
+                            {bulkUpdateGenderMutation.isPending ? "Atualizando..." : `Atualizar ${selectedAthletes.size} Atleta(s)`}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </>
                 )}
               </div>
 
@@ -719,6 +793,22 @@ const Admin = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {selectedAthletes.size > 0 && (
+                <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    ✓ {selectedAthletes.size} atleta(s) selecionado(s)
+                  </span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setSelectedAthletes(new Set())}
+                  >
+                    Limpar seleção
+                  </Button>
+                </div>
+              )}
+
               <Table>
                 <TableHeader>
                   <TableRow>
