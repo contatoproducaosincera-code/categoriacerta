@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
@@ -652,14 +652,26 @@ const Admin = () => {
                 <BulkAddAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
                 <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
                 <ImportTutorialDialog />
-                
-                {selectedAthletes.size > 0 && (
-                  <>
+              </div>
+
+              {/* Barra flutuante de ações em massa */}
+              {selectedAthletes.size > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4">
+                  <div className="bg-card border-2 border-primary shadow-2xl rounded-full px-6 py-4 flex items-center gap-4">
+                    <div className="flex items-center gap-2 pr-4 border-r border-border">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                        {selectedAthletes.size}
+                      </div>
+                      <span className="text-sm font-medium whitespace-nowrap">
+                        selecionado(s)
+                      </span>
+                    </div>
+
                     <Dialog open={openBulkCategory} onOpenChange={setOpenBulkCategory}>
                       <DialogTrigger asChild>
-                        <Button variant="secondary">
-                          <Users className="mr-2 h-4 w-4" />
-                          Alterar Categoria ({selectedAthletes.size})
+                        <Button size="sm" variant="secondary" className="gap-2">
+                          <Users className="h-4 w-4" />
+                          Categoria
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -699,9 +711,9 @@ const Admin = () => {
 
                     <Dialog open={openBulkGender} onOpenChange={setOpenBulkGender}>
                       <DialogTrigger asChild>
-                        <Button variant="secondary">
-                          <Users className="mr-2 h-4 w-4" />
-                          Alterar Gênero ({selectedAthletes.size})
+                        <Button size="sm" variant="secondary" className="gap-2">
+                          <Users className="h-4 w-4" />
+                          Gênero
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -737,9 +749,19 @@ const Admin = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
-                  </>
-                )}
-              </div>
+
+                    <Button 
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedAthletes(new Set())}
+                      className="gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Limpar
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               <Card className="border-primary/20">
                 <CardHeader className="pb-4">
