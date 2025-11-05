@@ -68,8 +68,7 @@ export const tournamentSchema = z.object({
   category: z.union([
     z.literal("Iniciante"),
     z.literal("D"),
-    z.literal("C"),
-    z.literal("Todas")
+    z.literal("C")
   ]),
   
   whatsapp: z.string()

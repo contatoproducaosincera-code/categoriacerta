@@ -18,8 +18,10 @@ import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, 
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
-import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import BulkAddAthletesDialog from "@/components/BulkAddAthletesDialog";
+import { athleteSchema, tournamentSchema, achievementSchema } from "@/lib/validations";
+import { z } from "zod";
+import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 
 const Admin = () => {
@@ -74,7 +76,7 @@ const Admin = () => {
     description: "",
     date: new Date().toISOString().split('T')[0],
     location: "",
-    category: "Iniciante" as "C" | "D" | "Iniciante",
+    category: "Iniciante" as "C" | "D" | "Iniciante" | "Todas",
     whatsapp: "",
   });
 
@@ -120,11 +122,20 @@ const Admin = () => {
 
   const addAthleteMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("athletes")
-        .insert([newAthlete]);
+      // Validate input before database insertion
+      try {
+        const validated = athleteSchema.parse(newAthlete);
+        const { error } = await supabase
+          .from("athletes")
+          .insert([validated]);
 
-      if (error) throw error;
+        if (error) throw error;
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new Error(`Erro de validação: ${error.issues[0].message}`);
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
@@ -146,19 +157,28 @@ const Admin = () => {
 
   const updateAthleteMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("athletes")
-        .update({
-          name: editAthlete.name,
-          email: editAthlete.email || null,
-          city: editAthlete.city,
-          instagram: editAthlete.instagram || null,
-          category: editAthlete.category,
-          gender: editAthlete.gender,
-        })
-        .eq("id", selectedAthlete.id);
+      // Validate input before database update
+      try {
+        const validated = athleteSchema.parse(editAthlete);
+        const { error } = await supabase
+          .from("athletes")
+          .update({
+            name: validated.name,
+            email: validated.email || null,
+            city: validated.city,
+            instagram: validated.instagram || null,
+            category: validated.category,
+            gender: validated.gender,
+          })
+          .eq("id", selectedAthlete.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new Error(`Erro de validação: ${error.issues[0].message}`);
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
@@ -205,11 +225,27 @@ const Admin = () => {
 
   const addTournamentMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("tournaments")
-        .insert([newTournament]);
+      // Validate input before database insertion
+      try {
+        const validated = tournamentSchema.parse(newTournament);
+        const { error } = await supabase
+          .from("tournaments")
+          .insert([{
+            name: validated.name,
+            description: validated.description || null,
+            date: validated.date,
+            location: validated.location,
+            category: validated.category,
+            whatsapp: validated.whatsapp || null,
+          }]);
 
-      if (error) throw error;
+        if (error) throw error;
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new Error(`Erro de validação: ${error.issues[0].message}`);
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
@@ -238,19 +274,31 @@ const Admin = () => {
 
   const updateTournamentMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("tournaments")
-        .update({
-          name: editTournament.name,
-          description: editTournament.description || null,
-          date: editTournament.date,
-          location: editTournament.location,
-          category: editTournament.category,
-          whatsapp: editTournament.whatsapp || null,
-        })
-        .eq("id", selectedTournament.id);
+      // Validate input before database update
+      try {
+        const validated = tournamentSchema.parse({
+          ...editTournament,
+          category: editTournament.category === "Todas" ? "Iniciante" : editTournament.category
+        });
+        const { error } = await supabase
+          .from("tournaments")
+          .update({
+            name: validated.name,
+            description: validated.description || null,
+            date: validated.date,
+            location: validated.location,
+            category: validated.category,
+            whatsapp: validated.whatsapp || null,
+          })
+          .eq("id", selectedTournament.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new Error(`Erro de validação: ${error.issues[0].message}`);
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-tournaments"] });
@@ -314,18 +362,29 @@ const Admin = () => {
 
       if (updateError) throw updateError;
 
-      // Registrar conquista
-      const { error: achievementError } = await supabase
-        .from("achievements")
-        .insert([{
+      // Validate and register achievement
+      try {
+        const achievementData = {
           athlete_id: selectedAthlete.id,
           tournament_name: achievement.tournament_name,
           position: parseInt(achievement.position),
           points_awarded: pointsToAdd,
           date: achievement.date,
-        }]);
+        };
+        
+        const validated = achievementSchema.parse(achievementData);
+        
+        const { error: achievementError } = await supabase
+          .from("achievements")
+          .insert([validated]);
 
-      if (achievementError) throw achievementError;
+        if (achievementError) throw achievementError;
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new Error(`Erro de validação: ${error.issues[0].message}`);
+        }
+        throw error;
+      }
 
       // Verificar se houve upgrade de categoria e disparar notificação
       const { data: updatedAthlete } = await supabase

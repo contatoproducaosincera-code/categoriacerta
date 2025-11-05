@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Upload, FileSpreadsheet, Trash2 } from "lucide-react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import { athleteSchema } from "@/lib/validations";
+import { z } from "zod";
 
 const ImportAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
   const [open, setOpen] = useState(false);
@@ -127,23 +129,53 @@ const ImportAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         return;
       }
 
-      const athletesToInsert = validAthletes.map((athlete) => ({
-        name: athlete.nome.trim(),
-        city: athlete.cidade.trim(),
-        category: validateCategory(athlete.categoria),
-        gender: validateGender(athlete.genero),
-        email: athlete.email?.trim() || null,
-        instagram: athlete.instagram?.trim() || null,
-        points: 0,
-      }));
+      // Validate each athlete before insertion
+      const athletesToInsert = [];
+      const validationErrors = [];
+
+      for (let i = 0; i < validAthletes.length; i++) {
+        const athlete = validAthletes[i];
+        try {
+          const athleteData = {
+            name: athlete.nome.trim(),
+            city: athlete.cidade.trim(),
+            category: validateCategory(athlete.categoria),
+            gender: validateGender(athlete.genero),
+            email: athlete.email?.trim() || undefined,
+            instagram: athlete.instagram?.trim() || undefined,
+            points: 0,
+          };
+          
+          const validated = athleteSchema.parse(athleteData);
+          athletesToInsert.push(validated);
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            validationErrors.push(`Linha ${i + 1}: ${error.issues[0].message}`);
+          }
+        }
+      }
+
+      if (validationErrors.length > 0 && athletesToInsert.length === 0) {
+        toast({
+          title: "Erros de validação",
+          description: validationErrors[0],
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
 
       const { error } = await supabase.from("athletes").insert(athletesToInsert);
 
       if (error) throw error;
 
+      const successMessage = validationErrors.length > 0
+        ? `${athletesToInsert.length} atletas importados. ${validationErrors.length} linhas ignoradas por erros de validação.`
+        : `${validAthletes.length} atletas importados com sucesso`;
+
       toast({
         title: "✓ Importação concluída!",
-        description: `${validAthletes.length} atletas importados com sucesso`,
+        description: successMessage,
       });
 
       setOpen(false);

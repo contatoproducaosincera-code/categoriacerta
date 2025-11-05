@@ -9,6 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UserPlus, Plus, Trash2, Save } from "lucide-react";
+import { athleteSchema } from "@/lib/validations";
+import { z } from "zod";
 
 interface AthleteFormData {
   id: string;
@@ -69,15 +71,41 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     setIsProcessing(true);
 
     try {
-      const athletesToInsert = validAthletes.map((athlete) => ({
-        name: athlete.name.trim(),
-        city: athlete.city.trim(),
-        category: athlete.category,
-        gender: athlete.gender,
-        email: athlete.email.trim() || null,
-        instagram: athlete.instagram.trim() || null,
-        points: 0,
-      }));
+      // Validate each athlete before insertion
+      const athletesToInsert = [];
+      const validationErrors = [];
+
+      for (let i = 0; i < validAthletes.length; i++) {
+        const athlete = validAthletes[i];
+        try {
+          const athleteData = {
+            name: athlete.name.trim(),
+            city: athlete.city.trim(),
+            category: athlete.category,
+            gender: athlete.gender,
+            email: athlete.email?.trim() || undefined,
+            instagram: athlete.instagram?.trim() || undefined,
+            points: 0,
+          };
+          
+          const validated = athleteSchema.parse(athleteData);
+          athletesToInsert.push(validated);
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            validationErrors.push(`Atleta ${i + 1}: ${error.issues[0].message}`);
+          }
+        }
+      }
+
+      if (validationErrors.length > 0) {
+        toast({
+          title: "Erros de validação",
+          description: validationErrors[0],
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
 
       const { error } = await supabase.from("athletes").insert(athletesToInsert);
 
