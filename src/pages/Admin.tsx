@@ -40,7 +40,7 @@ const Admin = () => {
   const [openEditTournament, setOpenEditTournament] = useState(false);
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
   const [adminGenderFilter, setAdminGenderFilter] = useState<string>("all");
-  const [adminCityFilter, setAdminCityFilter] = useState<string>("all");
+  const [adminCityFilter, setAdminCityFilter] = useState<string[]>([]);
   const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set());
   const [openBulkCategory, setOpenBulkCategory] = useState(false);
   const [openBulkGender, setOpenBulkGender] = useState(false);
@@ -498,7 +498,7 @@ const Admin = () => {
     const filteredAthletes = (athletes || []).filter(athlete => {
       const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
-      const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
+      const matchesCity = adminCityFilter.length === 0 || adminCityFilter.includes(athlete.city);
       return matchesSearch && matchesGender && matchesCity;
     });
 
@@ -798,7 +798,7 @@ const Admin = () => {
                     onClearFilters={() => {
                       setSearchTerm("");
                       setAdminGenderFilter("all");
-                      setAdminCityFilter("all");
+                      setAdminCityFilter([]);
                     }}
                     onOpenAddPoints={(athlete) => {
                       setSelectedAthlete(athlete);

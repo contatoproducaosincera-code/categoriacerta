@@ -10,11 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Trophy, Search, BadgeCheck, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
 
   // Otimização: query única consolidada com aggregations
   const { data: rankingData, isLoading } = useQuery({
@@ -115,13 +117,21 @@ const Ranking = () => {
   // Debounce search para melhor performance
   const debouncedSearch = useDebounce(searchTerm, 300);
   
+  // Extrair cidades únicas dos atletas
+  const availableCities = useMemo(() => {
+    if (!athletes) return [];
+    return [...new Set(athletes.map(a => a.city))].sort();
+  }, [athletes]);
+  
   // Filter athletes by search term com useMemo
   const filteredAthletes = useMemo(() => {
     if (!athletes) return [];
-    return athletes.filter(athlete =>
-      athlete.name.toLowerCase().includes(debouncedSearch.toLowerCase())
-    );
-  }, [athletes, debouncedSearch]);
+    return athletes.filter(athlete => {
+      const matchesSearch = athlete.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchesCity = selectedCities.length === 0 || selectedCities.includes(athlete.city);
+      return matchesSearch && matchesCity;
+    });
+  }, [athletes, debouncedSearch, selectedCities]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -161,6 +171,13 @@ const Ranking = () => {
                   <SelectItem value="Feminino">👩 Feminino</SelectItem>
                 </SelectContent>
               </Select>
+              <MultiSelect
+                options={availableCities}
+                selected={selectedCities}
+                onChange={setSelectedCities}
+                placeholder="Todas as Cidades"
+                className="w-full md:w-[250px]"
+              />
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full md:w-[250px]">
                   <SelectValue placeholder="Filtrar por categoria" />

@@ -12,12 +12,13 @@ import { Search, MapPin } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 import { BadgeCheck } from "lucide-react";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [genderFilter, setGenderFilter] = useState<string>("all");
-  const [cityFilter, setCityFilter] = useState("all");
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [pointsFilter, setPointsFilter] = useState("all");
 
   const getCategoryProgress = (points: number, category: string) => {
@@ -92,7 +93,7 @@ const Atletas = () => {
         const matchesSearch = athlete.name.toLowerCase().includes(debouncedSearch.toLowerCase());
         const matchesCategory = categoryFilter === "all" || athlete.category === categoryFilter;
         const matchesGender = genderFilter === "all" || athlete.gender === genderFilter;
-        const matchesCity = cityFilter === "all" || athlete.city === cityFilter;
+        const matchesCity = selectedCities.length === 0 || selectedCities.includes(athlete.city);
         
         let matchesPoints = true;
         if (pointsFilter === "0-500") matchesPoints = athlete.points >= 0 && athlete.points < 500;
@@ -102,7 +103,7 @@ const Atletas = () => {
         return matchesSearch && matchesCategory && matchesGender && matchesCity && matchesPoints;
       })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [athletes, debouncedSearch, categoryFilter, genderFilter, cityFilter, pointsFilter]);
+  }, [athletes, debouncedSearch, categoryFilter, genderFilter, selectedCities, pointsFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,17 +156,13 @@ const Atletas = () => {
             </div>
             
             <div className="flex flex-col md:flex-row gap-4">
-              <Select value={cityFilter} onValueChange={setCityFilter}>
-                <SelectTrigger className="w-full md:w-[250px]">
-                  <SelectValue placeholder="Filtrar por cidade" />
-                </SelectTrigger>
-                <SelectContent className="bg-background z-50">
-                  <SelectItem value="all">Todas as Cidades</SelectItem>
-                  {cities.map((city) => (
-                    <SelectItem key={city} value={city}>{city}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MultiSelect
+                options={cities}
+                selected={selectedCities}
+                onChange={setSelectedCities}
+                placeholder="Todas as Cidades"
+                className="w-full md:w-[250px]"
+              />
 
               <Select value={pointsFilter} onValueChange={setPointsFilter}>
                 <SelectTrigger className="w-full md:w-[250px]">

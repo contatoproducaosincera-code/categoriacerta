@@ -11,6 +11,7 @@ import { Plus, Edit, Trash2, Award, ArrowUpDown, ArrowUp, ArrowDown } from "luci
 import { useToast } from "@/hooks/use-toast";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import { useDebounce } from "@/hooks/useDebounce";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 interface Athlete {
   id: string;
@@ -27,11 +28,11 @@ interface AthletesTableProps {
   athletes: Athlete[];
   searchTerm: string;
   adminGenderFilter: string;
-  adminCityFilter: string;
+  adminCityFilter: string[];
   selectedAthletes: Set<string>;
   onSearchChange: (value: string) => void;
   onGenderFilterChange: (value: string) => void;
-  onCityFilterChange: (value: string) => void;
+  onCityFilterChange: (value: string[]) => void;
   onToggleAthleteSelection: (id: string) => void;
   onToggleSelectAll: () => void;
   onClearFilters: () => void;
@@ -99,7 +100,7 @@ export default function AthletesTable({
                            fuzzyMatch(athlete.city, debouncedSearch) ||
                            fuzzyMatch(athlete.category, debouncedSearch);
       const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
-      const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
+      const matchesCity = adminCityFilter.length === 0 || adminCityFilter.includes(athlete.city);
       return matchesSearch && matchesGender && matchesCity;
     });
 
@@ -135,7 +136,7 @@ export default function AthletesTable({
   }, [athletes, debouncedSearch, adminGenderFilter, adminCityFilter, sortField, sortOrder]);
 
   const totalFiltered = Object.values(groupedAthletes).flat().length;
-  const hasActiveFilters = adminGenderFilter !== "all" || adminCityFilter !== "all" || searchTerm !== "";
+  const hasActiveFilters = adminGenderFilter !== "all" || adminCityFilter.length > 0 || searchTerm !== "";
 
   return (
     <div className="space-y-4">
@@ -167,17 +168,13 @@ export default function AthletesTable({
             <SelectItem value="Feminino">👩 Feminino</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={adminCityFilter} onValueChange={onCityFilterChange}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Cidade" />
-          </SelectTrigger>
-          <SelectContent className="bg-background z-50">
-            <SelectItem value="all">Todas as Cidades</SelectItem>
-            {cities.map(city => (
-              <SelectItem key={city} value={city}>{city}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MultiSelect
+          options={cities}
+          selected={adminCityFilter}
+          onChange={onCityFilterChange}
+          placeholder="Todas as Cidades"
+          className="w-full sm:w-[200px]"
+        />
         {hasActiveFilters && (
           <Button variant="outline" onClick={onClearFilters}>
             Limpar Filtros
