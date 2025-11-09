@@ -23,6 +23,7 @@ import { athleteSchema, tournamentSchema, achievementSchema } from "@/lib/valida
 import { z } from "zod";
 import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
+import AthletesTable from "@/components/admin/AthletesTable";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -780,320 +781,190 @@ const Admin = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Atletas Cadastrados</CardTitle>
-                  <CardDescription>Gerencie atletas e registre conquistas</CardDescription>
+                  <CardDescription>Gerencie atletas e registre conquistas de forma otimizada</CardDescription>
                 </CardHeader>
                 <CardContent>
-              <div className="mb-4 flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar atleta por nome..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                  <AthletesTable
+                    athletes={athletes || []}
+                    searchTerm={searchTerm}
+                    adminGenderFilter={adminGenderFilter}
+                    adminCityFilter={adminCityFilter}
+                    selectedAthletes={selectedAthletes}
+                    onSearchChange={setSearchTerm}
+                    onGenderFilterChange={setAdminGenderFilter}
+                    onCityFilterChange={setAdminCityFilter}
+                    onToggleAthleteSelection={toggleAthleteSelection}
+                    onToggleSelectAll={toggleSelectAll}
+                    onClearFilters={() => {
+                      setSearchTerm("");
+                      setAdminGenderFilter("all");
+                      setAdminCityFilter("all");
+                    }}
+                    onOpenAddPoints={(athlete) => {
+                      setSelectedAthlete(athlete);
+                      setOpenAddPoints(true);
+                    }}
+                    onOpenEditAthlete={(athlete) => {
+                      setSelectedAthlete(athlete);
+                      setEditAthlete({
+                        name: athlete.name,
+                        email: athlete.email || "",
+                        city: athlete.city,
+                        instagram: athlete.instagram || "",
+                        category: athlete.category,
+                        gender: athlete.gender,
+                      });
+                      setOpenEditAthlete(true);
+                    }}
+                    onDeleteAthlete={(id) => deleteAthleteMutation.mutate(id)}
                   />
-                </div>
-                <Select value={adminGenderFilter} onValueChange={setAdminGenderFilter}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Gênero" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background z-50">
-                    <SelectItem value="all">Todos os Gêneros</SelectItem>
-                    <SelectItem value="Masculino">🧔 Masculino</SelectItem>
-                    <SelectItem value="Feminino">👩 Feminino</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={adminCityFilter} onValueChange={setAdminCityFilter}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder="Cidade" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background z-50">
-                    <SelectItem value="all">Todas as Cidades</SelectItem>
-                    {[...new Set((athletes || []).map(a => a.city))].sort().map(city => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                </CardContent>
+              </Card>
 
-              {selectedAthletes.size > 0 && (
-                <div className="mb-4 p-3 bg-primary/10 border border-primary/20 rounded-lg flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    ✓ {selectedAthletes.size} atleta(s) selecionado(s)
-                  </span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setSelectedAthletes(new Set())}
-                  >
-                    Limpar seleção
-                  </Button>
-                </div>
-              )}
-
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
-                      <Checkbox
-                        checked={(athletes || []).filter(athlete => {
-                          const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
-                          const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
-                          const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
-                          return matchesSearch && matchesGender && matchesCity;
-                        }).length > 0 && selectedAthletes.size === (athletes || []).filter(athlete => {
-                          const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
-                          const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
-                          const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
-                          return matchesSearch && matchesGender && matchesCity;
-                        }).length}
-                        onCheckedChange={toggleSelectAll}
+              {/* Dialogs de Adição de Pontos e Edição */}
+              <Dialog open={openAddPoints} onOpenChange={(open) => {
+                setOpenAddPoints(open);
+                if (!open) setSelectedAthlete(null);
+              }}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Registrar Conquista</DialogTitle>
+                    <DialogDescription>
+                      Adicione uma conquista para {selectedAthlete?.name}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="tournament">Nome do Torneio*</Label>
+                      <Input
+                        id="tournament"
+                        value={achievement.tournament_name}
+                        onChange={(e) => setAchievement({ ...achievement, tournament_name: e.target.value })}
+                        placeholder="Copa Verão 2025"
                       />
-                    </TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Gênero</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Pontos</TableHead>
-                    <TableHead>Cidade</TableHead>
-                    <TableHead>Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(athletes || [])
-                    .filter(athlete => {
-                      const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
-                      const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
-                      const matchesCity = adminCityFilter === "all" || athlete.city === adminCityFilter;
-                      return matchesSearch && matchesGender && matchesCity;
-                    })
-                    .map((athlete) => (
-                    <TableRow key={athlete.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedAthletes.has(athlete.id)}
-                          onCheckedChange={() => toggleAthleteSelection(athlete.id)}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">{athlete.name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {athlete.gender === "Feminino" ? "👩" : "🧔"} {athlete.gender}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{athlete.category}</TableCell>
-                      <TableCell className="font-bold text-primary">{athlete.points}</TableCell>
-                      <TableCell>{athlete.city}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Dialog open={openAddPoints && selectedAthlete?.id === athlete.id} onOpenChange={(open) => {
-                            setOpenAddPoints(open);
-                            if (!open) setSelectedAthlete(null);
-                          }}>
-                            <DialogTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                onClick={() => setSelectedAthlete(athlete)}
-                              >
-                                <Plus className="mr-1 h-3 w-3" />
-                                Conquista
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Registrar Conquista</DialogTitle>
-                                <DialogDescription>
-                                  Adicione uma conquista para {athlete.name}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label htmlFor="tournament">Nome do Torneio*</Label>
-                                  <Input
-                                    id="tournament"
-                                    value={achievement.tournament_name}
-                                    onChange={(e) => setAchievement({ ...achievement, tournament_name: e.target.value })}
-                                    placeholder="Copa Verão 2025"
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="position">Posição*</Label>
-                                  <Select 
-                                    value={achievement.position} 
-                                    onValueChange={(value) => setAchievement({ ...achievement, position: value })}
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="1">1º Lugar (+100 pontos)</SelectItem>
-                                      <SelectItem value="2">2º Lugar (+80 pontos)</SelectItem>
-                                      <SelectItem value="3">3º Lugar (+60 pontos)</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <Label htmlFor="date">Data*</Label>
-                                  <Input
-                                    id="date"
-                                    type="date"
-                                    value={achievement.date}
-                                    onChange={(e) => setAchievement({ ...achievement, date: e.target.value })}
-                                  />
-                                </div>
-                                <Button 
-                                  className="w-full" 
-                                  onClick={() => addPointsMutation.mutate()}
-                                  disabled={!achievement.tournament_name || addPointsMutation.isPending}
-                                >
-                                  {addPointsMutation.isPending ? "Registrando..." : "Registrar Conquista"}
-                                </Button>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
+                    </div>
+                    <div>
+                      <Label htmlFor="position">Posição*</Label>
+                      <Select 
+                        value={achievement.position} 
+                        onValueChange={(value) => setAchievement({ ...achievement, position: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1º Lugar (+100 pontos)</SelectItem>
+                          <SelectItem value="2">2º Lugar (+80 pontos)</SelectItem>
+                          <SelectItem value="3">3º Lugar (+60 pontos)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="date">Data*</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={achievement.date}
+                        onChange={(e) => setAchievement({ ...achievement, date: e.target.value })}
+                      />
+                    </div>
+                    <Button 
+                      className="w-full" 
+                      onClick={() => addPointsMutation.mutate()}
+                      disabled={!achievement.tournament_name || addPointsMutation.isPending}
+                    >
+                      {addPointsMutation.isPending ? "Registrando..." : "Registrar Conquista"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-                          <AthleteAchievementsDialog
-                            athleteId={athlete.id}
-                            athleteName={athlete.name}
-                            athletePoints={athlete.points}
-                            athleteCategory={athlete.category}
-                            isAdmin={true}
-                            onAchievementDeleted={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })}
-                          >
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              title="Ver e gerenciar conquistas"
-                            >
-                              <Award className="h-3 w-3" />
-                            </Button>
-                          </AthleteAchievementsDialog>
-
-                          <Dialog open={openEditAthlete && selectedAthlete?.id === athlete.id} onOpenChange={(open) => {
-                            setOpenEditAthlete(open);
-                            if (!open) setSelectedAthlete(null);
-                          }}>
-                            <DialogTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedAthlete(athlete);
-                                  setEditAthlete({
-                                    name: athlete.name,
-                                    email: athlete.email || "",
-                                    city: athlete.city,
-                                    instagram: athlete.instagram || "",
-                                    category: athlete.category,
-                                    gender: athlete.gender || "Masculino",
-                                  });
-                                }}
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Editar Atleta</DialogTitle>
-                                <DialogDescription>
-                                  Atualize os dados de {athlete.name}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label htmlFor="edit-name">Nome Completo*</Label>
-                                  <Input
-                                    id="edit-name"
-                                    value={editAthlete.name}
-                                    onChange={(e) => setEditAthlete({ ...editAthlete, name: e.target.value })}
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="edit-email">Email</Label>
-                                  <Input
-                                    id="edit-email"
-                                    type="email"
-                                    value={editAthlete.email}
-                                    onChange={(e) => setEditAthlete({ ...editAthlete, email: e.target.value })}
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="edit-city">Cidade*</Label>
-                                  <Input
-                                    id="edit-city"
-                                    value={editAthlete.city}
-                                    onChange={(e) => setEditAthlete({ ...editAthlete, city: e.target.value })}
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="edit-instagram">Instagram</Label>
-                                  <Input
-                                    id="edit-instagram"
-                                    value={editAthlete.instagram}
-                                    onChange={(e) => setEditAthlete({ ...editAthlete, instagram: e.target.value })}
-                                  />
-                                </div>
-                                <div>
-                                  <Label htmlFor="edit-gender">Gênero*</Label>
-                                  <Select 
-                                    value={editAthlete.gender} 
-                                    onValueChange={(value: any) => setEditAthlete({ ...editAthlete, gender: value })}
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Masculino">🧔 Masculino</SelectItem>
-                                      <SelectItem value="Feminino">👩 Feminino</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <div>
-                                  <Label htmlFor="edit-category">Categoria*</Label>
-                                  <Select 
-                                    value={editAthlete.category} 
-                                    onValueChange={(value: any) => setEditAthlete({ ...editAthlete, category: value })}
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Iniciante">Iniciante</SelectItem>
-                                      <SelectItem value="D">Categoria D</SelectItem>
-                                      <SelectItem value="C">Categoria C</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                                <Button
-                                  className="w-full" 
-                                  onClick={() => updateAthleteMutation.mutate()}
-                                  disabled={!editAthlete.name || !editAthlete.city || updateAthleteMutation.isPending}
-                                >
-                                  {updateAthleteMutation.isPending ? "Atualizando..." : "Atualizar Atleta"}
-                                </Button>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => {
-                              if (confirm(`Tem certeza que deseja excluir ${athlete.name}?`)) {
-                                deleteAthleteMutation.mutate(athlete.id);
-                              }
-                            }}
-                            disabled={deleteAthleteMutation.isPending}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+              <Dialog open={openEditAthlete} onOpenChange={(open) => {
+                setOpenEditAthlete(open);
+                if (!open) setSelectedAthlete(null);
+              }}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Editar Atleta</DialogTitle>
+                    <DialogDescription>
+                      Atualize os dados de {selectedAthlete?.name}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="edit-name">Nome Completo*</Label>
+                      <Input
+                        id="edit-name"
+                        value={editAthlete.name}
+                        onChange={(e) => setEditAthlete({ ...editAthlete, name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-email">Email</Label>
+                      <Input
+                        id="edit-email"
+                        type="email"
+                        value={editAthlete.email}
+                        onChange={(e) => setEditAthlete({ ...editAthlete, email: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-city">Cidade*</Label>
+                      <Input
+                        id="edit-city"
+                        value={editAthlete.city}
+                        onChange={(e) => setEditAthlete({ ...editAthlete, city: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-instagram">Instagram</Label>
+                      <Input
+                        id="edit-instagram"
+                        value={editAthlete.instagram}
+                        onChange={(e) => setEditAthlete({ ...editAthlete, instagram: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-gender">Gênero*</Label>
+                      <Select 
+                        value={editAthlete.gender} 
+                        onValueChange={(value: any) => setEditAthlete({ ...editAthlete, gender: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                          <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-category">Categoria*</Label>
+                      <Select 
+                        value={editAthlete.category} 
+                        onValueChange={(value: any) => setEditAthlete({ ...editAthlete, category: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Iniciante">Iniciante</SelectItem>
+                          <SelectItem value="D">Categoria D</SelectItem>
+                          <SelectItem value="C">Categoria C</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      className="w-full" 
+                      onClick={() => updateAthleteMutation.mutate()}
+                      disabled={!editAthlete.name || !editAthlete.city || updateAthleteMutation.isPending}
+                    >
+                      {updateAthleteMutation.isPending ? "Atualizando..." : "Atualizar Atleta"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
             </TabsContent>
 
