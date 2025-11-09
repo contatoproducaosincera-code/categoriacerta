@@ -38,37 +38,53 @@ const Feed = () => {
     enabled: !!user,
   });
 
-  // Get followed athletes' recent achievements
-  const { data: feedItems, isLoading } = useQuery({
-    queryKey: ["feed", currentAthlete?.id],
+  // Otimização: query única com join
+  const { data: feedItems = [], isLoading } = useQuery({
+    queryKey: ["feed-optimized", currentAthlete?.id],
     queryFn: async () => {
       if (!currentAthlete?.id) return [];
 
-      // Get list of followed athletes
-      const { data: follows } = await supabase
+      // Query otimizada com join
+      const { data: achievements, error } = await supabase
         .from("follows")
-        .select("following_id")
+        .select(`
+          following_id,
+          athletes!follows_following_id_fkey (
+            id,
+            name,
+            category,
+            city
+          )
+        `)
         .eq("follower_id", currentAthlete.id);
 
-      if (!follows || follows.length === 0) return [];
+      if (error || !achievements || achievements.length === 0) return [];
 
-      const followedIds = follows.map(f => f.following_id);
+      const followedIds = achievements.map(f => f.following_id);
 
-      // Get recent achievements from followed athletes
-      const { data: achievements, error } = await supabase
+      // Buscar conquistas dos seguidos
+      const { data: achievementsData, error: achievementsError } = await supabase
         .from("achievements")
-        .select(`
-          *,
-          athlete:athletes(id, name, category, city)
-        `)
+        .select("*")
         .in("athlete_id", followedIds)
         .order("date", { ascending: false })
         .limit(50);
 
-      if (error) throw error;
-      return achievements;
+      if (achievementsError) throw achievementsError;
+
+      // Mapear atletas
+      const athletesMap = new Map(
+        achievements.map(a => [a.following_id, a.athletes])
+      );
+
+      return achievementsData?.map(achievement => ({
+        ...achievement,
+        athlete: athletesMap.get(achievement.athlete_id)
+      })) || [];
     },
     enabled: !!currentAthlete?.id,
+    staleTime: 30000,
+    gcTime: 300000,
   });
 
   const getPositionBadge = (position: number) => {

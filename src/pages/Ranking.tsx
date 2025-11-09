@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,72 +16,46 @@ const Ranking = () => {
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: athletes, isLoading } = useQuery({
-    queryKey: ["ranking", categoryFilter, genderFilter],
+  // Otimização: query única consolidada com aggregations
+  const { data: rankingData, isLoading } = useQuery({
+    queryKey: ["ranking-optimized", categoryFilter, genderFilter],
     queryFn: async () => {
-      let query = supabase
+      // Query principal de atletas
+      let athletesQuery = supabase
         .from("athletes")
-        .select("*");
+        .select("*")
+        .order("points", { ascending: false })
+        .order("name", { ascending: true });
 
       if (categoryFilter !== "all") {
-        query = query.eq("category", categoryFilter as any);
+        athletesQuery = athletesQuery.eq("category", categoryFilter as any);
       }
       
       if (genderFilter !== "all") {
-        query = query.eq("gender", genderFilter as any);
+        athletesQuery = athletesQuery.eq("gender", genderFilter as any);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const [athletesResult, achievementsResult, historyResult] = await Promise.all([
+        athletesQuery,
+        supabase.from("achievements").select("athlete_id, position"),
+        supabase.from("ranking_history").select("athlete_id, position, recorded_at").order("recorded_at", { ascending: false }).limit(1000)
+      ]);
+
+      if (athletesResult.error) throw athletesResult.error;
       
-      // Ordenar por pontuação (maior para menor) e depois por nome alfabético
-      return data?.sort((a, b) => {
-        if (b.points !== a.points) {
-          return b.points - a.points; // Maior pontuação primeiro
+      // Processar contagens de primeiros lugares
+      const firstPlaceCounts: Record<string, number> = {};
+      achievementsResult.data?.forEach((achievement) => {
+        if (achievement.position === 1) {
+          firstPlaceCounts[achievement.athlete_id] = (firstPlaceCounts[achievement.athlete_id] || 0) + 1;
         }
-        return a.name.localeCompare(b.name, 'pt-BR'); // Ordem alfabética em caso de empate
-      }) || [];
-    },
-  });
-
-  // Buscar contagem de primeiros lugares para cada atleta
-  const { data: firstPlaceCounts } = useQuery({
-    queryKey: ["first-place-counts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("achievements")
-        .select("athlete_id")
-        .eq("position", 1);
-
-      if (error) throw error;
-      
-      // Contar quantos primeiros lugares cada atleta tem
-      const counts: Record<string, number> = {};
-      data?.forEach((achievement) => {
-        counts[achievement.athlete_id] = (counts[achievement.athlete_id] || 0) + 1;
       });
-      
-      return counts;
-    },
-  });
 
-  // Buscar histórico de posições para calcular mudanças
-  const { data: positionChanges } = useQuery({
-    queryKey: ["position-changes"],
-    queryFn: async () => {
-      // Buscar as duas últimas entradas de ranking para cada atleta
-      const { data, error } = await supabase
-        .from("ranking_history")
-        .select("athlete_id, position, recorded_at")
-        .order("recorded_at", { ascending: false });
-
-      if (error) throw error;
-      
-      // Agrupar por atleta e pegar as duas últimas posições
-      const changes: Record<string, number> = {};
+      // Processar mudanças de ranking
+      const positionChanges: Record<string, number> = {};
       const athletePositions: Record<string, number[]> = {};
       
-      data?.forEach((record) => {
+      historyResult.data?.forEach((record) => {
         if (!athletePositions[record.athlete_id]) {
           athletePositions[record.athlete_id] = [];
         }
@@ -89,18 +64,26 @@ const Ranking = () => {
         }
       });
       
-      // Calcular mudança (posição anterior - posição atual)
-      // Positivo = subiu, Negativo = caiu
       Object.keys(athletePositions).forEach((athleteId) => {
         const positions = athletePositions[athleteId];
         if (positions.length === 2) {
-          changes[athleteId] = positions[1] - positions[0];
+          positionChanges[athleteId] = positions[1] - positions[0];
         }
       });
-      
-      return changes;
+
+      return {
+        athletes: athletesResult.data || [],
+        firstPlaceCounts,
+        positionChanges
+      };
     },
+    staleTime: 30000, // Cache por 30 segundos
+    gcTime: 300000, // Manter em cache por 5 minutos
   });
+
+  const athletes = rankingData?.athletes;
+  const firstPlaceCounts = rankingData?.firstPlaceCounts;
+  const positionChanges = rankingData?.positionChanges;
 
   const getAthleteFirstPlaces = (athleteId: string) => {
     return firstPlaceCounts?.[athleteId] || 0;
@@ -129,10 +112,16 @@ const Ranking = () => {
     return null;
   };
 
-  // Filter athletes by search term
-  const filteredAthletes = athletes?.filter(athlete =>
-    athlete.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Debounce search para melhor performance
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  
+  // Filter athletes by search term com useMemo
+  const filteredAthletes = useMemo(() => {
+    if (!athletes) return [];
+    return athletes.filter(athlete =>
+      athlete.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+  }, [athletes, debouncedSearch]);
 
   return (
     <div className="min-h-screen bg-background">

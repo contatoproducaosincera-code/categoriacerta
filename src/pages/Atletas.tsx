@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,61 +43,66 @@ const Atletas = () => {
     };
   };
 
-  const { data: athletes, isLoading } = useQuery({
-    queryKey: ["athletes"],
+  // Otimização: query consolidada
+  const { data: athletesData, isLoading } = useQuery({
+    queryKey: ["athletes-optimized"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("athletes")
-        .select("*")
-        .order("points", { ascending: false });
+      const [athletesResult, achievementsResult] = await Promise.all([
+        supabase.from("athletes").select("*").order("points", { ascending: false }),
+        supabase.from("achievements").select("athlete_id, position")
+      ]);
 
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Buscar contagem de primeiros lugares para cada atleta
-  const { data: firstPlaceCounts } = useQuery({
-    queryKey: ["first-place-counts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("achievements")
-        .select("athlete_id")
-        .eq("position", 1);
-
-      if (error) throw error;
+      if (athletesResult.error) throw athletesResult.error;
       
-      // Contar quantos primeiros lugares cada atleta tem
-      const counts: Record<string, number> = {};
-      data?.forEach((achievement) => {
-        counts[achievement.athlete_id] = (counts[achievement.athlete_id] || 0) + 1;
+      // Contar primeiros lugares
+      const firstPlaceCounts: Record<string, number> = {};
+      achievementsResult.data?.forEach((achievement) => {
+        if (achievement.position === 1) {
+          firstPlaceCounts[achievement.athlete_id] = (firstPlaceCounts[achievement.athlete_id] || 0) + 1;
+        }
       });
       
-      return counts;
+      return {
+        athletes: athletesResult.data || [],
+        firstPlaceCounts
+      };
     },
+    staleTime: 30000,
+    gcTime: 300000,
   });
+
+  const athletes = athletesData?.athletes;
+  const firstPlaceCounts = athletesData?.firstPlaceCounts;
 
   const getAthleteFirstPlaces = (athleteId: string) => {
     return firstPlaceCounts?.[athleteId] || 0;
   };
 
-  const cities = [...new Set((athletes || []).map(a => a.city))].sort();
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  
+  const cities = useMemo(() => 
+    [...new Set((athletes || []).map(a => a.city))].sort(),
+    [athletes]
+  );
 
-  const filteredAthletes = (athletes || [])
-    .filter(athlete => {
-      const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = categoryFilter === "all" || athlete.category === categoryFilter;
-      const matchesGender = genderFilter === "all" || athlete.gender === genderFilter;
-      const matchesCity = cityFilter === "all" || athlete.city === cityFilter;
-      
-      let matchesPoints = true;
-      if (pointsFilter === "0-500") matchesPoints = athlete.points >= 0 && athlete.points < 500;
-      else if (pointsFilter === "500-1000") matchesPoints = athlete.points >= 500 && athlete.points < 1000;
-      else if (pointsFilter === "1000+") matchesPoints = athlete.points >= 1000;
-      
-      return matchesSearch && matchesCategory && matchesGender && matchesCity && matchesPoints;
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const filteredAthletes = useMemo(() => {
+    if (!athletes) return [];
+    return athletes
+      .filter(athlete => {
+        const matchesSearch = athlete.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+        const matchesCategory = categoryFilter === "all" || athlete.category === categoryFilter;
+        const matchesGender = genderFilter === "all" || athlete.gender === genderFilter;
+        const matchesCity = cityFilter === "all" || athlete.city === cityFilter;
+        
+        let matchesPoints = true;
+        if (pointsFilter === "0-500") matchesPoints = athlete.points >= 0 && athlete.points < 500;
+        else if (pointsFilter === "500-1000") matchesPoints = athlete.points >= 500 && athlete.points < 1000;
+        else if (pointsFilter === "1000+") matchesPoints = athlete.points >= 1000;
+        
+        return matchesSearch && matchesCategory && matchesGender && matchesCity && matchesPoints;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [athletes, debouncedSearch, categoryFilter, genderFilter, cityFilter, pointsFilter]);
 
   return (
     <div className="min-h-screen bg-background">
