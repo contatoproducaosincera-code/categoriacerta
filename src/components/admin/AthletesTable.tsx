@@ -202,7 +202,7 @@ export default function AthletesTable({
 
           return (
             <div key={category} className="space-y-2">
-              <div className="sticky top-0 z-10 bg-gradient-to-r from-primary/10 to-transparent border-l-4 border-primary px-4 py-2 rounded">
+              <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-l-4 border-primary px-4 py-3 rounded-t mb-2 shadow-sm">
                 <h3 className="font-bold text-lg flex items-center gap-2">
                   <Award className="h-5 w-5 text-primary" />
                   Categoria {category === "Iniciante" ? "Iniciante" : category}
@@ -214,7 +214,7 @@ export default function AthletesTable({
 
               <div className="border rounded-lg overflow-hidden">
                 <Table>
-                  <TableHeader className="sticky top-12 bg-background z-10">
+                  <TableHeader className="sticky top-[72px] bg-background z-[15] shadow-sm border-b">
                     <TableRow>
                       <TableHead className="w-12">
                         <Checkbox
