@@ -494,6 +494,34 @@ const Admin = () => {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async () => {
+      const athleteIds = Array.from(selectedAthletes);
+      
+      const { error } = await supabase
+        .from("athletes")
+        .delete()
+        .in("id", athleteIds);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
+      toast({
+        title: "Atletas excluídos!",
+        description: `${selectedAthletes.size} atleta(s) removido(s) do sistema`,
+      });
+      setSelectedAthletes(new Set());
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const toggleSelectAll = () => {
     const filteredAthletes = (athletes || []).filter(athlete => {
       const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -750,6 +778,21 @@ const Admin = () => {
                         </div>
                       </DialogContent>
                     </Dialog>
+
+                    <Button 
+                      size="sm" 
+                      variant="destructive" 
+                      onClick={() => {
+                        if (confirm(`Tem certeza que deseja excluir ${selectedAthletes.size} atleta(s)? Esta ação não pode ser desfeita.`)) {
+                          bulkDeleteMutation.mutate();
+                        }
+                      }}
+                      disabled={bulkDeleteMutation.isPending}
+                      className="gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {bulkDeleteMutation.isPending ? "Excluindo..." : "Excluir"}
+                    </Button>
 
                     <Button 
                       size="sm"
