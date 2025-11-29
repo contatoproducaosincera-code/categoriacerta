@@ -12,6 +12,7 @@ import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import QueryErrorBoundary from "@/components/QueryErrorBoundary";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -19,71 +20,115 @@ const Ranking = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
 
-  // Query principal de atletas - simplificada
-  const { data: athletes, isLoading, error } = useQuery({
-    queryKey: ["athletes", categoryFilter, genderFilter],
+  // Otimização: query única consolidada com aggregations
+  const { data: rankingData, isLoading, error } = useQuery({
+    queryKey: ["ranking-optimized", categoryFilter, genderFilter],
     queryFn: async () => {
-      let query = supabase
+      // Query principal de atletas
+      let athletesQuery = supabase
         .from("athletes")
         .select("*")
         .order("points", { ascending: false })
         .order("name", { ascending: true });
 
       if (categoryFilter !== "all") {
-        query = query.eq("category", categoryFilter as "C" | "D" | "Iniciante");
+        athletesQuery = athletesQuery.eq("category", categoryFilter as any);
       }
       
       if (genderFilter !== "all") {
-        query = query.eq("gender", genderFilter as "Masculino" | "Feminino");
+        athletesQuery = athletesQuery.eq("gender", genderFilter as any);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
+      const [athletesResult, achievementsResult, historyResult] = await Promise.all([
+        athletesQuery,
+        supabase.from("achievements").select("athlete_id, position"),
+        supabase.from("ranking_history")
+          .select("athlete_id, position, recorded_at")
+          .order("recorded_at", { ascending: false })
+          .limit(200) // Reduzido de 1000 para 200 para melhor performance
+      ]);
+
+      if (athletesResult.error) throw athletesResult.error;
+      
+      // Processar contagens de primeiros lugares
+      const firstPlaceCounts: Record<string, number> = {};
+      achievementsResult.data?.forEach((achievement) => {
+        if (achievement.position === 1) {
+          firstPlaceCounts[achievement.athlete_id] = (firstPlaceCounts[achievement.athlete_id] || 0) + 1;
+        }
+      });
+
+      // Processar mudanças de ranking
+      const positionChanges: Record<string, number> = {};
+      const athletePositions: Record<string, number[]> = {};
+      
+      historyResult.data?.forEach((record) => {
+        if (!athletePositions[record.athlete_id]) {
+          athletePositions[record.athlete_id] = [];
+        }
+        if (athletePositions[record.athlete_id].length < 2) {
+          athletePositions[record.athlete_id].push(record.position);
+        }
+      });
+      
+      Object.keys(athletePositions).forEach((athleteId) => {
+        const positions = athletePositions[athleteId];
+        if (positions.length === 2) {
+          positionChanges[athleteId] = positions[1] - positions[0];
+        }
+      });
+
+      return {
+        athletes: athletesResult.data || [],
+        firstPlaceCounts,
+        positionChanges
+      };
     },
-    staleTime: 30000,
-    gcTime: 300000,
-    retry: 2,
+    staleTime: 30000, // Cache por 30 segundos
+    gcTime: 300000, // Manter em cache por 5 minutos
   });
 
-  // Query de achievements (opcional, não bloqueia renderização)
-  const { data: achievements } = useQuery({
-    queryKey: ["achievements"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("achievements")
-        .select("athlete_id, position");
-      return data || [];
-    },
-    staleTime: 60000,
-    retry: false,
-  });
-
-  // Processar contagens de primeiros lugares
-  const firstPlaceCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    achievements?.forEach((achievement) => {
-      if (achievement.position === 1) {
-        counts[achievement.athlete_id] = (counts[achievement.athlete_id] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [achievements]);
+  const athletes = rankingData?.athletes;
+  const firstPlaceCounts = rankingData?.firstPlaceCounts;
+  const positionChanges = rankingData?.positionChanges;
 
   const getAthleteFirstPlaces = (athleteId: string) => {
     return firstPlaceCounts?.[athleteId] || 0;
   };
 
-  // Debounce search
+  const getRankingChange = (athleteId: string) => {
+    return positionChanges?.[athleteId] || 0;
+  };
+
+  const getRankingChangeIcon = (change: number) => {
+    if (change > 0) {
+      return (
+        <div className="flex items-center gap-1 text-green-600 animate-fade-in">
+          <ArrowUp className="h-3 w-3" />
+          <span className="text-xs font-semibold">+{change}</span>
+        </div>
+      );
+    } else if (change < 0) {
+      return (
+        <div className="flex items-center gap-1 text-red-600 animate-fade-in">
+          <ArrowDown className="h-3 w-3" />
+          <span className="text-xs font-semibold">{change}</span>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Debounce search para melhor performance
   const debouncedSearch = useDebounce(searchTerm, 300);
   
-  // Extrair cidades
+  // Extrair cidades únicas dos atletas
   const availableCities = useMemo(() => {
     if (!athletes) return [];
     return [...new Set(athletes.map(a => a.city))].sort();
   }, [athletes]);
   
-  // Filtrar atletas
+  // Filter athletes by search term com useMemo
   const filteredAthletes = useMemo(() => {
     if (!athletes) return [];
     return athletes.filter(athlete => {
@@ -94,15 +139,15 @@ const Ranking = () => {
   }, [athletes, debouncedSearch, selectedCities]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <section className="py-12">
+    <QueryErrorBoundary>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        
+        <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="mb-6">
             <BackButton />
           </div>
-          
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Ranking Geral
@@ -122,7 +167,6 @@ const Ranking = () => {
                   className="pl-10"
                 />
               </div>
-              
               <Select value={genderFilter} onValueChange={setGenderFilter}>
                 <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="Gênero" />
@@ -133,7 +177,6 @@ const Ranking = () => {
                   <SelectItem value="Feminino">👩 Feminino</SelectItem>
                 </SelectContent>
               </Select>
-              
               <MultiSelect
                 options={availableCities}
                 selected={selectedCities}
@@ -141,7 +184,6 @@ const Ranking = () => {
                 placeholder="Todas as Cidades"
                 className="w-full md:w-[250px]"
               />
-              
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full md:w-[250px]">
                   <SelectValue placeholder="Filtrar por categoria" />
@@ -186,7 +228,7 @@ const Ranking = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAthletes.map((athlete, index) => (
+                    {(filteredAthletes || []).map((athlete, index) => (
                       <TableRow 
                         key={athlete.id}
                         className="hover:bg-accent/50 transition-colors"
@@ -217,6 +259,7 @@ const Ranking = () => {
                               {getAthleteFirstPlaces(athlete.id) >= 3 && (
                                 <BadgeCheck className="h-4 w-4 text-primary animate-scale-in" />
                               )}
+                              {getRankingChangeIcon(getRankingChange(athlete.id))}
                             </span>
                           </AthleteAchievementsDialog>
                         </TableCell>
@@ -267,6 +310,7 @@ const Ranking = () => {
         </div>
       </section>
     </div>
+    </QueryErrorBoundary>
   );
 };
 
