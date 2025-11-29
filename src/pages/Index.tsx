@@ -1,6 +1,5 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import TopThreeAthletes from "@/components/TopThreeAthletes";
 import { Award, TrendingUp, Users, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -32,7 +31,6 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
-      <TopThreeAthletes />
       
       {/* Features Section */}
       <section className="py-24 bg-muted/30 relative overflow-hidden">
