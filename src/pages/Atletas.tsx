@@ -8,10 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Search, MapPin } from "lucide-react";
+import { Search, MapPin, Trophy, BadgeCheck } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
-import { BadgeCheck } from "lucide-react";
 import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import QueryErrorBoundary from "@/components/QueryErrorBoundary";
@@ -115,72 +114,82 @@ const Atletas = () => {
       <div className="min-h-screen bg-background">
         <Navbar />
         
-        <section className="py-12 bg-gradient-to-b from-primary/10 to-transparent">
-        <div className="container mx-auto px-4">
-          <div className="mb-6">
+        <section className="py-12 lg:py-16 bg-gradient-to-b from-primary/10 to-transparent">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 lg:mb-8">
             <BackButton />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">
-            Atletas Cadastrados
-          </h1>
-          <p className="text-center text-muted-foreground text-lg mb-8">
-            Conheça os atletas do ranking
-          </p>
+          <div className="text-center mb-8 lg:mb-12">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 lg:mb-4">
+              Atletas Cadastrados
+            </h1>
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
+              Conheça os atletas do ranking e acompanhe sua evolução
+            </p>
+          </div>
 
-          <div className="max-w-4xl mx-auto mb-12 space-y-4 relative z-10">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar atleta..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+          <div className="max-w-6xl mx-auto mb-8 lg:mb-12 space-y-4 lg:space-y-6">
+            <div className="bg-card/80 backdrop-blur-sm rounded-xl shadow-medium border-2 border-border/50 p-4 lg:p-6">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Filtros de Busca
+              </h3>
+              <div className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar atleta por nome..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 h-12 text-base"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+                  <Select value={genderFilter} onValueChange={setGenderFilter}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Gênero" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-[100]">
+                      <SelectItem value="all">Todos os Gêneros</SelectItem>
+                      <SelectItem value="Masculino">🧔 Masculino</SelectItem>
+                      <SelectItem value="Feminino">👩 Feminino</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Categoria" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-[100]">
+                      <SelectItem value="all">Todas Categorias</SelectItem>
+                      <SelectItem value="C">Categoria C</SelectItem>
+                      <SelectItem value="D">Categoria D</SelectItem>
+                      <SelectItem value="Iniciante">Iniciante</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <MultiSelect
+                    options={cities}
+                    selected={selectedCities}
+                    onChange={setSelectedCities}
+                    placeholder="Todas as Cidades"
+                    className="h-11"
+                  />
+
+                  <Select value={pointsFilter} onValueChange={setPointsFilter}>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Pontuação" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background z-[100]">
+                      <SelectItem value="all">Todas Pontuações</SelectItem>
+                      <SelectItem value="0-500">0 - 499 pontos</SelectItem>
+                      <SelectItem value="500-1000">500 - 999 pontos</SelectItem>
+                      <SelectItem value="1000+">1000+ pontos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <Select value={genderFilter} onValueChange={setGenderFilter}>
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Gênero" />
-                </SelectTrigger>
-                <SelectContent className="bg-background z-[100]">
-                  <SelectItem value="all">Todos os Gêneros</SelectItem>
-                  <SelectItem value="Masculino">🧔 Masculino</SelectItem>
-                  <SelectItem value="Feminino">👩 Feminino</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent className="bg-background z-[100]">
-                  <SelectItem value="all">Todas Categorias</SelectItem>
-                  <SelectItem value="C">Categoria C</SelectItem>
-                  <SelectItem value="D">Categoria D</SelectItem>
-                  <SelectItem value="Iniciante">Iniciante</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex flex-col md:flex-row gap-4">
-              <MultiSelect
-                options={cities}
-                selected={selectedCities}
-                onChange={setSelectedCities}
-                placeholder="Todas as Cidades"
-                className="w-full md:w-[250px]"
-              />
-
-              <Select value={pointsFilter} onValueChange={setPointsFilter}>
-                <SelectTrigger className="w-full md:w-[250px]">
-                  <SelectValue placeholder="Filtrar por pontuação" />
-                </SelectTrigger>
-                <SelectContent className="bg-background z-[100]">
-                  <SelectItem value="all">Todas Pontuações</SelectItem>
-                  <SelectItem value="0-500">0 - 499 pontos (Iniciante)</SelectItem>
-                  <SelectItem value="500-1000">500 - 999 pontos (D)</SelectItem>
-                  <SelectItem value="1000+">1000+ pontos (C)</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
@@ -201,7 +210,7 @@ const Atletas = () => {
               <p className="text-muted-foreground text-lg">Nenhum atleta encontrado com os filtros selecionados.</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto relative z-0 mt-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 max-w-7xl mx-auto">
               {filteredAthletes.map((athlete) => (
                 <AthleteAchievementsDialog
                   key={athlete.id}
@@ -210,43 +219,48 @@ const Atletas = () => {
                   athletePoints={athlete.points}
                   athleteCategory={athlete.category}
                 >
-                  <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="hover:text-primary transition-colors flex items-center gap-2">
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer border-2 hover:border-primary/30 group">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-start justify-between gap-2">
+                        <span className="text-lg group-hover:text-primary transition-colors flex items-center gap-2 flex-1">
                           {athlete.name}
                           {getAthleteFirstPlaces(athlete.id) >= 3 && (
-                            <BadgeCheck className="h-5 w-5 text-primary animate-scale-in" />
+                            <BadgeCheck className="h-5 w-5 text-primary animate-scale-in flex-shrink-0" />
                           )}
                         </span>
-                        <Badge variant={
-                          athlete.category === "C" ? "default" :
-                          athlete.category === "D" ? "secondary" : "outline"
-                        }>
+                        <Badge 
+                          variant={
+                            athlete.category === "C" ? "default" :
+                            athlete.category === "D" ? "secondary" : "outline"
+                          }
+                          className="text-xs font-bold"
+                        >
                           {athlete.category}
                         </Badge>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center text-muted-foreground mb-2">
-                        <MapPin className="h-4 w-4 mr-2" />
-                        {athlete.city}
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                        <span className="truncate">{athlete.city}</span>
                       </div>
-                      <div className="text-2xl font-bold text-primary mb-3">
-                        {athlete.points} pontos
+                      <div className="text-3xl font-black text-primary">
+                        {athlete.points}
+                        <span className="text-sm font-medium text-muted-foreground ml-1">pts</span>
                       </div>
                       {(() => {
                         const progress = getCategoryProgress(athlete.points, athlete.category);
                         return progress.nextCategory ? (
-                          <div className="space-y-2">
-                            <Progress value={progress.progress} className="h-2" />
-                            <p className="text-xs text-muted-foreground">
-                              Faltam <span className="font-semibold text-foreground">{progress.remaining} pts</span> para categoria {progress.nextCategory}
+                          <div className="space-y-2 pt-2 border-t">
+                            <Progress value={progress.progress} className="h-2.5" />
+                            <p className="text-xs text-muted-foreground leading-tight">
+                              <span className="font-bold text-foreground">{progress.remaining} pts</span> para categoria {progress.nextCategory}
                             </p>
                           </div>
                         ) : (
-                          <p className="text-xs font-medium text-primary">
-                            🏆 Categoria máxima alcançada
+                          <p className="text-xs font-bold text-primary pt-2 border-t flex items-center gap-1">
+                            <Trophy className="h-3.5 w-3.5" />
+                            Categoria máxima
                           </p>
                         );
                       })()}

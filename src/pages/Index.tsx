@@ -33,14 +33,14 @@ const Index = () => {
       <HeroSection />
       
       {/* Features Section */}
-      <section className="py-24 bg-muted/30 relative overflow-hidden">
+      <section className="py-20 lg:py-28 bg-muted/30 relative overflow-hidden">
         <div className="absolute inset-0 bg-[var(--gradient-glow)] opacity-50" />
-        <div className="container mx-auto px-4 relative">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-12 lg:mb-20 animate-fade-in-up">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-4 lg:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Por que Categoria Certa?
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
               A plataforma mais completa para gerenciar sua carreira no beach tennis
             </p>
           </div>
@@ -70,16 +70,16 @@ const Index = () => {
       </section>
 
       {/* About Section */}
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto animate-fade-in-up">
-            <h2 className="text-4xl md:text-5xl font-display font-bold mb-6">
+      <section className="py-20 lg:py-28 bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-4xl mx-auto animate-fade-in-up">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 lg:mb-8">
               Sobre o Categoria Certa
             </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed mb-12 lg:mb-16 max-w-3xl mx-auto px-4">
               Plataforma oficial para acompanhar atletas de beach tennis, 
               registrar conquistas e acompanhar a evolução de cada jogador. 
-              Sistema simples de categorias: a cada 500 pontos você sobe uma categoria!
+              Sistema simples de categorias: <strong className="text-foreground">a cada 500 pontos você sobe uma categoria!</strong>
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-3xl mx-auto">
               {[
