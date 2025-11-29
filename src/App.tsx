@@ -16,7 +16,24 @@ import Offline from "./pages/Offline";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30000, // 30 segundos
+      gcTime: 300000, // 5 minutos
+      refetchOnWindowFocus: false,
+      retry: (failureCount, error) => {
+        // Não retentar em erros de autenticação
+        if (error && typeof error === 'object' && 'code' in error) {
+          const code = (error as any).code;
+          if (code === 'PGRST301' || code === 'PGRST116') return false;
+        }
+        return failureCount < 2;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

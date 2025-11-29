@@ -14,6 +14,7 @@ import BackButton from "@/components/BackButton";
 import { BadgeCheck } from "lucide-react";
 import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import QueryErrorBoundary from "@/components/QueryErrorBoundary";
 
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,7 +47,7 @@ const Atletas = () => {
   };
 
   // Otimização: query consolidada com select específico
-  const { data: athletesData, isLoading } = useQuery({
+  const { data: athletesData, isLoading, error } = useQuery({
     queryKey: ["athletes-optimized"],
     queryFn: async () => {
       const [athletesResult, achievementsResult] = await Promise.all([
@@ -110,10 +111,11 @@ const Atletas = () => {
   }, [athletes, debouncedSearch, categoryFilter, genderFilter, selectedCities, pointsFilter]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <section className="py-12 bg-gradient-to-b from-primary/10 to-transparent">
+    <QueryErrorBoundary>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        
+        <section className="py-12 bg-gradient-to-b from-primary/10 to-transparent">
         <div className="container mx-auto px-4">
           <div className="mb-6">
             <BackButton />
@@ -184,6 +186,20 @@ const Atletas = () => {
 
           {isLoading ? (
             <LoadingSpinner message="Carregando atletas..." />
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-500 mb-4">Erro ao carregar atletas. Por favor, tente novamente.</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Recarregar Página
+              </button>
+            </div>
+          ) : !filteredAthletes || filteredAthletes.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">Nenhum atleta encontrado com os filtros selecionados.</p>
+            </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {filteredAthletes.map((athlete) => (
@@ -243,6 +259,7 @@ const Atletas = () => {
         </div>
       </section>
     </div>
+    </QueryErrorBoundary>
   );
 };
 

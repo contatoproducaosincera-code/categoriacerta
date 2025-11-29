@@ -7,7 +7,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { memo } from "react";
 
 const TopThreeAthletes = () => {
-  const { data: athletes, isLoading } = useQuery({
+  const { data: athletes, isLoading, error } = useQuery({
     queryKey: ["top-three-athletes"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -31,6 +31,11 @@ const TopThreeAthletes = () => {
         </div>
       </section>
     );
+  }
+
+  if (error) {
+    console.error("Error loading top athletes:", error);
+    return null;
   }
 
   if (!athletes || athletes.length === 0) {
