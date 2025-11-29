@@ -7,10 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Trophy, Search, BadgeCheck, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { Trophy, Search, BadgeCheck, ArrowUp, ArrowDown } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 import { MultiSelect } from "@/components/ui/multi-select";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -40,7 +41,10 @@ const Ranking = () => {
       const [athletesResult, achievementsResult, historyResult] = await Promise.all([
         athletesQuery,
         supabase.from("achievements").select("athlete_id, position"),
-        supabase.from("ranking_history").select("athlete_id, position, recorded_at").order("recorded_at", { ascending: false }).limit(1000)
+        supabase.from("ranking_history")
+          .select("athlete_id, position, recorded_at")
+          .order("recorded_at", { ascending: false })
+          .limit(200) // Reduzido de 1000 para 200 para melhor performance
       ]);
 
       if (athletesResult.error) throw athletesResult.error;
@@ -193,9 +197,7 @@ const Ranking = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Carregando ranking...</p>
-            </div>
+            <LoadingSpinner message="Carregando ranking..." />
           ) : (
             <>
               <div className="max-w-4xl mx-auto bg-card rounded-lg border shadow-lg overflow-hidden">

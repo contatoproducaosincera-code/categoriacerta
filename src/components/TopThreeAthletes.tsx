@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Trophy, Medal } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { memo } from "react";
 
 const TopThreeAthletes = () => {
   const { data: athletes, isLoading } = useQuery({
@@ -10,20 +12,22 @@ const TopThreeAthletes = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("athletes")
-        .select("*")
+        .select("id, name, points, city, category")
         .order("points", { ascending: false })
         .limit(3);
 
       if (error) throw error;
       return data;
     },
+    staleTime: 60000, // Cache por 1 minuto
+    gcTime: 300000, // Manter em cache por 5 minutos
   });
 
   if (isLoading) {
     return (
       <section className="py-16 bg-accent/30">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">Carregando...</p>
+        <div className="container mx-auto px-4">
+          <LoadingSpinner message="Carregando ranking..." />
         </div>
       </section>
     );
@@ -93,4 +97,4 @@ const TopThreeAthletes = () => {
   );
 };
 
-export default TopThreeAthletes;
+export default memo(TopThreeAthletes);
