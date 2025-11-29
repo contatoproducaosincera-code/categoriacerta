@@ -127,7 +127,7 @@ const Atletas = () => {
             Conheça os atletas do ranking
           </p>
 
-          <div className="max-w-4xl mx-auto mb-8 space-y-4">
+          <div className="max-w-4xl mx-auto mb-12 space-y-4 relative z-10">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
@@ -142,7 +142,7 @@ const Atletas = () => {
                 <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="Gênero" />
                 </SelectTrigger>
-                <SelectContent className="bg-background z-50">
+                <SelectContent className="bg-background z-[100]">
                   <SelectItem value="all">Todos os Gêneros</SelectItem>
                   <SelectItem value="Masculino">🧔 Masculino</SelectItem>
                   <SelectItem value="Feminino">👩 Feminino</SelectItem>
@@ -152,7 +152,7 @@ const Atletas = () => {
                 <SelectTrigger className="w-full md:w-[200px]">
                   <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
-                <SelectContent className="bg-background z-50">
+                <SelectContent className="bg-background z-[100]">
                   <SelectItem value="all">Todas Categorias</SelectItem>
                   <SelectItem value="C">Categoria C</SelectItem>
                   <SelectItem value="D">Categoria D</SelectItem>
@@ -174,7 +174,7 @@ const Atletas = () => {
                 <SelectTrigger className="w-full md:w-[250px]">
                   <SelectValue placeholder="Filtrar por pontuação" />
                 </SelectTrigger>
-                <SelectContent className="bg-background z-50">
+                <SelectContent className="bg-background z-[100]">
                   <SelectItem value="all">Todas Pontuações</SelectItem>
                   <SelectItem value="0-500">0 - 499 pontos (Iniciante)</SelectItem>
                   <SelectItem value="500-1000">500 - 999 pontos (D)</SelectItem>
@@ -201,7 +201,7 @@ const Atletas = () => {
               <p className="text-muted-foreground text-lg">Nenhum atleta encontrado com os filtros selecionados.</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto relative z-0 mt-8">
               {filteredAthletes.map((athlete) => (
                 <AthleteAchievementsDialog
                   key={athlete.id}
