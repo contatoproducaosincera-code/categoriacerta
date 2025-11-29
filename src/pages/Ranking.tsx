@@ -12,6 +12,7 @@ import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import QueryErrorBoundary from "@/components/QueryErrorBoundary";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -20,7 +21,7 @@ const Ranking = () => {
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
 
   // Otimização: query única consolidada com aggregations
-  const { data: rankingData, isLoading } = useQuery({
+  const { data: rankingData, isLoading, error } = useQuery({
     queryKey: ["ranking-optimized", categoryFilter, genderFilter],
     queryFn: async () => {
       // Query principal de atletas
@@ -138,10 +139,11 @@ const Ranking = () => {
   }, [athletes, debouncedSearch, selectedCities]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <section className="py-12">
+    <QueryErrorBoundary>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        
+        <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="mb-6">
             <BackButton />
@@ -198,6 +200,20 @@ const Ranking = () => {
 
           {isLoading ? (
             <LoadingSpinner message="Carregando ranking..." />
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-500 mb-4">Erro ao carregar ranking. Por favor, tente novamente.</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+              >
+                Recarregar Página
+              </button>
+            </div>
+          ) : !filteredAthletes || filteredAthletes.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg">Nenhum atleta encontrado com os filtros selecionados.</p>
+            </div>
           ) : (
             <>
               <div className="max-w-4xl mx-auto bg-card rounded-lg border shadow-lg overflow-hidden">
@@ -294,6 +310,7 @@ const Ranking = () => {
         </div>
       </section>
     </div>
+    </QueryErrorBoundary>
   );
 };
 
