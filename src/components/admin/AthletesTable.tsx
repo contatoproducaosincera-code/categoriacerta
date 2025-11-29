@@ -63,6 +63,7 @@ export default function AthletesTable({
   const { toast } = useToast();
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   // Fuzzy search function
@@ -93,6 +94,20 @@ export default function AthletesTable({
     [athletes]
   );
 
+  // Detectar nomes duplicados
+  const duplicateNames = useMemo(() => {
+    const nameCount = new Map<string, number>();
+    athletes.forEach(athlete => {
+      const count = nameCount.get(athlete.name) || 0;
+      nameCount.set(athlete.name, count + 1);
+    });
+    return new Set(
+      Array.from(nameCount.entries())
+        .filter(([_, count]) => count > 1)
+        .map(([name, _]) => name)
+    );
+  }, [athletes]);
+
   // Filtrar e agrupar atletas por categoria
   const groupedAthletes = useMemo(() => {
     const filtered = athletes.filter(athlete => {
@@ -101,7 +116,8 @@ export default function AthletesTable({
                            fuzzyMatch(athlete.category, debouncedSearch);
       const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
       const matchesCity = adminCityFilter.length === 0 || adminCityFilter.includes(athlete.city);
-      return matchesSearch && matchesGender && matchesCity;
+      const matchesDuplicates = !showDuplicatesOnly || duplicateNames.has(athlete.name);
+      return matchesSearch && matchesGender && matchesCity && matchesDuplicates;
     });
 
     // Ordenar
@@ -133,10 +149,10 @@ export default function AthletesTable({
     });
 
     return groups;
-  }, [athletes, debouncedSearch, adminGenderFilter, adminCityFilter, sortField, sortOrder]);
+  }, [athletes, debouncedSearch, adminGenderFilter, adminCityFilter, showDuplicatesOnly, duplicateNames, sortField, sortOrder]);
 
   const totalFiltered = Object.values(groupedAthletes).flat().length;
-  const hasActiveFilters = adminGenderFilter !== "all" || adminCityFilter.length > 0 || searchTerm !== "";
+  const hasActiveFilters = adminGenderFilter !== "all" || adminCityFilter.length > 0 || searchTerm !== "" || showDuplicatesOnly;
 
   return (
     <div className="space-y-4">
@@ -175,8 +191,24 @@ export default function AthletesTable({
           placeholder="Todas as Cidades"
           className="w-full sm:w-[200px]"
         />
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="show-duplicates"
+            checked={showDuplicatesOnly}
+            onCheckedChange={(checked) => setShowDuplicatesOnly(checked === true)}
+          />
+          <Label htmlFor="show-duplicates" className="text-sm cursor-pointer">
+            Apenas duplicados ({duplicateNames.size} nomes)
+          </Label>
+        </div>
         {hasActiveFilters && (
-          <Button variant="outline" onClick={onClearFilters}>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              onClearFilters();
+              setShowDuplicatesOnly(false);
+            }}
+          >
             Limpar Filtros
           </Button>
         )}
