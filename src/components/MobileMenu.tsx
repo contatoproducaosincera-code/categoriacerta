@@ -70,13 +70,6 @@ const MobileMenu = () => {
               >
                 Torneios
               </Link>
-              <Link
-                to="/install"
-                className="px-4 py-3 rounded-lg text-sm font-medium transition-all hover:bg-secondary/20 hover:text-secondary border border-secondary/30 flex items-center gap-2"
-                onClick={() => setIsOpen(false)}
-              >
-                Instalar App
-              </Link>
               {user ? (
                 <>
                   <Button className="mt-4" asChild>

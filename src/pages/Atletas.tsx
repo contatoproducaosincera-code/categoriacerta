@@ -13,6 +13,7 @@ import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 import { BadgeCheck } from "lucide-react";
 import { MultiSelect } from "@/components/ui/multi-select";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,12 +45,15 @@ const Atletas = () => {
     };
   };
 
-  // Otimização: query consolidada
+  // Otimização: query consolidada com select específico
   const { data: athletesData, isLoading } = useQuery({
     queryKey: ["athletes-optimized"],
     queryFn: async () => {
       const [athletesResult, achievementsResult] = await Promise.all([
-        supabase.from("athletes").select("*").order("points", { ascending: false }),
+        supabase
+          .from("athletes")
+          .select("id, name, points, category, city, gender")
+          .order("points", { ascending: false }),
         supabase.from("achievements").select("athlete_id, position")
       ]);
 
@@ -68,8 +72,8 @@ const Atletas = () => {
         firstPlaceCounts
       };
     },
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 30000, // Cache por 30 segundos
+    gcTime: 300000, // Manter em cache por 5 minutos
   });
 
   const athletes = athletesData?.athletes;
@@ -179,9 +183,7 @@ const Atletas = () => {
           </div>
 
           {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Carregando atletas...</p>
-            </div>
+            <LoadingSpinner message="Carregando atletas..." />
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {filteredAthletes.map((athlete) => (
