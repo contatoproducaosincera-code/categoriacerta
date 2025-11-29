@@ -97,37 +97,37 @@ const Ranking = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="mb-6">
+      <section className="py-12 lg:py-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 lg:mb-8">
             <BackButton />
           </div>
           
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <div className="text-center mb-10 lg:mb-14">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 lg:mb-5">
               Ranking Geral
             </h1>
-            <p className="text-muted-foreground text-lg mb-6">
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 lg:mb-10 max-w-2xl mx-auto px-4">
               Acompanhe sua evolução e suba de categoria
             </p>
             
-            <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
-              <div className="relative w-full md:w-[300px]">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <div className="flex flex-col sm:flex-row gap-3 lg:gap-4 justify-center items-stretch sm:items-center flex-wrap">
+              <div className="relative w-full sm:w-auto sm:min-w-[280px] lg:min-w-[320px]">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                 <Input
                   type="text"
-                  placeholder="Buscar atleta..."
+                  placeholder="Buscar atleta por nome..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-11 h-12 text-base shadow-sm"
                 />
               </div>
               
               <Select value={genderFilter} onValueChange={setGenderFilter}>
-                <SelectTrigger className="w-full md:w-[200px]">
+                <SelectTrigger className="w-full sm:w-[180px] lg:w-[200px] h-12">
                   <SelectValue placeholder="Gênero" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background z-[100]">
                   <SelectItem value="all">Todos os Gêneros</SelectItem>
                   <SelectItem value="Masculino">🧔 Masculino</SelectItem>
                   <SelectItem value="Feminino">👩 Feminino</SelectItem>
@@ -139,14 +139,14 @@ const Ranking = () => {
                 selected={selectedCities}
                 onChange={setSelectedCities}
                 placeholder="Todas as Cidades"
-                className="w-full md:w-[250px]"
+                className="w-full sm:w-[200px] lg:w-[240px] h-12"
               />
               
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full md:w-[250px]">
-                  <SelectValue placeholder="Filtrar por categoria" />
+                <SelectTrigger className="w-full sm:w-[180px] lg:w-[200px] h-12">
+                  <SelectValue placeholder="Categoria" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background z-[100]">
                   <SelectItem value="all">Todas Categorias</SelectItem>
                   <SelectItem value="C">Categoria C</SelectItem>
                   <SelectItem value="D">Categoria D</SelectItem>
