@@ -1,13 +1,12 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Trophy, Search, BadgeCheck, ArrowUp, ArrowDown } from "lucide-react";
+import { Trophy, Search } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -19,13 +18,13 @@ const Ranking = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
 
-  // Query principal de atletas - simplificada
+  // Query otimizada
   const { data: athletes, isLoading, error } = useQuery({
     queryKey: ["athletes", categoryFilter, genderFilter],
     queryFn: async () => {
       let query = supabase
         .from("athletes")
-        .select("*")
+        .select("id, name, city, category, gender, points")
         .order("points", { ascending: false })
         .order("name", { ascending: true });
 
@@ -41,57 +40,23 @@ const Ranking = () => {
       if (error) throw error;
       return data || [];
     },
-    staleTime: 30000,
-    gcTime: 300000,
-    retry: 2,
-  });
-
-  // Query de achievements (opcional, não bloqueia renderização)
-  const { data: achievements } = useQuery({
-    queryKey: ["achievements"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("achievements")
-        .select("athlete_id, position");
-      return data || [];
-    },
     staleTime: 60000,
-    retry: false,
+    gcTime: 600000,
   });
-
-  // Processar contagens de primeiros lugares
-  const firstPlaceCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    achievements?.forEach((achievement) => {
-      if (achievement.position === 1) {
-        counts[achievement.athlete_id] = (counts[achievement.athlete_id] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [achievements]);
-
-  const getAthleteFirstPlaces = (athleteId: string) => {
-    return firstPlaceCounts?.[athleteId] || 0;
-  };
-
-  // Debounce search
-  const debouncedSearch = useDebounce(searchTerm, 300);
   
-  // Extrair cidades
-  const availableCities = useMemo(() => {
-    if (!athletes) return [];
-    return [...new Set(athletes.map(a => a.city))].sort();
-  }, [athletes]);
-  
-  // Filtrar atletas
-  const filteredAthletes = useMemo(() => {
-    if (!athletes) return [];
-    return athletes.filter(athlete => {
-      const matchesSearch = athlete.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+  // Extrair cidades e filtrar atletas
+  const { availableCities, filteredAthletes } = useMemo(() => {
+    if (!athletes) return { availableCities: [], filteredAthletes: [] };
+    
+    const cities = [...new Set(athletes.map(a => a.city))].sort();
+    const filtered = athletes.filter(athlete => {
+      const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCity = selectedCities.length === 0 || selectedCities.includes(athlete.city);
       return matchesSearch && matchesCity;
     });
-  }, [athletes, debouncedSearch, selectedCities]);
+    
+    return { availableCities: cities, filteredAthletes: filtered };
+  }, [athletes, searchTerm, selectedCities]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -212,11 +177,8 @@ const Ranking = () => {
                             athletePoints={athlete.points}
                             athleteCategory={athlete.category}
                           >
-                            <span className="cursor-pointer hover:text-primary transition-colors hover:underline flex items-center gap-2">
+                            <span className="cursor-pointer hover:text-primary transition-colors hover:underline">
                               {athlete.name}
-                              {getAthleteFirstPlaces(athlete.id) >= 3 && (
-                                <BadgeCheck className="h-4 w-4 text-primary animate-scale-in" />
-                              )}
                             </span>
                           </AthleteAchievementsDialog>
                         </TableCell>
