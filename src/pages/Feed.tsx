@@ -1,168 +1,103 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import BackButton from "@/components/BackButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy, Medal, Calendar, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Calendar, Users, TrendingUp, Medal } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import BackButton from "@/components/BackButton";
-import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 const Feed = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, navigate]);
-
-  // Get current athlete
-  const { data: currentAthlete } = useQuery({
-    queryKey: ["current-athlete", user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      const { data, error } = await supabase
-        .from("athletes")
-        .select("id")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
-  });
-
-  // Top 3 Athletes
-  const { data: topAthletes, isLoading: topLoading } = useQuery({
-    queryKey: ["top-three-athletes"],
+  // Buscar top 3 atletas
+  const { data: topAthletes, isLoading: isLoadingTop } = useQuery({
+    queryKey: ["topAthletes"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("athletes")
-        .select("id, name, points, city, category")
+        .select("id, name, category, points, city")
         .order("points", { ascending: false })
         .limit(3);
-
+      
       if (error) throw error;
-      return data;
+      return data || [];
     },
     staleTime: 60000,
     gcTime: 300000,
   });
 
-  // Otimização: query única com join
-  const { data: feedItems = [], isLoading } = useQuery({
-    queryKey: ["feed-optimized", currentAthlete?.id],
+  // Buscar conquistas recentes de todos os atletas
+  const { data: feedItems, isLoading: isLoadingFeed } = useQuery({
+    queryKey: ["recentAchievements"],
     queryFn: async () => {
-      if (!currentAthlete?.id) return [];
-
-      // Query otimizada com join
       const { data: achievements, error } = await supabase
-        .from("follows")
+        .from("achievements")
         .select(`
-          following_id,
-          athletes!follows_following_id_fkey (
+          id,
+          tournament_name,
+          position,
+          points_awarded,
+          date,
+          athlete_id,
+          athletes!inner (
             id,
             name,
             category,
-            city
+            city,
+            points
           )
         `)
-        .eq("follower_id", currentAthlete.id);
-
-      if (error || !achievements || achievements.length === 0) return [];
-
-      const followedIds = achievements.map(f => f.following_id);
-
-      // Buscar conquistas dos seguidos
-      const { data: achievementsData, error: achievementsError } = await supabase
-        .from("achievements")
-        .select("*")
-        .in("athlete_id", followedIds)
         .order("date", { ascending: false })
-        .limit(50);
+        .limit(20);
 
-      if (achievementsError) throw achievementsError;
-
-      // Mapear atletas
-      const athletesMap = new Map(
-        achievements.map(a => [a.following_id, a.athletes])
-      );
-
-      return achievementsData?.map(achievement => ({
-        ...achievement,
-        athlete: athletesMap.get(achievement.athlete_id)
-      })) || [];
+      if (error) throw error;
+      return achievements || [];
     },
-    enabled: !!currentAthlete?.id,
     staleTime: 30000,
     gcTime: 300000,
   });
 
   const getPositionBadge = (position: number) => {
-    const colors: Record<number, string> = {
-      1: "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white",
-      2: "bg-gradient-to-r from-gray-400 to-gray-500 text-white",
-      3: "bg-gradient-to-r from-amber-700 to-amber-800 text-white",
+    const colors = {
+      1: "bg-yellow-500 text-white",
+      2: "bg-gray-400 text-white",
+      3: "bg-amber-600 text-white",
     };
-
-    return (
-      <Badge className={colors[position] || ""}>
-        {position}º Lugar
-      </Badge>
-    );
+    return colors[position as keyof typeof colors] || "bg-primary text-primary-foreground";
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="mb-6">
+      <section className="py-12 lg:py-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 lg:mb-8">
             <BackButton />
           </div>
           
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
+          <div className="text-center mb-10 lg:mb-14">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 lg:mb-5 flex items-center justify-center gap-3">
               <TrendingUp className="h-10 w-10 text-primary" />
-              Feed de Atualizações
+              Feed de Conquistas
             </h1>
-            <p className="text-muted-foreground text-lg">
-              Ranking geral e conquistas dos atletas que você segue
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
+              Acompanhe as conquistas recentes e o top 3 do ranking
             </p>
           </div>
 
           {/* Top 3 do Ranking */}
-          {topLoading ? (
-            <div className="mb-12">
+          <div className="mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 lg:mb-8 text-center">
+              Top 3 do Ranking
+            </h2>
+            
+            {isLoadingTop ? (
               <LoadingSpinner message="Carregando ranking..." />
-            </div>
-          ) : topAthletes && topAthletes.length > 0 ? (
-            <div className="mb-12">
-              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-                Top 3 do Ranking
-              </h2>
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            ) : topAthletes && topAthletes.length > 0 ? (
+              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
                 {topAthletes.map((athlete, index) => (
                   <AthleteAchievementsDialog
                     key={athlete.id}
@@ -172,7 +107,7 @@ const Feed = () => {
                     athleteCategory={athlete.category}
                   >
                     <Card
-                      className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2 cursor-pointer"
+                      className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2 cursor-pointer animate-fade-in"
                       style={{
                         background: index === 0 
                           ? 'linear-gradient(145deg, hsl(45 90% 60%), hsl(45 80% 55%))'
@@ -180,20 +115,18 @@ const Feed = () => {
                           ? 'linear-gradient(145deg, hsl(0 0% 85%), hsl(0 0% 75%))'
                           : 'linear-gradient(145deg, hsl(25 50% 55%), hsl(25 40% 45%))'
                       }}
-                      role="article"
-                      aria-label={`${athlete.name} - ${index + 1}º lugar no ranking`}
                     >
                       <div className="flex justify-center mb-4">
                         {index === 0 ? (
-                          <Trophy className="h-16 w-16 text-yellow-100" aria-label="Troféu de ouro - Primeiro lugar" />
+                          <Trophy className="h-16 w-16 text-yellow-100" />
                         ) : (
-                          <Medal className="h-16 w-16 text-white" aria-label={`Medalha - ${index + 1}º lugar`} />
+                          <Medal className="h-16 w-16 text-white" />
                         )}
                       </div>
                       <div className="text-6xl font-bold text-white mb-2">
                         {index + 1}º
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2 hover:scale-105 transition-transform">
+                      <h3 className="text-xl font-bold text-white mb-2">
                         {athlete.name}
                       </h3>
                       <p className="text-white/90 mb-1">{athlete.city}</p>
@@ -205,21 +138,30 @@ const Feed = () => {
                   </AthleteAchievementsDialog>
                 ))}
               </div>
-            </div>
-          ) : null}
-
-          {/* Feed de Conquistas */}
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center">
-              Conquistas Recentes
-            </h2>
-            
-            {isLoading ? (
+            ) : (
               <div className="text-center py-12">
-                <LoadingSpinner message="Carregando conquistas..." />
+                <p className="text-muted-foreground text-lg">Nenhum atleta no ranking ainda.</p>
               </div>
-            ) : feedItems && feedItems.length > 0 ? (
-              <div className="grid md:grid-cols-2 gap-4">
+            )}
+          </div>
+
+          {/* Conquistas Recentes */}
+          <div className="space-y-6 lg:space-y-8">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center">Conquistas Recentes</h2>
+            
+            {isLoadingFeed ? (
+              <LoadingSpinner message="Carregando conquistas..." />
+            ) : !feedItems || feedItems.length === 0 ? (
+              <Card className="bg-card/50 backdrop-blur border-2">
+                <CardContent className="pt-12 pb-12 text-center">
+                  <Medal className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-lg text-muted-foreground">
+                    Nenhuma conquista recente encontrada
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
                 {feedItems.map((item: any) => (
                   <Card key={item.id} className="hover:shadow-lg transition-all duration-300 animate-fade-in">
                     <CardHeader>
@@ -231,15 +173,17 @@ const Feed = () => {
                               item.position === 2 ? 'text-gray-400' :
                               'text-amber-600'
                             }`} />
-                            {item.athlete.name}
+                            {item.athletes.name}
                           </CardTitle>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                            <Badge variant="outline">{item.athlete.category}</Badge>
+                            <Badge variant="outline">{item.athletes.category}</Badge>
                             <span>•</span>
-                            <span>{item.athlete.city}</span>
+                            <span>{item.athletes.city}</span>
                           </div>
                         </div>
-                        {getPositionBadge(item.position)}
+                        <Badge className={getPositionBadge(item.position)}>
+                          {item.position}º Lugar
+                        </Badge>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -263,16 +207,6 @@ const Feed = () => {
                   </Card>
                 ))}
               </div>
-            ) : (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-xl font-semibold mb-2">Nenhuma conquista recente</h3>
-                  <p className="text-muted-foreground">
-                    Comece a seguir atletas para ver suas conquistas aqui!
-                  </p>
-                </CardContent>
-              </Card>
             )}
           </div>
         </div>
