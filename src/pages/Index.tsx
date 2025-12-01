@@ -2,8 +2,9 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import { Award, TrendingUp, Users, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { memo } from "react";
 
-const Index = () => {
+const Index = memo(() => {
   const features = [
     {
       icon: TrendingUp,
@@ -34,9 +35,8 @@ const Index = () => {
       
       {/* Features Section */}
       <section className="py-20 lg:py-28 bg-muted/30 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[var(--gradient-glow)] opacity-50" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-12 lg:mb-20 animate-fade-in-up">
+          <div className="text-center mb-12 lg:mb-20">
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-4 lg:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Por que Categoria Certa?
             </h2>
@@ -49,11 +49,10 @@ const Index = () => {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className="group hover:shadow-strong transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/50 bg-card/50 backdrop-blur-sm animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/50 bg-card/50 backdrop-blur-sm"
               >
                 <CardContent className="p-6 text-center">
-                  <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-medium">
+                  <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-4 group-hover:scale-110 transition-all">
                     <feature.icon className="h-7 w-7 text-primary-foreground" />
                   </div>
                   <h3 className="font-display font-semibold text-lg mb-2">
@@ -72,7 +71,7 @@ const Index = () => {
       {/* About Section */}
       <section className="py-20 lg:py-28 bg-background">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="max-w-4xl mx-auto animate-fade-in-up">
+          <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 lg:mb-8">
               Sobre o Categoria Certa
             </h2>
@@ -89,8 +88,7 @@ const Index = () => {
               ].map((category, index) => (
                 <div
                   key={index}
-                  className="p-8 rounded-2xl bg-gradient-to-br from-accent to-accent/50 border-2 border-border shadow-soft hover:shadow-strong transition-all hover:scale-105 animate-fade-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="p-8 rounded-2xl bg-gradient-to-br from-accent to-accent/50 border-2 border-border hover:shadow-lg transition-all hover:scale-105"
                 >
                   <div className="text-5xl mb-3">
                     {category.icon}
@@ -112,6 +110,8 @@ const Index = () => {
       </section>
     </div>
   );
-};
+});
+
+Index.displayName = "Index";
 
 export default Index;

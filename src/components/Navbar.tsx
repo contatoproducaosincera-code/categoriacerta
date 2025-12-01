@@ -3,8 +3,9 @@ import { Trophy, Users, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import MobileMenu from "./MobileMenu";
+import { memo } from "react";
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const location = useLocation();
   const { user, signOut } = useAuth();
   
@@ -17,13 +18,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-xl shadow-medium" role="navigation" aria-label="Menu principal">
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-xl shadow-sm" role="navigation" aria-label="Menu principal">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 lg:h-18 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 lg:gap-3 group" aria-label="Categoria Certa - Página inicial">
-          <div className="relative">
-            <Trophy className="h-7 w-7 lg:h-8 lg:w-8 text-primary transition-transform group-hover:scale-110 group-hover:rotate-12" aria-hidden="true" />
-            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-0 group-hover:scale-150 transition-transform" aria-hidden="true" />
-          </div>
+          <Trophy className="h-7 w-7 lg:h-8 lg:w-8 text-primary transition-transform group-hover:scale-110" aria-hidden="true" />
           <span className="font-display font-bold text-lg lg:text-xl xl:text-2xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             Categoria Certa
           </span>
@@ -34,7 +32,7 @@ const Navbar = () => {
             to="/"
             className={`px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all ${
               isActive("/")
-                ? "bg-primary text-primary-foreground shadow-glow scale-105"
+                ? "bg-primary text-primary-foreground scale-105"
                 : "hover:bg-accent/80 hover:text-accent-foreground hover:scale-105"
             }`}
           >
@@ -44,7 +42,7 @@ const Navbar = () => {
             to="/atletas"
             className={`px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all ${
               isActive("/atletas")
-                ? "bg-primary text-primary-foreground shadow-glow scale-105"
+                ? "bg-primary text-primary-foreground scale-105"
                 : "hover:bg-accent/80 hover:text-accent-foreground hover:scale-105"
             }`}
           >
@@ -54,7 +52,7 @@ const Navbar = () => {
             to="/ranking"
             className={`px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all ${
               isActive("/ranking")
-                ? "bg-primary text-primary-foreground shadow-glow scale-105"
+                ? "bg-primary text-primary-foreground scale-105"
                 : "hover:bg-accent/80 hover:text-accent-foreground hover:scale-105"
             }`}
           >
@@ -64,7 +62,7 @@ const Navbar = () => {
             to="/feed"
             className={`px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all flex items-center gap-1.5 ${
               isActive("/feed")
-                ? "bg-primary text-primary-foreground shadow-glow scale-105"
+                ? "bg-primary text-primary-foreground scale-105"
                 : "hover:bg-accent/80 hover:text-accent-foreground hover:scale-105"
             }`}
           >
@@ -75,7 +73,7 @@ const Navbar = () => {
             to="/torneios"
             className={`px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all ${
               isActive("/torneios")
-                ? "bg-primary text-primary-foreground shadow-glow scale-105"
+                ? "bg-primary text-primary-foreground scale-105"
                 : "hover:bg-accent/80 hover:text-accent-foreground hover:scale-105"
             }`}
           >
@@ -84,14 +82,14 @@ const Navbar = () => {
           {user ? (
             <>
               <Button 
-                className="ml-2 lg:ml-3 shadow-medium hover:shadow-strong transition-all hover:scale-105" 
+                className="ml-2 lg:ml-3 transition-all hover:scale-105" 
                 size="sm" 
                 asChild
               >
                 <Link to="/admin" className="font-semibold">Admin</Link>
               </Button>
               <Button 
-                className="ml-2 shadow-medium hover:shadow-strong transition-all hover:scale-105" 
+                className="ml-2 transition-all hover:scale-105" 
                 size="sm"
                 variant="outline"
                 onClick={handleAuthAction}
@@ -102,7 +100,7 @@ const Navbar = () => {
             </>
           ) : (
             <Button 
-              className="ml-2 lg:ml-3 shadow-medium hover:shadow-strong transition-all hover:scale-105 font-semibold" 
+              className="ml-2 lg:ml-3 transition-all hover:scale-105 font-semibold" 
               size="sm" 
               asChild
             >
@@ -118,6 +116,8 @@ const Navbar = () => {
       </div>
     </nav>
   );
-};
+});
+
+Navbar.displayName = "Navbar";
 
 export default Navbar;
