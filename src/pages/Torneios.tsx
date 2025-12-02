@@ -4,8 +4,9 @@ import Navbar from "@/components/Navbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, MessageCircle } from "lucide-react";
+import { Calendar, MapPin, MessageCircle, Trophy } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const Torneios = () => {
   const { data: tournaments, isLoading } = useQuery({
@@ -48,8 +49,22 @@ const Torneios = () => {
               {(tournaments || []).map((torneio) => (
                 <Card 
                   key={torneio.id}
-                  className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                 >
+                  {torneio.image_url && (
+                    <AspectRatio ratio={16 / 9}>
+                      <img
+                        src={torneio.image_url}
+                        alt={torneio.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </AspectRatio>
+                  )}
+                  {!torneio.image_url && (
+                    <div className="h-32 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                      <Trophy className="h-12 w-12 text-primary/40" />
+                    </div>
+                  )}
                   <CardHeader>
                     <div className="flex items-start justify-between mb-2">
                       <CardTitle className="text-xl">{torneio.name}</CardTitle>
