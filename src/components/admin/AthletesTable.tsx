@@ -2,14 +2,14 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Edit, Trash2, Award, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Edit, Trash2, Award, ArrowUpDown, ArrowUp, ArrowDown, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
+import ManageAchievementsDialog from "@/components/admin/ManageAchievementsDialog";
 import { useDebounce } from "@/hooks/useDebounce";
 import { MultiSelect } from "@/components/ui/multi-select";
 
@@ -335,6 +335,15 @@ export default function AthletesTable({
                               <Plus className="mr-1 h-3 w-3" />
                               Conquista
                             </Button>
+                            <ManageAchievementsDialog athlete={athlete}>
+                              <Button 
+                                size="sm" 
+                                variant="secondary"
+                                title="Gerenciar conquistas"
+                              >
+                                <History className="h-3 w-3" />
+                              </Button>
+                            </ManageAchievementsDialog>
                             <Button 
                               size="sm" 
                               variant="outline"
