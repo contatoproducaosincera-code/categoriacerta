@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
@@ -24,6 +24,7 @@ import { z } from "zod";
 import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import AthletesTable from "@/components/admin/AthletesTable";
+import TournamentImageUpload from "@/components/admin/TournamentImageUpload";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -72,6 +73,7 @@ const Admin = () => {
     location: "",
     category: "Iniciante" as "C" | "D" | "Iniciante",
     whatsapp: "",
+    image_url: null as string | null,
   });
 
   const [editTournament, setEditTournament] = useState({
@@ -81,6 +83,7 @@ const Admin = () => {
     location: "",
     category: "Iniciante" as "C" | "D" | "Iniciante" | "Todas",
     whatsapp: "",
+    image_url: null as string | null,
   });
 
   const [achievement, setAchievement] = useState({
@@ -240,6 +243,7 @@ const Admin = () => {
             location: validated.location,
             category: validated.category,
             whatsapp: validated.whatsapp || null,
+            image_url: newTournament.image_url || null,
           }]);
 
         if (error) throw error;
@@ -264,6 +268,7 @@ const Admin = () => {
         location: "", 
         category: "Iniciante",
         whatsapp: "",
+        image_url: null,
       });
     },
     onError: (error: any) => {
@@ -292,6 +297,7 @@ const Admin = () => {
             location: validated.location,
             category: validated.category,
             whatsapp: validated.whatsapp || null,
+            image_url: editTournament.image_url || null,
           })
           .eq("id", selectedTournament.id);
 
@@ -1086,6 +1092,10 @@ const Admin = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                    <TournamentImageUpload
+                      imageUrl={newTournament.image_url}
+                      onImageChange={(url) => setNewTournament({ ...newTournament, image_url: url })}
+                    />
                     <Button 
                       className="w-full" 
                       onClick={() => addTournamentMutation.mutate()}
@@ -1106,6 +1116,7 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Imagem</TableHead>
                       <TableHead>Nome</TableHead>
                       <TableHead>Data</TableHead>
                       <TableHead>Local</TableHead>
@@ -1117,6 +1128,19 @@ const Admin = () => {
                   <TableBody>
                     {(tournaments || []).map((tournament) => (
                       <TableRow key={tournament.id}>
+                        <TableCell>
+                          {tournament.image_url ? (
+                            <img 
+                              src={tournament.image_url} 
+                              alt={tournament.name}
+                              className="w-16 h-10 object-cover rounded"
+                            />
+                          ) : (
+                            <div className="w-16 h-10 bg-muted rounded flex items-center justify-center">
+                              <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="font-medium">{tournament.name}</TableCell>
                         <TableCell>{new Date(tournament.date).toLocaleDateString('pt-BR')}</TableCell>
                         <TableCell>{tournament.location}</TableCell>
@@ -1141,6 +1165,7 @@ const Admin = () => {
                                         location: tournament.location,
                                         category: tournament.category,
                                         whatsapp: tournament.whatsapp || "",
+                                        image_url: tournament.image_url || null,
                                       });
                                     }}
                                   >
@@ -1213,6 +1238,11 @@ const Admin = () => {
                                       </SelectContent>
                                     </Select>
                                   </div>
+                                  <TournamentImageUpload
+                                    imageUrl={editTournament.image_url}
+                                    onImageChange={(url) => setEditTournament({ ...editTournament, image_url: url })}
+                                    tournamentId={selectedTournament?.id}
+                                  />
                                   <Button
                                     className="w-full" 
                                     onClick={() => updateTournamentMutation.mutate()}

@@ -314,6 +314,7 @@ export type Database = {
           date: string
           description: string | null
           id: string
+          image_url: string | null
           location: string
           name: string
           whatsapp: string | null
@@ -324,6 +325,7 @@ export type Database = {
           date: string
           description?: string | null
           id?: string
+          image_url?: string | null
           location: string
           name: string
           whatsapp?: string | null
@@ -334,6 +336,7 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           location?: string
           name?: string
           whatsapp?: string | null
