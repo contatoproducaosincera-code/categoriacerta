@@ -65,6 +65,15 @@
       }
     }
     </script>
+    <!-- Theme initialization script to prevent flash -->
+    <script>
+      (function() {
+        const stored = localStorage.getItem('categoria-certa-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (prefersDark ? 'dark' : 'light');
+        document.documentElement.classList.add(theme);
+      })();
+    </script>
   </head>
 
   <body>
