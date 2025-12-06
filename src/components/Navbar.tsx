@@ -3,6 +3,7 @@ import { Trophy, Users, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import MobileMenu from "./MobileMenu";
+import ThemeToggle from "./ThemeToggle";
 import { memo } from "react";
 
 const Navbar = memo(() => {
@@ -79,6 +80,10 @@ const Navbar = memo(() => {
           >
             Torneios
           </Link>
+          
+          {/* Theme Toggle */}
+          <ThemeToggle />
+          
           {user ? (
             <>
               <Button 
@@ -112,7 +117,11 @@ const Navbar = memo(() => {
           )}
         </div>
 
-        <MobileMenu />
+        {/* Mobile: Theme Toggle + Menu */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <MobileMenu />
+        </div>
       </div>
     </nav>
   );
