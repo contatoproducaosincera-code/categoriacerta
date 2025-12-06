@@ -33,9 +33,11 @@ interface AthleteAchievementsDialogProps {
   athleteName: string;
   athletePoints: number;
   athleteCategory: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   isAdmin?: boolean;
   onAchievementDeleted?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const AthleteAchievementsDialog = ({
@@ -46,6 +48,8 @@ const AthleteAchievementsDialog = ({
   children,
   isAdmin = false,
   onAchievementDeleted,
+  open: controlledOpen,
+  onOpenChange,
 }: AthleteAchievementsDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -262,9 +266,11 @@ const AthleteAchievementsDialog = ({
     );
   };
 
+  const isControlled = controlledOpen !== undefined;
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog open={isControlled ? controlledOpen : undefined} onOpenChange={onOpenChange}>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
