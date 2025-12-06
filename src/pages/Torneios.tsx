@@ -23,8 +23,11 @@ interface Tournament {
   image_url: string | null;
 }
 
-// Memoized Tournament Card
+// Memoized Tournament Card - Instagram style (4:5 ratio)
 const TournamentCard = memo(({ torneio, status }: { torneio: Tournament; status: "future" | "today" | "past" }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   const handleWhatsAppClick = useCallback(() => {
     if (torneio.whatsapp) {
       if (torneio.whatsapp.startsWith('http')) {
@@ -37,9 +40,9 @@ const TournamentCard = memo(({ torneio, status }: { torneio: Tournament; status:
   }, [torneio.whatsapp]);
 
   const statusConfig = {
-    future: { label: "Próximo", icon: Clock, variant: "default" as const, className: "bg-primary text-primary-foreground" },
-    today: { label: "Hoje!", icon: Trophy, variant: "default" as const, className: "bg-green-500 text-white animate-pulse" },
-    past: { label: "Encerrado", icon: CheckCircle, variant: "secondary" as const, className: "bg-muted text-muted-foreground" },
+    future: { label: "Próximo", icon: Clock, className: "bg-primary text-primary-foreground" },
+    today: { label: "Hoje!", icon: Trophy, className: "bg-green-500 text-white animate-pulse" },
+    past: { label: "Encerrado", icon: CheckCircle, className: "bg-muted text-muted-foreground" },
   };
 
   const config = statusConfig[status];
@@ -47,67 +50,89 @@ const TournamentCard = memo(({ torneio, status }: { torneio: Tournament; status:
   const isPastTournament = status === "past";
 
   return (
-    <Card 
-      className={`hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden ${isPastTournament ? "opacity-70" : ""}`}
+    <div 
+      className={`group relative overflow-hidden rounded-2xl bg-card border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${isPastTournament ? "opacity-70" : ""}`}
     >
-      {torneio.image_url ? (
-        <AspectRatio ratio={16 / 9}>
+      {/* Cover Image with 4:5 ratio (Instagram style) */}
+      <AspectRatio ratio={4 / 5} className="relative">
+        {/* Skeleton loader */}
+        {!imageLoaded && !imageError && torneio.image_url && (
+          <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 animate-pulse" />
+        )}
+        
+        {torneio.image_url && !imageError ? (
           <img
             src={torneio.image_url}
             alt={torneio.name}
-            className={`w-full h-full object-cover ${isPastTournament ? "grayscale" : ""}`}
+            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+              isPastTournament ? "grayscale" : ""
+            } ${imageLoaded ? "opacity-100" : "opacity-0"}`}
             loading="lazy"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
           />
-        </AspectRatio>
-      ) : (
-        <div className={`h-32 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center ${isPastTournament ? "grayscale" : ""}`}>
-          <Trophy className="h-12 w-12 text-primary/40" />
-        </div>
-      )}
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <CardTitle className="text-lg leading-tight">{torneio.name}</CardTitle>
-          <div className="flex flex-col gap-1 items-end shrink-0">
-            <Badge className={config.className}>
-              <StatusIcon className="h-3 w-3 mr-1" />
-              {config.label}
-            </Badge>
-            <Badge variant={
-              torneio.category === "C" ? "default" :
-              torneio.category === "D" ? "secondary" : "outline"
-            }>
-              Cat. {torneio.category}
-            </Badge>
+        ) : (
+          <div className={`w-full h-full bg-gradient-to-br from-primary/20 via-secondary/10 to-primary/5 flex flex-col items-center justify-center ${isPastTournament ? "grayscale" : ""}`}>
+            <Trophy className="h-16 w-16 text-primary/30 mb-2" />
+            <span className="text-sm text-muted-foreground">Sem imagem</span>
           </div>
-        </div>
-        {torneio.description && (
-          <CardDescription className="line-clamp-2">{torneio.description}</CardDescription>
         )}
-      </CardHeader>
-      <CardContent className="space-y-3 pt-0">
-        <div className="flex items-center text-sm">
-          <Calendar className="h-4 w-4 mr-2 text-primary shrink-0" />
-          <span className="font-semibold">
-            {format(parseISO(torneio.date), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR })}
-          </span>
+
+        {/* Gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+        {/* Status badge - top right */}
+        <div className="absolute top-3 right-3 z-10">
+          <Badge className={`${config.className} shadow-lg`}>
+            <StatusIcon className="h-3 w-3 mr-1" />
+            {config.label}
+          </Badge>
         </div>
-        <div className="flex items-center text-sm">
-          <MapPin className="h-4 w-4 mr-2 text-primary shrink-0" />
-          <span className="truncate">{torneio.location}</span>
-        </div>
-        {!isPastTournament && (
-          <Button 
-            className="w-full" 
-            size="lg"
-            onClick={handleWhatsAppClick}
-            disabled={!torneio.whatsapp}
+
+        {/* Category badge - top left */}
+        <div className="absolute top-3 left-3 z-10">
+          <Badge 
+            variant="outline" 
+            className="bg-background/90 backdrop-blur-sm shadow-lg"
           >
-            <MessageCircle className="mr-2 h-4 w-4" />
-            {torneio.whatsapp ? 'Falar com Organizador' : 'WhatsApp não cadastrado'}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+            Cat. {torneio.category}
+          </Badge>
+        </div>
+
+        {/* Content overlay - bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+          <h3 className="font-bold text-lg text-white mb-2 line-clamp-2 drop-shadow-lg">
+            {torneio.name}
+          </h3>
+          
+          <div className="space-y-1.5">
+            <div className="flex items-center text-sm text-white/90">
+              <Calendar className="h-4 w-4 mr-2 shrink-0" />
+              <span className="font-medium">
+                {format(parseISO(torneio.date), "d 'de' MMM, yyyy", { locale: ptBR })}
+              </span>
+            </div>
+            <div className="flex items-center text-sm text-white/80">
+              <MapPin className="h-4 w-4 mr-2 shrink-0" />
+              <span className="truncate">{torneio.location}</span>
+            </div>
+          </div>
+
+          {/* WhatsApp Button */}
+          {!isPastTournament && torneio.whatsapp && (
+            <Button 
+              className="w-full mt-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30 text-white"
+              variant="outline"
+              size="sm"
+              onClick={handleWhatsAppClick}
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Inscreva-se
+            </Button>
+          )}
+        </div>
+      </AspectRatio>
+    </div>
   );
 });
 
@@ -380,8 +405,8 @@ const Torneios = () => {
                       </div>
                     </div>
 
-                    {/* Tournaments for this date */}
-                    <div className="grid md:grid-cols-2 gap-4 pl-4">
+                    {/* Tournaments for this date - responsive grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                       {dateTournaments.map(torneio => (
                         <TournamentCard 
                           key={torneio.id} 
@@ -412,8 +437,8 @@ const Torneios = () => {
           {showPast && pastTournaments.length > 0 && (
             <div className="mt-8 max-w-6xl mx-auto">
               <h2 className="text-xl font-bold mb-4 text-muted-foreground">Torneios Encerrados</h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pastTournaments.slice(0, 6).map(torneio => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {pastTournaments.slice(0, 8).map(torneio => (
                   <TournamentCard 
                     key={torneio.id} 
                     torneio={torneio} 
