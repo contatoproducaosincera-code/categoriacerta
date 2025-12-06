@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ import { athleteSchema, tournamentSchema, achievementSchema } from "@/lib/valida
 import { z } from "zod";
 import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
-import AthletesTable from "@/components/admin/AthletesTable";
+import OptimizedAthletesTable from "@/components/admin/OptimizedAthletesTable";
 import TournamentImageUpload from "@/components/admin/TournamentImageUpload";
 
 const Admin = () => {
@@ -98,7 +98,7 @@ const Admin = () => {
     }
   }, [user, loading, navigate]);
 
-  const { data: athletes } = useQuery({
+  const { data: athletes, isLoading: isLoadingAthletes } = useQuery({
     queryKey: ["admin-athletes"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -110,9 +110,11 @@ const Admin = () => {
       return data;
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 2, // 2 minutes cache
+    gcTime: 1000 * 60 * 5, // 5 minutes garbage collection
   });
 
-  const { data: tournaments } = useQuery({
+  const { data: tournaments, isLoading: isLoadingTournaments } = useQuery({
     queryKey: ["admin-tournaments"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -124,6 +126,8 @@ const Admin = () => {
       return data;
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 2, // 2 minutes cache
+    gcTime: 1000 * 60 * 5, // 5 minutes garbage collection
   });
 
   const addAthleteMutation = useMutation({
@@ -528,7 +532,7 @@ const Admin = () => {
     },
   });
 
-  const toggleSelectAll = () => {
+  const toggleSelectAll = useCallback(() => {
     const filteredAthletes = (athletes || []).filter(athlete => {
       const matchesSearch = athlete.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesGender = adminGenderFilter === "all" || athlete.gender === adminGenderFilter;
@@ -541,17 +545,19 @@ const Admin = () => {
     } else {
       setSelectedAthletes(new Set(filteredAthletes.map(a => a.id)));
     }
-  };
+  }, [athletes, searchTerm, adminGenderFilter, adminCityFilter, selectedAthletes.size]);
 
-  const toggleAthleteSelection = (athleteId: string) => {
-    const newSelection = new Set(selectedAthletes);
-    if (newSelection.has(athleteId)) {
-      newSelection.delete(athleteId);
-    } else {
-      newSelection.add(athleteId);
-    }
-    setSelectedAthletes(newSelection);
-  };
+  const toggleAthleteSelection = useCallback((athleteId: string) => {
+    setSelectedAthletes(prev => {
+      const newSelection = new Set(prev);
+      if (newSelection.has(athleteId)) {
+        newSelection.delete(athleteId);
+      } else {
+        newSelection.add(athleteId);
+      }
+      return newSelection;
+    });
+  }, []);
 
   if (loading) {
     return (
@@ -833,7 +839,7 @@ const Admin = () => {
                   <CardDescription>Gerencie atletas e registre conquistas de forma otimizada</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <AthletesTable
+                  <OptimizedAthletesTable
                     athletes={athletes || []}
                     searchTerm={searchTerm}
                     adminGenderFilter={adminGenderFilter}

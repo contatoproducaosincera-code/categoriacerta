@@ -28,11 +28,16 @@ interface Achievement {
 
 interface ManageAchievementsDialogProps {
   athlete: Athlete;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-const ManageAchievementsDialog = ({ athlete, children }: ManageAchievementsDialogProps) => {
-  const [open, setOpen] = useState(false);
+const ManageAchievementsDialog = ({ athlete, children, open: controlledOpen, onOpenChange }: ManageAchievementsDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (onOpenChange || (() => {})) : setInternalOpen;
   const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [achievementToDelete, setAchievementToDelete] = useState<Achievement | null>(null);
@@ -174,9 +179,11 @@ const ManageAchievementsDialog = ({ athlete, children }: ManageAchievementsDialo
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          {children}
-        </DialogTrigger>
+        {children && (
+          <DialogTrigger asChild>
+            {children}
+          </DialogTrigger>
+        )}
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
