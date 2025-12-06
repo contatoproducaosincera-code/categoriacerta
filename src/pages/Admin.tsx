@@ -25,6 +25,9 @@ import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import OptimizedAthletesTable from "@/components/admin/OptimizedAthletesTable";
 import TournamentImageUpload from "@/components/admin/TournamentImageUpload";
+import { useDuplicateCheck } from "@/hooks/useDuplicateCheck";
+import DuplicateIndicator from "@/components/DuplicateIndicator";
+import DuplicateWarningDialog from "@/components/DuplicateWarningDialog";
 
 const Admin = () => {
   const { user, loading, signOut } = useAuth();
@@ -47,6 +50,11 @@ const Admin = () => {
   const [openBulkGender, setOpenBulkGender] = useState(false);
   const [bulkCategory, setBulkCategory] = useState<"C" | "D" | "Iniciante">("Iniciante");
   const [bulkGender, setBulkGender] = useState<"Masculino" | "Feminino">("Masculino");
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [pendingAthleteSubmit, setPendingAthleteSubmit] = useState(false);
+
+  // Duplicate check hook
+  const { updateName, result: duplicateResult, isChecking: isDuplicateChecking } = useDuplicateCheck();
 
   const [newAthlete, setNewAthlete] = useState({
     name: "",
@@ -149,12 +157,16 @@ const Admin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-athletes"] });
+      queryClient.invalidateQueries({ queryKey: ["athlete-names-cache"] });
       toast({
         title: "Atleta cadastrado!",
         description: "O atleta foi adicionado com sucesso",
       });
       setOpenAddAthlete(false);
+      setShowDuplicateWarning(false);
+      setPendingAthleteSubmit(false);
       setNewAthlete({ name: "", email: "", city: "", instagram: "", category: "Iniciante", gender: "Masculino" });
+      updateName("");
     },
     onError: (error: any) => {
       toast({
@@ -616,8 +628,17 @@ const Admin = () => {
                         <Input
                           id="name"
                           value={newAthlete.name}
-                          onChange={(e) => setNewAthlete({ ...newAthlete, name: e.target.value })}
+                          onChange={(e) => {
+                            setNewAthlete({ ...newAthlete, name: e.target.value });
+                            updateName(e.target.value);
+                          }}
                           placeholder="João Silva"
+                        />
+                        <DuplicateIndicator
+                          result={duplicateResult}
+                          isChecking={isDuplicateChecking}
+                          nameLength={newAthlete.name.length}
+                          className="mt-1.5"
                         />
                       </div>
                       <div>
@@ -681,14 +702,35 @@ const Admin = () => {
                       </div>
                       <Button 
                         className="w-full" 
-                        onClick={() => addAthleteMutation.mutate()}
-                        disabled={!newAthlete.name || !newAthlete.city || addAthleteMutation.isPending}
+                        onClick={() => {
+                          if (duplicateResult.hasDuplicates) {
+                            setShowDuplicateWarning(true);
+                          } else {
+                            addAthleteMutation.mutate();
+                          }
+                        }}
+                        disabled={!newAthlete.name || !newAthlete.city || addAthleteMutation.isPending || isDuplicateChecking}
                       >
                         {addAthleteMutation.isPending ? "Cadastrando..." : "Cadastrar"}
                       </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
+
+                {/* Duplicate Warning Dialog */}
+                <DuplicateWarningDialog
+                  open={showDuplicateWarning}
+                  onOpenChange={setShowDuplicateWarning}
+                  matches={duplicateResult.matches}
+                  athleteName={newAthlete.name}
+                  onConfirm={() => {
+                    addAthleteMutation.mutate();
+                  }}
+                  onCancel={() => {
+                    setShowDuplicateWarning(false);
+                  }}
+                  isProcessing={addAthleteMutation.isPending}
+                />
 
                 <BulkAddAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
                 <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
