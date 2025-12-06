@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -8,9 +8,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { UserPlus, Plus, Trash2, Save } from "lucide-react";
+import { UserPlus, Plus, Trash2, Save, AlertTriangle } from "lucide-react";
 import { athleteSchema } from "@/lib/validations";
 import { z } from "zod";
+import { useDuplicateCheck } from "@/hooks/useDuplicateCheck";
+import { findDuplicates, DuplicateMatch } from "@/lib/nameSimilarity";
+import DuplicateWarningDialog from "@/components/DuplicateWarningDialog";
+import { Badge } from "@/components/ui/badge";
 
 interface AthleteFormData {
   id: string;
@@ -28,7 +32,13 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     { id: "1", name: "", email: "", city: "", instagram: "", category: "Iniciante", gender: "Masculino" },
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
+  const [duplicateAthleteName, setDuplicateAthleteName] = useState("");
   const { toast } = useToast();
+
+  // Get existing athletes for duplicate check
+  const { checkName, athleteCount } = useDuplicateCheck();
 
   const addNewAthlete = () => {
     const newId = String(Date.now());
@@ -56,7 +66,23 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
     );
   };
 
-  const handleBulkSave = async () => {
+  // Check for duplicates in the batch
+  const checkForDuplicates = () => {
+    const validAthletes = athletes.filter((a) => a.name.trim() && a.city.trim());
+    
+    for (const athlete of validAthletes) {
+      const result = checkName(athlete.name);
+      if (result.hasDuplicates && result.matches.some(m => m.similarity >= 90)) {
+        setDuplicateMatches(result.matches);
+        setDuplicateAthleteName(athlete.name);
+        setShowDuplicateWarning(true);
+        return true;
+      }
+    }
+    return false;
+  };
+
+  const handleBulkSave = async (skipDuplicateCheck = false) => {
     const validAthletes = athletes.filter((a) => a.name.trim() && a.city.trim());
 
     if (validAthletes.length === 0) {
@@ -65,6 +91,11 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
         description: "Preencha pelo menos nome e cidade de um atleta",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Check for duplicates before saving (unless skipped)
+    if (!skipDuplicateCheck && checkForDuplicates()) {
       return;
     }
 
@@ -117,6 +148,7 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       });
 
       setOpen(false);
+      setShowDuplicateWarning(false);
       setAthletes([
         { id: "1", name: "", email: "", city: "", instagram: "", category: "Iniciante", gender: "Masculino" },
       ]);
@@ -132,6 +164,20 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
       setIsProcessing(false);
     }
   };
+
+  // Get duplicate warnings for all athletes
+  const athleteDuplicateWarnings = useMemo(() => {
+    const warnings: Record<string, DuplicateMatch[]> = {};
+    athletes.forEach((athlete) => {
+      if (athlete.name.length >= 3) {
+        const result = checkName(athlete.name);
+        if (result.hasDuplicates) {
+          warnings[athlete.id] = result.matches;
+        }
+      }
+    });
+    return warnings;
+  }, [athletes, checkName]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -168,7 +214,15 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                     </Button>
                   </div>
 
-                  <h4 className="font-semibold mb-4">Atleta #{index + 1}</h4>
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold">Atleta #{index + 1}</h4>
+                    {athleteDuplicateWarnings[athlete.id] && (
+                      <Badge variant="outline" className="text-amber-600 border-amber-500 gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Nome parecido encontrado
+                      </Badge>
+                    )}
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -178,6 +232,7 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                         value={athlete.name}
                         onChange={(e) => updateAthlete(athlete.id, "name", e.target.value)}
                         placeholder="João Silva"
+                        className={athleteDuplicateWarnings[athlete.id] ? "border-amber-500" : ""}
                       />
                     </div>
 
@@ -260,11 +315,26 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
             <Plus className="mr-2 h-4 w-4" />
             Adicionar Mais
           </Button>
-          <Button onClick={handleBulkSave} disabled={isProcessing}>
+          <Button onClick={() => handleBulkSave()} disabled={isProcessing}>
             <Save className="mr-2 h-4 w-4" />
             {isProcessing ? "Salvando..." : `Salvar Todos (${athletes.filter(a => a.name && a.city).length})`}
           </Button>
         </div>
+
+        {/* Duplicate Warning Dialog */}
+        <DuplicateWarningDialog
+          open={showDuplicateWarning}
+          onOpenChange={setShowDuplicateWarning}
+          matches={duplicateMatches}
+          athleteName={duplicateAthleteName}
+          onConfirm={() => {
+            handleBulkSave(true);
+          }}
+          onCancel={() => {
+            setShowDuplicateWarning(false);
+          }}
+          isProcessing={isProcessing}
+        />
       </DialogContent>
     </Dialog>
   );
