@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,8 @@ import BackButton from "@/components/BackButton";
 import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import QueryErrorBoundary from "@/components/QueryErrorBoundary";
+import { useOfflineAthletes, useOfflineAchievements } from "@/hooks/useOfflineData";
+import OfflineIndicator from "@/components/OfflineIndicator";
 
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,45 +47,40 @@ const Atletas = () => {
     };
   };
 
-  // Otimização: query consolidada com select específico
-  const { data: athletesData, isLoading, error } = useQuery({
-    queryKey: ["athletes-optimized"],
-    queryFn: async () => {
-      const [athletesResult, achievementsResult] = await Promise.all([
-        supabase
-          .from("athletes")
-          .select("id, name, points, category, city, gender")
-          .order("points", { ascending: false }),
-        supabase.from("achievements").select("athlete_id, position")
-      ]);
+  // Offline-first data fetching
+  const { 
+    athletes, 
+    isLoading: athletesLoading, 
+    error: athletesError,
+    isOnline,
+    isFromCache,
+    cacheInfo,
+    refetch,
+  } = useOfflineAthletes();
 
-      if (athletesResult.error) throw athletesResult.error;
-      
-      // Contar primeiros lugares
-      const firstPlaceCounts: Record<string, number> = {};
-      achievementsResult.data?.forEach((achievement) => {
-        if (achievement.position === 1) {
-          firstPlaceCounts[achievement.athlete_id] = (firstPlaceCounts[achievement.athlete_id] || 0) + 1;
-        }
-      });
-      
-      return {
-        athletes: athletesResult.data || [],
-        firstPlaceCounts
-      };
-    },
-    staleTime: 30000, // Cache por 30 segundos
-    gcTime: 300000, // Manter em cache por 5 minutos
-  });
+  // Fetch achievements (online only)
+  const { data: achievementsData } = useOfflineAchievements(
+    athletes?.map(a => a.id)
+  );
 
-  const athletes = athletesData?.athletes;
-  const firstPlaceCounts = athletesData?.firstPlaceCounts;
-
-  const getAthleteFirstPlaces = (athleteId: string) => {
+  // Count first places
+  const firstPlaceCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    achievementsData?.forEach((achievement) => {
+      if (achievement.position === 1) {
+        counts[achievement.athlete_id] = (counts[achievement.athlete_id] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [achievementsData]);
+  const getAthleteFirstPlaces = useCallback((athleteId: string) => {
     return firstPlaceCounts?.[athleteId] || 0;
-  };
+  }, [firstPlaceCounts]);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
+  
+  const isLoading = athletesLoading;
+  const error = athletesError;
   
   const cities = useMemo(() => 
     [...new Set((athletes || []).map(a => a.city))].sort(),
@@ -115,20 +112,28 @@ const Atletas = () => {
         <Navbar />
         
         <section className="py-12 lg:py-16 bg-gradient-to-b from-primary/10 to-transparent">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 lg:mb-8">
-            <BackButton />
-          </div>
-          <div className="text-center mb-8 lg:mb-12">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 lg:mb-4">
-              Atletas Cadastrados
-            </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-              Conheça os atletas do ranking e acompanhe sua evolução
-            </p>
-          </div>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6 lg:mb-8">
+              <BackButton />
+            </div>
+            <div className="text-center mb-8 lg:mb-12">
+              <div className="flex flex-col items-center gap-2">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-1 lg:mb-2">
+                  Atletas Cadastrados
+                </h1>
+                <OfflineIndicator
+                  isOnline={isOnline}
+                  isFromCache={isFromCache}
+                  cacheAge={cacheInfo.cacheAge}
+                  onRefresh={() => refetch()}
+                />
+              </div>
+              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto px-4 mt-3">
+                Conheça os atletas do ranking e acompanhe sua evolução
+              </p>
+            </div>
 
-          <div className="max-w-6xl mx-auto mb-8 lg:mb-12 space-y-4 lg:space-y-6">
+            <div className="max-w-6xl mx-auto mb-8 lg:mb-12 space-y-4 lg:space-y-6">
             <div className="bg-card/80 backdrop-blur-sm rounded-xl shadow-medium border-2 border-border/50 p-4 lg:p-6">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4 flex items-center gap-2">
                 <Search className="h-4 w-4" />
@@ -270,9 +275,9 @@ const Atletas = () => {
               ))}
             </div>
           )}
-        </div>
-      </section>
-    </div>
+          </div>
+        </section>
+      </div>
     </QueryErrorBoundary>
   );
 };

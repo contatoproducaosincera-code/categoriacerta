@@ -1,27 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Trophy, Medal } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { memo } from "react";
+import { memo, useMemo } from "react";
+import { useOfflineAthletes } from "@/hooks/useOfflineData";
 
 const TopThreeAthletes = () => {
-  const { data: athletes, isLoading, error } = useQuery({
-    queryKey: ["top-three-athletes"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("athletes")
-        .select("id, name, points, city, category")
-        .order("points", { ascending: false })
-        .limit(3);
+  const { athletes: allAthletes, isLoading, error, isOnline } = useOfflineAthletes();
 
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 60000, // Cache por 1 minuto
-    gcTime: 300000, // Manter em cache por 5 minutos
-  });
+  // Get top 3 athletes
+  const athletes = useMemo(() => {
+    if (!allAthletes) return [];
+    return allAthletes.slice(0, 3);
+  }, [allAthletes]);
 
   if (isLoading) {
     return (
@@ -33,7 +24,7 @@ const TopThreeAthletes = () => {
     );
   }
 
-  if (error) {
+  if (error && isOnline) {
     console.error("Error loading top athletes:", error);
     return null;
   }

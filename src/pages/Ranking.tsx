@@ -1,6 +1,4 @@
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useMemo, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +9,8 @@ import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import BackButton from "@/components/BackButton";
 import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useOfflineAthletes } from "@/hooks/useOfflineData";
+import OfflineIndicator from "@/components/OfflineIndicator";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -18,33 +18,28 @@ const Ranking = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
 
-  // Query otimizada
-  const { data: athletes, isLoading, error } = useQuery({
-    queryKey: ["athletes", categoryFilter, genderFilter],
-    queryFn: async () => {
-      let query = supabase
-        .from("athletes")
-        .select("id, name, city, category, gender, points")
-        .order("points", { ascending: false })
-        .order("name", { ascending: true });
+  // Offline-first data fetching
+  const { 
+    athletes: allAthletes, 
+    isLoading, 
+    error,
+    isOnline,
+    isFromCache,
+    cacheInfo,
+    refetch,
+  } = useOfflineAthletes();
 
-      if (categoryFilter !== "all") {
-        query = query.eq("category", categoryFilter as "C" | "D" | "Iniciante");
-      }
-      
-      if (genderFilter !== "all") {
-        query = query.eq("gender", genderFilter as "Masculino" | "Feminino");
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data || [];
-    },
-    staleTime: 60000,
-    gcTime: 600000,
-  });
+  // Filter athletes based on category and gender
+  const athletes = useMemo(() => {
+    if (!allAthletes) return [];
+    return allAthletes.filter(athlete => {
+      const matchesCategory = categoryFilter === "all" || athlete.category === categoryFilter;
+      const matchesGender = genderFilter === "all" || athlete.gender === genderFilter;
+      return matchesCategory && matchesGender;
+    });
+  }, [allAthletes, categoryFilter, genderFilter]);
   
-  // Extrair cidades e filtrar atletas
+  // Extract cities and filter athletes
   const { availableCities, filteredAthletes } = useMemo(() => {
     if (!athletes) return { availableCities: [], filteredAthletes: [] };
     
@@ -69,10 +64,18 @@ const Ranking = () => {
           </div>
           
           <div className="text-center mb-10 lg:mb-14">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 lg:mb-5">
-              Ranking Geral
-            </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 lg:mb-10 max-w-2xl mx-auto px-4">
+            <div className="flex flex-col items-center gap-2">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-1 lg:mb-2">
+                Ranking Geral
+              </h1>
+              <OfflineIndicator
+                isOnline={isOnline}
+                isFromCache={isFromCache}
+                cacheAge={cacheInfo.cacheAge}
+                onRefresh={() => refetch()}
+              />
+            </div>
+            <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 lg:mb-10 max-w-2xl mx-auto px-4 mt-3">
               Acompanhe sua evolução e suba de categoria
             </p>
             
