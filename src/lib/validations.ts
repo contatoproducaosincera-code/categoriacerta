@@ -68,13 +68,26 @@ export const tournamentSchema = z.object({
   category: z.union([
     z.literal("Iniciante"),
     z.literal("D"),
-    z.literal("C")
+    z.literal("C"),
+    z.literal("Iniciante + D"),
+    z.literal("D + C"),
+    z.literal("Todas")
   ]),
   
   whatsapp: z.string()
     .regex(/^https:\/\/wa\.me\/\d+|^$/, "WhatsApp deve ser um link válido (https://wa.me/...)")
     .optional()
-    .or(z.literal(""))
+    .or(z.literal("")),
+  
+  is_recurring: z.boolean().default(false),
+  
+  recurrence_type: z.union([
+    z.literal("weekly"),
+    z.literal("biweekly"),
+    z.literal("monthly")
+  ]).optional().nullable(),
+  
+  recurrence_day: z.number().min(0).max(6).optional().nullable()
 });
 
 export type TournamentInput = z.infer<typeof tournamentSchema>;

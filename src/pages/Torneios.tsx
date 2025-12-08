@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, MapPin, MessageCircle, Trophy, ChevronLeft, ChevronRight, Clock, CheckCircle, Filter, X } from "lucide-react";
+import { Calendar, MapPin, MessageCircle, Trophy, ChevronLeft, ChevronRight, Clock, CheckCircle, Filter, X, Repeat } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { format, isFuture, isPast, isToday, parseISO, startOfMonth, endOfMonth, isSameMonth } from "date-fns";
@@ -18,9 +18,12 @@ interface Tournament {
   description: string | null;
   date: string;
   location: string;
-  category: "C" | "D" | "Iniciante";
+  category: "C" | "D" | "Iniciante" | "Iniciante + D" | "D + C" | "Todas";
   whatsapp: string | null;
   image_url: string | null;
+  is_recurring: boolean;
+  recurrence_type: "weekly" | "biweekly" | "monthly" | null;
+  recurrence_day: number | null;
 }
 
 // Memoized Tournament Card - Instagram style (4:5 ratio)
@@ -90,13 +93,21 @@ const TournamentCard = memo(({ torneio, status }: { torneio: Tournament; status:
         </div>
 
         {/* Category badge - top left */}
-        <div className="absolute top-3 left-3 z-10">
+        <div className="absolute top-3 left-3 z-10 flex gap-1.5">
           <Badge 
             variant="outline" 
             className="bg-background/90 backdrop-blur-sm shadow-lg"
           >
             Cat. {torneio.category}
           </Badge>
+          {torneio.is_recurring && (
+            <Badge 
+              variant="outline" 
+              className="bg-background/90 backdrop-blur-sm shadow-lg"
+            >
+              <Repeat className="h-3 w-3" />
+            </Badge>
+          )}
         </div>
 
         {/* Content overlay - bottom */}
@@ -316,9 +327,12 @@ const Torneios = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas Categorias</SelectItem>
-                <SelectItem value="C">Categoria C</SelectItem>
-                <SelectItem value="D">Categoria D</SelectItem>
                 <SelectItem value="Iniciante">Iniciante</SelectItem>
+                <SelectItem value="D">Categoria D</SelectItem>
+                <SelectItem value="C">Categoria C</SelectItem>
+                <SelectItem value="Iniciante + D">Iniciante + D</SelectItem>
+                <SelectItem value="D + C">D + C</SelectItem>
+                <SelectItem value="Todas">Todas</SelectItem>
               </SelectContent>
             </Select>
 
