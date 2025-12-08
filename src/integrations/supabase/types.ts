@@ -309,36 +309,45 @@ export type Database = {
       }
       tournaments: {
         Row: {
-          category: Database["public"]["Enums"]["category"]
+          category: string
           created_at: string
           date: string
           description: string | null
           id: string
           image_url: string | null
+          is_recurring: boolean
           location: string
           name: string
+          recurrence_day: number | null
+          recurrence_type: string | null
           whatsapp: string | null
         }
         Insert: {
-          category: Database["public"]["Enums"]["category"]
+          category: string
           created_at?: string
           date: string
           description?: string | null
           id?: string
           image_url?: string | null
+          is_recurring?: boolean
           location: string
           name: string
+          recurrence_day?: number | null
+          recurrence_type?: string | null
           whatsapp?: string | null
         }
         Update: {
-          category?: Database["public"]["Enums"]["category"]
+          category?: string
           created_at?: string
           date?: string
           description?: string | null
           id?: string
           image_url?: string | null
+          is_recurring?: boolean
           location?: string
           name?: string
+          recurrence_day?: number | null
+          recurrence_type?: string | null
           whatsapp?: string | null
         }
         Relationships: []

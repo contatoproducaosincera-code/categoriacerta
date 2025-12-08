@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon, Repeat } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
@@ -79,9 +79,12 @@ const Admin = () => {
     description: "",
     date: new Date().toISOString().split('T')[0],
     location: "",
-    category: "Iniciante" as "C" | "D" | "Iniciante",
+    category: "Iniciante" as "C" | "D" | "Iniciante" | "Iniciante + D" | "D + C" | "Todas",
     whatsapp: "",
     image_url: null as string | null,
+    is_recurring: false,
+    recurrence_type: null as "weekly" | "biweekly" | "monthly" | null,
+    recurrence_day: null as number | null,
   });
 
   const [editTournament, setEditTournament] = useState({
@@ -89,9 +92,12 @@ const Admin = () => {
     description: "",
     date: new Date().toISOString().split('T')[0],
     location: "",
-    category: "Iniciante" as "C" | "D" | "Iniciante" | "Todas",
+    category: "Iniciante" as "C" | "D" | "Iniciante" | "Iniciante + D" | "D + C" | "Todas",
     whatsapp: "",
     image_url: null as string | null,
+    is_recurring: false,
+    recurrence_type: null as "weekly" | "biweekly" | "monthly" | null,
+    recurrence_day: null as number | null,
   });
 
   const [achievement, setAchievement] = useState({
@@ -260,6 +266,9 @@ const Admin = () => {
             category: validated.category,
             whatsapp: validated.whatsapp || null,
             image_url: newTournament.image_url || null,
+            is_recurring: newTournament.is_recurring,
+            recurrence_type: newTournament.is_recurring ? newTournament.recurrence_type : null,
+            recurrence_day: newTournament.is_recurring ? newTournament.recurrence_day : null,
           }]);
 
         if (error) throw error;
@@ -285,6 +294,9 @@ const Admin = () => {
         category: "Iniciante",
         whatsapp: "",
         image_url: null,
+        is_recurring: false,
+        recurrence_type: null,
+        recurrence_day: null,
       });
     },
     onError: (error: any) => {
@@ -302,7 +314,6 @@ const Admin = () => {
       try {
         const validated = tournamentSchema.parse({
           ...editTournament,
-          category: editTournament.category === "Todas" ? "Iniciante" : editTournament.category
         });
         const { error } = await supabase
           .from("tournaments")
@@ -314,6 +325,9 @@ const Admin = () => {
             category: validated.category,
             whatsapp: validated.whatsapp || null,
             image_url: editTournament.image_url || null,
+            is_recurring: editTournament.is_recurring,
+            recurrence_type: editTournament.is_recurring ? editTournament.recurrence_type : null,
+            recurrence_day: editTournament.is_recurring ? editTournament.recurrence_day : null,
           })
           .eq("id", selectedTournament.id);
 
@@ -1137,9 +1151,73 @@ const Admin = () => {
                           <SelectItem value="Iniciante">Iniciante</SelectItem>
                           <SelectItem value="D">Categoria D</SelectItem>
                           <SelectItem value="C">Categoria C</SelectItem>
+                          <SelectItem value="Iniciante + D">Iniciante + D</SelectItem>
+                          <SelectItem value="D + C">D + C</SelectItem>
+                          <SelectItem value="Todas">Todas as Categorias</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
+                    
+                    {/* Recurring Tournament Section */}
+                    <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          id="is-recurring"
+                          checked={newTournament.is_recurring}
+                          onCheckedChange={(checked) => setNewTournament({ 
+                            ...newTournament, 
+                            is_recurring: !!checked,
+                            recurrence_type: checked ? "weekly" : null,
+                            recurrence_day: checked ? new Date(newTournament.date).getDay() : null
+                          })}
+                        />
+                        <Label htmlFor="is-recurring" className="font-medium cursor-pointer">
+                          Torneio Recorrente
+                        </Label>
+                      </div>
+                      
+                      {newTournament.is_recurring && (
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                          <div>
+                            <Label htmlFor="recurrence-type">Frequência</Label>
+                            <Select 
+                              value={newTournament.recurrence_type || "weekly"} 
+                              onValueChange={(value: any) => setNewTournament({ ...newTournament, recurrence_type: value })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="weekly">Semanal</SelectItem>
+                                <SelectItem value="biweekly">Quinzenal</SelectItem>
+                                <SelectItem value="monthly">Mensal</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="recurrence-day">Dia da Semana</Label>
+                            <Select 
+                              value={String(newTournament.recurrence_day ?? 0)} 
+                              onValueChange={(value) => setNewTournament({ ...newTournament, recurrence_day: parseInt(value) })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0">Domingo</SelectItem>
+                                <SelectItem value="1">Segunda</SelectItem>
+                                <SelectItem value="2">Terça</SelectItem>
+                                <SelectItem value="3">Quarta</SelectItem>
+                                <SelectItem value="4">Quinta</SelectItem>
+                                <SelectItem value="5">Sexta</SelectItem>
+                                <SelectItem value="6">Sábado</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     <TournamentImageUpload
                       imageUrl={newTournament.image_url}
                       onImageChange={(url) => setNewTournament({ ...newTournament, image_url: url })}
@@ -1169,6 +1247,7 @@ const Admin = () => {
                       <TableHead>Data</TableHead>
                       <TableHead>Local</TableHead>
                       <TableHead>Categoria</TableHead>
+                      <TableHead>Recorrente</TableHead>
                       <TableHead>WhatsApp</TableHead>
                       <TableHead>Ações</TableHead>
                     </TableRow>
@@ -1192,7 +1271,21 @@ const Admin = () => {
                         <TableCell className="font-medium">{tournament.name}</TableCell>
                         <TableCell>{new Date(tournament.date).toLocaleDateString('pt-BR')}</TableCell>
                         <TableCell>{tournament.location}</TableCell>
-                        <TableCell>{tournament.category}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{tournament.category}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {(tournament as any).is_recurring ? (
+                            <Badge variant="secondary" className="gap-1">
+                              <Repeat className="h-3 w-3" />
+                              {(tournament as any).recurrence_type === 'weekly' && 'Semanal'}
+                              {(tournament as any).recurrence_type === 'biweekly' && 'Quinzenal'}
+                              {(tournament as any).recurrence_type === 'monthly' && 'Mensal'}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
                         <TableCell>{tournament.whatsapp || '-'}</TableCell>
                         <TableCell>
                             <div className="flex gap-2">
@@ -1211,9 +1304,12 @@ const Admin = () => {
                                         description: tournament.description || "",
                                         date: tournament.date,
                                         location: tournament.location,
-                                        category: tournament.category,
+                                        category: tournament.category as "C" | "D" | "Iniciante" | "Iniciante + D" | "D + C" | "Todas",
                                         whatsapp: tournament.whatsapp || "",
                                         image_url: tournament.image_url || null,
+                                        is_recurring: (tournament as any).is_recurring || false,
+                                        recurrence_type: (tournament as any).recurrence_type || null,
+                                        recurrence_day: (tournament as any).recurrence_day ?? null,
                                       });
                                     }}
                                   >
@@ -1283,9 +1379,73 @@ const Admin = () => {
                                         <SelectItem value="Iniciante">Iniciante</SelectItem>
                                         <SelectItem value="D">Categoria D</SelectItem>
                                         <SelectItem value="C">Categoria C</SelectItem>
+                                        <SelectItem value="Iniciante + D">Iniciante + D</SelectItem>
+                                        <SelectItem value="D + C">D + C</SelectItem>
+                                        <SelectItem value="Todas">Todas as Categorias</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
+                                  
+                                  {/* Recurring Tournament Section */}
+                                  <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
+                                    <div className="flex items-center gap-3">
+                                      <Checkbox
+                                        id="edit-is-recurring"
+                                        checked={editTournament.is_recurring}
+                                        onCheckedChange={(checked) => setEditTournament({ 
+                                          ...editTournament, 
+                                          is_recurring: !!checked,
+                                          recurrence_type: checked ? (editTournament.recurrence_type || "weekly") : null,
+                                          recurrence_day: checked ? (editTournament.recurrence_day ?? new Date(editTournament.date).getDay()) : null
+                                        })}
+                                      />
+                                      <Label htmlFor="edit-is-recurring" className="font-medium cursor-pointer">
+                                        Torneio Recorrente
+                                      </Label>
+                                    </div>
+                                    
+                                    {editTournament.is_recurring && (
+                                      <div className="grid grid-cols-2 gap-3 pt-2">
+                                        <div>
+                                          <Label htmlFor="edit-recurrence-type">Frequência</Label>
+                                          <Select 
+                                            value={editTournament.recurrence_type || "weekly"} 
+                                            onValueChange={(value: any) => setEditTournament({ ...editTournament, recurrence_type: value })}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="weekly">Semanal</SelectItem>
+                                              <SelectItem value="biweekly">Quinzenal</SelectItem>
+                                              <SelectItem value="monthly">Mensal</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="edit-recurrence-day">Dia da Semana</Label>
+                                          <Select 
+                                            value={String(editTournament.recurrence_day ?? 0)} 
+                                            onValueChange={(value) => setEditTournament({ ...editTournament, recurrence_day: parseInt(value) })}
+                                          >
+                                            <SelectTrigger>
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="0">Domingo</SelectItem>
+                                              <SelectItem value="1">Segunda</SelectItem>
+                                              <SelectItem value="2">Terça</SelectItem>
+                                              <SelectItem value="3">Quarta</SelectItem>
+                                              <SelectItem value="4">Quinta</SelectItem>
+                                              <SelectItem value="5">Sexta</SelectItem>
+                                              <SelectItem value="6">Sábado</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+
                                   <TournamentImageUpload
                                     imageUrl={editTournament.image_url}
                                     onImageChange={(url) => setEditTournament({ ...editTournament, image_url: url })}
