@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
+import AthleteRegistrationForm from "@/components/AthleteRegistrationForm";
 import { Award, TrendingUp, Users, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { memo } from "react";
@@ -32,6 +33,19 @@ const Index = memo(() => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
+      
+      {/* Registration CTA Section */}
+      <section className="py-12 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl sm:text-3xl font-display font-bold mb-4">
+            Quer participar dos torneios?
+          </h2>
+          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+            Cadastre-se na nossa lista de espera e aguarde aprovação do administrador
+          </p>
+          <AthleteRegistrationForm />
+        </div>
+      </section>
       
       {/* Features Section */}
       <section className="py-20 lg:py-28 bg-muted/30 relative overflow-hidden">
