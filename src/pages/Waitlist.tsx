@@ -32,12 +32,30 @@ const GENDERS: Gender[] = ['Masculino', 'Feminino'];
 
 const Waitlist = memo(() => {
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<Category>('Iniciante');
-  const [selectedGender, setSelectedGender] = useState<Gender>('Masculino');
   const [processingId, setProcessingId] = useState<string | null>(null);
+  // Per-athlete category/gender selection
+  const [athleteSettings, setAthleteSettings] = useState<Record<string, { category: Category; gender: Gender }>>({});
   
   const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
+
+  const getAthleteSettings = (id: string) => {
+    return athleteSettings[id] || { category: 'Iniciante' as Category, gender: 'Masculino' as Gender };
+  };
+
+  const updateAthleteCategory = (id: string, category: Category) => {
+    setAthleteSettings(prev => ({
+      ...prev,
+      [id]: { ...getAthleteSettings(id), category }
+    }));
+  };
+
+  const updateAthleteGender = (id: string, gender: Gender) => {
+    setAthleteSettings(prev => ({
+      ...prev,
+      [id]: { ...getAthleteSettings(id), gender }
+    }));
+  };
 
   const { data: waitlist, isLoading } = useQuery({
     queryKey: ['admin-waitlist'],
@@ -111,9 +129,10 @@ const Waitlist = memo(() => {
   });
 
   const handleApprove = useCallback((athlete: WaitlistAthlete) => {
+    const settings = getAthleteSettings(athlete.id);
     setProcessingId(athlete.id);
-    approveMutation.mutate({ athlete, category: selectedCategory, gender: selectedGender });
-  }, [approveMutation, selectedCategory, selectedGender]);
+    approveMutation.mutate({ athlete, category: settings.category, gender: settings.gender });
+  }, [approveMutation, athleteSettings]);
 
   const handleDelete = useCallback((id: string) => {
     setProcessingId(id);
@@ -135,9 +154,9 @@ const Waitlist = memo(() => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <div className="relative flex-1">
+            {/* Search Filter */}
+            <div className="mb-6">
+              <div className="relative max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nome ou cidade..."
@@ -146,26 +165,6 @@ const Waitlist = memo(() => {
                   className="pl-9"
                 />
               </div>
-              <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as Category)}>
-                <SelectTrigger className="w-full sm:w-36">
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedGender} onValueChange={(v) => setSelectedGender(v as Gender)}>
-                <SelectTrigger className="w-full sm:w-36">
-                  <SelectValue placeholder="Gênero" />
-                </SelectTrigger>
-                <SelectContent>
-                  {GENDERS.map(gender => (
-                    <SelectItem key={gender} value={gender}>{gender}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Table */}
@@ -184,51 +183,87 @@ const Waitlist = memo(() => {
                     <TableRow>
                       <TableHead>Nome</TableHead>
                       <TableHead>Cidade</TableHead>
-                      <TableHead>Inscrição</TableHead>
+                      <TableHead>Categoria</TableHead>
+                      <TableHead>Gênero</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredWaitlist.map((athlete) => (
-                      <TableRow key={athlete.id}>
-                        <TableCell className="font-medium">
-                          {athlete.first_name} {athlete.last_name}
-                        </TableCell>
-                        <TableCell>
-                          <span className="flex items-center gap-1 text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            {athlete.city}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {format(new Date(athlete.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={() => handleApprove(athlete)}
-                              disabled={processingId === athlete.id}
+                    {filteredWaitlist.map((athlete) => {
+                      const settings = getAthleteSettings(athlete.id);
+                      return (
+                        <TableRow key={athlete.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{athlete.first_name} {athlete.last_name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {format(new Date(athlete.created_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="flex items-center gap-1 text-muted-foreground">
+                              <MapPin className="h-3 w-3" />
+                              {athlete.city}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Select 
+                              value={settings.category} 
+                              onValueChange={(v) => updateAthleteCategory(athlete.id, v as Category)}
                             >
-                              {processingId === athlete.id ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <><UserCheck className="h-4 w-4 mr-1" /> Aprovar</>
-                              )}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDelete(athlete.id)}
-                              disabled={processingId === athlete.id}
+                              <SelectTrigger className="w-28 h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CATEGORIES.map(cat => (
+                                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Select 
+                              value={settings.gender} 
+                              onValueChange={(v) => updateAthleteGender(athlete.id, v as Gender)}
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                              <SelectTrigger className="w-28 h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {GENDERS.map(gender => (
+                                  <SelectItem key={gender} value={gender}>{gender}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleApprove(athlete)}
+                                disabled={processingId === athlete.id}
+                              >
+                                {processingId === athlete.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <><UserCheck className="h-4 w-4 mr-1" /> Aprovar</>
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDelete(athlete.id)}
+                                disabled={processingId === athlete.id}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
