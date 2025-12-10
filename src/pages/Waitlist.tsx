@@ -24,6 +24,7 @@ interface WaitlistAthlete {
   first_name: string;
   last_name: string;
   city: string;
+  gender: string;
   created_at: string;
 }
 
@@ -39,21 +40,24 @@ const Waitlist = memo(() => {
   const debouncedSearch = useDebounce(search, 300);
   const queryClient = useQueryClient();
 
-  const getAthleteSettings = (id: string) => {
-    return athleteSettings[id] || { category: 'Iniciante' as Category, gender: 'Masculino' as Gender };
+  const getAthleteSettings = (athlete: WaitlistAthlete) => {
+    const stored = athleteSettings[athlete.id];
+    if (stored) return stored;
+    // Use gender from waitlist as default
+    return { category: 'Iniciante' as Category, gender: (athlete.gender || 'Masculino') as Gender };
   };
 
-  const updateAthleteCategory = (id: string, category: Category) => {
+  const updateAthleteCategory = (athlete: WaitlistAthlete, category: Category) => {
     setAthleteSettings(prev => ({
       ...prev,
-      [id]: { ...getAthleteSettings(id), category }
+      [athlete.id]: { ...getAthleteSettings(athlete), category }
     }));
   };
 
-  const updateAthleteGender = (id: string, gender: Gender) => {
+  const updateAthleteGender = (athlete: WaitlistAthlete, gender: Gender) => {
     setAthleteSettings(prev => ({
       ...prev,
-      [id]: { ...getAthleteSettings(id), gender }
+      [athlete.id]: { ...getAthleteSettings(athlete), gender }
     }));
   };
 
@@ -129,7 +133,7 @@ const Waitlist = memo(() => {
   });
 
   const handleApprove = useCallback((athlete: WaitlistAthlete) => {
-    const settings = getAthleteSettings(athlete.id);
+    const settings = getAthleteSettings(athlete);
     setProcessingId(athlete.id);
     approveMutation.mutate({ athlete, category: settings.category, gender: settings.gender });
   }, [approveMutation, athleteSettings]);
@@ -190,7 +194,7 @@ const Waitlist = memo(() => {
                   </TableHeader>
                   <TableBody>
                     {filteredWaitlist.map((athlete) => {
-                      const settings = getAthleteSettings(athlete.id);
+                      const settings = getAthleteSettings(athlete);
                       return (
                         <TableRow key={athlete.id}>
                           <TableCell>
@@ -210,7 +214,7 @@ const Waitlist = memo(() => {
                           <TableCell>
                             <Select 
                               value={settings.category} 
-                              onValueChange={(v) => updateAthleteCategory(athlete.id, v as Category)}
+                              onValueChange={(v) => updateAthleteCategory(athlete, v as Category)}
                             >
                               <SelectTrigger className="w-28 h-8 text-xs">
                                 <SelectValue />
@@ -225,7 +229,7 @@ const Waitlist = memo(() => {
                           <TableCell>
                             <Select 
                               value={settings.gender} 
-                              onValueChange={(v) => updateAthleteGender(athlete.id, v as Gender)}
+                              onValueChange={(v) => updateAthleteGender(athlete, v as Gender)}
                             >
                               <SelectTrigger className="w-28 h-8 text-xs">
                                 <SelectValue />
