@@ -14,7 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon, Repeat } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon, Repeat, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
@@ -611,9 +612,17 @@ const Admin = () => {
             </Button>
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Painel Administrativo</h1>
-            <p className="text-muted-foreground">Gerencie atletas e torneios</p>
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Painel Administrativo</h1>
+              <p className="text-muted-foreground">Gerencie atletas e torneios</p>
+            </div>
+            <Link to="/admin/waitlist">
+              <Button variant="outline" className="gap-2">
+                <Clock className="h-4 w-4" />
+                Lista de Espera
+              </Button>
+            </Link>
           </div>
 
           <Tabs defaultValue="athletes" className="space-y-6">

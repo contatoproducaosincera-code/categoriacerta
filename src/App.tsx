@@ -18,6 +18,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Signup = lazy(() => import("./pages/Signup"));
 const Feed = lazy(() => import("./pages/Feed"));
 const Offline = lazy(() => import("./pages/Offline"));
+const Waitlist = lazy(() => import("./pages/Waitlist"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
@@ -54,6 +55,11 @@ const App = () => (
                 <Route path="/admin" element={
                   <ProtectedRoute>
                     <Admin />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/waitlist" element={
+                  <ProtectedRoute>
+                    <Waitlist />
                   </ProtectedRoute>
                 } />
                 <Route path="/auth" element={<Auth />} />
