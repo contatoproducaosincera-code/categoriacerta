@@ -34,16 +34,34 @@ const Index = memo(() => {
       <Navbar />
       <HeroSection />
       
-      {/* Registration CTA Section */}
-      <section className="py-12 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl font-display font-bold mb-4">
+      {/* Registration CTA Section - Prominent */}
+      <section className="py-16 lg:py-20 bg-gradient-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-32 h-32 rounded-full bg-white blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-white blur-3xl" />
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
+            <span className="text-2xl">🎾</span>
+            <span className="text-primary-foreground font-medium text-sm">Inscrições Abertas</span>
+          </div>
+          
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold mb-4 text-primary-foreground">
             Quer participar dos torneios?
           </h2>
-          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Cadastre-se na nossa lista de espera e aguarde aprovação do administrador
+          <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto text-lg">
+            Cadastre-se agora na nossa lista de espera e comece sua jornada no beach tennis!
           </p>
-          <AthleteRegistrationForm />
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <AthleteRegistrationForm />
+          </div>
+          
+          <p className="text-primary-foreground/60 text-sm mt-6">
+            ✓ Cadastro rápido e gratuito &nbsp; ✓ Aprovação em até 24h
+          </p>
         </div>
       </section>
       
