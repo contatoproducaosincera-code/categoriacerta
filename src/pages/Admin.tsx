@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon, Repeat, Clock } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon, Repeat, Clock, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImportAthletesDialog from "@/components/ImportAthletesDialog";
@@ -617,12 +617,20 @@ const Admin = () => {
               <h1 className="text-3xl font-bold mb-2">Painel Administrativo</h1>
               <p className="text-muted-foreground">Gerencie atletas e torneios</p>
             </div>
-            <Link to="/admin/waitlist">
-              <Button variant="outline" className="gap-2">
-                <Clock className="h-4 w-4" />
-                Lista de Espera
-              </Button>
-            </Link>
+            <div className="flex gap-2 flex-wrap">
+              <Link to="/admin/waitlist">
+                <Button variant="outline" className="gap-2">
+                  <Clock className="h-4 w-4" />
+                  Lista de Espera
+                </Button>
+              </Link>
+              <Link to="/admin/reversao-categoria">
+                <Button variant="outline" className="gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10">
+                  <RotateCcw className="h-4 w-4" />
+                  Reversão de Categorias
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <Tabs defaultValue="athletes" className="space-y-6">
