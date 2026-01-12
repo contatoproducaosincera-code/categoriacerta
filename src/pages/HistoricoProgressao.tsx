@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, TrendingUp, Calendar, Award, ArrowRight } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import PromotionDetailsDialog from "@/components/PromotionDetailsDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -30,6 +31,7 @@ interface CategoryHistoryItem {
 const HistoricoProgressao = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [selectedPromotion, setSelectedPromotion] = useState<CategoryHistoryItem | null>(null);
 
   const { data: historyData, isLoading, error } = useQuery({
     queryKey: ["category-history"],
@@ -188,10 +190,13 @@ const HistoricoProgressao = () => {
                   {filteredHistory.map((item) => (
                     <TableRow 
                       key={item.id}
-                      className="hover:bg-accent/50 transition-colors"
+                      className="hover:bg-accent/50 transition-colors cursor-pointer"
+                      onClick={() => setSelectedPromotion(item)}
                     >
                       <TableCell className="font-medium">
-                        {item.athletes?.name || "Atleta removido"}
+                        <span className="hover:text-primary hover:underline">
+                          {item.athletes?.name || "Atleta removido"}
+                        </span>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {item.athletes?.city || "-"}
@@ -230,10 +235,25 @@ const HistoricoProgressao = () => {
               <p>📊 <strong>160 pontos:</strong> Iniciante → D</p>
               <p>📊 <strong>300 pontos:</strong> D → C (categoria máxima)</p>
               <p className="text-xs mt-2">💡 Ao subir de categoria, o atleta começa com 0 pontos na nova categoria.</p>
+              <p className="text-xs">👆 Clique no nome de um atleta para ver os detalhes da promoção.</p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Promotion Details Dialog */}
+      {selectedPromotion && selectedPromotion.athletes && (
+        <PromotionDetailsDialog
+          open={!!selectedPromotion}
+          onOpenChange={(open) => !open && setSelectedPromotion(null)}
+          athleteId={selectedPromotion.athlete_id}
+          athleteName={selectedPromotion.athletes.name}
+          oldCategory={selectedPromotion.old_category}
+          newCategory={selectedPromotion.new_category}
+          pointsAtChange={selectedPromotion.points_at_change}
+          promotionDate={selectedPromotion.changed_at}
+        />
+      )}
     </div>
   );
 };
