@@ -378,6 +378,7 @@ export type Database = {
           city: string
           created_at: string
           first_name: string
+          gender: string
           id: string
           last_name: string
         }
@@ -385,6 +386,7 @@ export type Database = {
           city: string
           created_at?: string
           first_name: string
+          gender?: string
           id?: string
           last_name: string
         }
@@ -392,6 +394,7 @@ export type Database = {
           city?: string
           created_at?: string
           first_name?: string
+          gender?: string
           id?: string
           last_name?: string
         }
