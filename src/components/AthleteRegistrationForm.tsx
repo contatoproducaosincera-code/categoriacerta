@@ -6,24 +6,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { UserPlus, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { calculateSimilarity, normalizeString } from '@/lib/nameSimilarity';
 
-type Gender = 'Masculino' | 'Feminino';
-
 interface RegistrationForm {
   firstName: string;
   lastName: string;
   city: string;
-  gender: Gender;
 }
 
 const AthleteRegistrationForm = memo(() => {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<RegistrationForm>({ firstName: '', lastName: '', city: '', gender: 'Masculino' });
+  const [form, setForm] = useState<RegistrationForm>({ firstName: '', lastName: '', city: '' });
   const queryClient = useQueryClient();
   
   const fullName = `${form.firstName} ${form.lastName}`.trim();
@@ -94,13 +90,12 @@ const AthleteRegistrationForm = memo(() => {
         first_name: data.firstName.trim(),
         last_name: data.lastName.trim(),
         city: data.city.trim(),
-        gender: data.gender,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Inscrição realizada!', { description: 'Você está na lista de espera.' });
-      setForm({ firstName: '', lastName: '', city: '', gender: 'Masculino' });
+      setForm({ firstName: '', lastName: '', city: '' });
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ['registration-name-check'] });
     },
@@ -181,29 +176,15 @@ const AthleteRegistrationForm = memo(() => {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">Cidade</Label>
-              <Input
-                id="city"
-                placeholder="Sua cidade"
-                value={form.city}
-                onChange={(e) => updateField('city', e.target.value)}
-                maxLength={100}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Gênero</Label>
-              <Select value={form.gender} onValueChange={(v) => setForm(prev => ({ ...prev, gender: v as Gender }))}>
-                <SelectTrigger className="bg-background">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="Masculino">Masculino</SelectItem>
-                  <SelectItem value="Feminino">Feminino</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="city">Cidade</Label>
+            <Input
+              id="city"
+              placeholder="Sua cidade"
+              value={form.city}
+              onChange={(e) => updateField('city', e.target.value)}
+              maxLength={100}
+            />
           </div>
 
           <Button 
