@@ -222,17 +222,9 @@ const Ranking = () => {
                   </div>
                 </div>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>📊 <strong>160 pontos:</strong> Iniciante → D</p>
-                  <p>📊 <strong>300 pontos:</strong> D → C (categoria máxima)</p>
-                  <p className="text-xs mt-2">💡 Ao subir de categoria, você começa com 0 pontos!</p>
-                </div>
-                <div className="mt-4 pt-4 border-t border-border">
-                  <a 
-                    href="/historico-progressao" 
-                    className="text-primary hover:underline font-medium inline-flex items-center gap-1"
-                  >
-                    📈 Ver histórico de progressões
-                  </a>
+                  <p>📊 <strong>500 pontos:</strong> Iniciante → D</p>
+                  <p>📊 <strong>500 pontos:</strong> D → C (categoria máxima)</p>
+                  <p className="text-xs mt-2">💡 A cada 500 pontos você sobe uma categoria!</p>
                 </div>
               </div>
             </>

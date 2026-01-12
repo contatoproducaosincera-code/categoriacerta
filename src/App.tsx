@@ -19,7 +19,6 @@ const Signup = lazy(() => import("./pages/Signup"));
 const Feed = lazy(() => import("./pages/Feed"));
 const Offline = lazy(() => import("./pages/Offline"));
 const Waitlist = lazy(() => import("./pages/Waitlist"));
-const HistoricoProgressao = lazy(() => import("./pages/HistoricoProgressao"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
@@ -52,7 +51,6 @@ const App = () => (
                 <Route path="/ranking" element={<Ranking />} />
                 <Route path="/torneios" element={<Torneios />} />
                 <Route path="/feed" element={<Feed />} />
-                <Route path="/historico-progressao" element={<HistoricoProgressao />} />
                 <Route path="/offline" element={<Offline />} />
                 <Route path="/admin" element={
                   <ProtectedRoute>

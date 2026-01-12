@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, Users, LogIn, LogOut, TrendingUp } from "lucide-react";
+import { Trophy, Users, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import MobileMenu from "./MobileMenu";
@@ -79,17 +79,6 @@ const Navbar = memo(() => {
             }`}
           >
             Torneios
-          </Link>
-          <Link
-            to="/historico-progressao"
-            className={`px-3 lg:px-4 py-2 rounded-lg text-sm lg:text-base font-medium transition-all flex items-center gap-1.5 ${
-              isActive("/historico-progressao")
-                ? "bg-primary text-primary-foreground scale-105"
-                : "hover:bg-accent/80 hover:text-accent-foreground hover:scale-105"
-            }`}
-          >
-            <TrendingUp className="h-4 w-4" />
-            Progressão
           </Link>
           
           {/* Theme Toggle */}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Users, LogIn, LogOut, TrendingUp } from "lucide-react";
+import { Menu, X, Users, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -69,14 +69,6 @@ const MobileMenu = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Torneios
-              </Link>
-              <Link
-                to="/historico-progressao"
-                className="px-4 py-3 rounded-lg text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground flex items-center gap-2"
-                onClick={() => setIsOpen(false)}
-              >
-                <TrendingUp className="h-4 w-4" />
-                Progressão
               </Link>
               {user ? (
                 <>
