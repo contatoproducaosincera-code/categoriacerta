@@ -26,13 +26,13 @@ const Atletas = () => {
 
   const getCategoryProgress = (points: number, category: string) => {
     const thresholds = {
-      'Iniciante': { next: 500, nextCategory: 'D' },
-      'D': { next: 500, nextCategory: 'C' },
-      'C': { next: 500, nextCategory: null }
+      'Iniciante': { next: 160, nextCategory: 'D' },
+      'D': { next: 300, nextCategory: 'C' },
+      'C': { next: null, nextCategory: null } // Categoria C não pontua (não existe B na região)
     };
 
     const threshold = thresholds[category as keyof typeof thresholds];
-    if (!threshold || !threshold.nextCategory) {
+    if (!threshold || !threshold.nextCategory || !threshold.next) {
       return { progress: 100, remaining: 0, nextCategory: null, percentage: 100 };
     }
 
@@ -97,9 +97,9 @@ const Atletas = () => {
         const matchesCity = selectedCities.length === 0 || selectedCities.includes(athlete.city);
         
         let matchesPoints = true;
-        if (pointsFilter === "0-500") matchesPoints = athlete.points >= 0 && athlete.points < 500;
-        else if (pointsFilter === "500-1000") matchesPoints = athlete.points >= 500 && athlete.points < 1000;
-        else if (pointsFilter === "1000+") matchesPoints = athlete.points >= 1000;
+        if (pointsFilter === "0-160") matchesPoints = athlete.points >= 0 && athlete.points < 160;
+        else if (pointsFilter === "160-300") matchesPoints = athlete.points >= 160 && athlete.points < 300;
+        else if (pointsFilter === "300+") matchesPoints = athlete.points >= 300;
         
         return matchesSearch && matchesCategory && matchesGender && matchesCity && matchesPoints;
       })
@@ -188,9 +188,9 @@ const Atletas = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-background z-[100]">
                       <SelectItem value="all">Todas Pontuações</SelectItem>
-                      <SelectItem value="0-500">0 - 499 pontos</SelectItem>
-                      <SelectItem value="500-1000">500 - 999 pontos</SelectItem>
-                      <SelectItem value="1000+">1000+ pontos</SelectItem>
+                      <SelectItem value="0-160">0 - 159 pontos</SelectItem>
+                      <SelectItem value="160-300">160 - 299 pontos</SelectItem>
+                      <SelectItem value="300+">300+ pontos</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -265,7 +265,7 @@ const Atletas = () => {
                         ) : (
                           <p className="text-xs font-bold text-primary pt-2 border-t flex items-center gap-1">
                             <Trophy className="h-3.5 w-3.5" />
-                            Categoria máxima
+                            Categoria máxima (não pontua)
                           </p>
                         );
                       })()}

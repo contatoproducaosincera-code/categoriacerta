@@ -110,13 +110,13 @@ const Index = memo(() => {
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed mb-12 lg:mb-16 max-w-3xl mx-auto px-4">
               Plataforma oficial para acompanhar atletas de beach tennis, 
               registrar conquistas e acompanhar a evolução de cada jogador. 
-              Sistema simples de categorias: <strong className="text-foreground">a cada 500 pontos você sobe uma categoria!</strong>
+              Sistema de categorias com <strong className="text-foreground">promoção automática baseada em pontos!</strong>
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-3xl mx-auto">
               {[
-                { title: "Iniciante", description: "Categoria inicial", icon: "🎾" },
-                { title: "Categoria D", description: "500 pontos", icon: "⭐" },
-                { title: "Categoria C", description: "1000 pontos", icon: "🏆" },
+                { title: "Iniciante", description: "Sobe com 160 pts", icon: "🎾" },
+                { title: "Categoria D", description: "Sobe com 300 pts", icon: "⭐" },
+                { title: "Categoria C", description: "Categoria máxima", icon: "🏆" },
               ].map((category, index) => (
                 <div
                   key={index}
@@ -135,7 +135,7 @@ const Index = memo(() => {
               ))}
             </div>
             <p className="text-sm text-muted-foreground mt-8">
-              💡 A cada 500 pontos conquistados, você avança automaticamente para a próxima categoria!
+              💡 Iniciante sobe com 160 pts, Categoria D sobe com 300 pts. Categoria C é a máxima da região!
             </p>
           </div>
         </div>
