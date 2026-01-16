@@ -14,6 +14,7 @@ export interface CachedAthlete {
   category: string;
   city: string;
   gender: string;
+  active_points?: number;
 }
 
 interface CacheData<T> {
@@ -37,6 +38,7 @@ export const offlineStorage = {
         c: a.category,
         y: a.city,
         g: a.gender,
+        a: a.active_points || 0, // active_points for category progression
       }));
       
       const cacheData: CacheData<typeof minimalData> = {
@@ -60,7 +62,7 @@ export const offlineStorage = {
       const cached = localStorage.getItem(STORAGE_KEYS.ATHLETES);
       if (!cached) return null;
 
-      const cacheData: CacheData<Array<{i: string; n: string; p: number; c: string; y: string; g: string}>> = JSON.parse(cached);
+      const cacheData: CacheData<Array<{i: string; n: string; p: number; c: string; y: string; g: string; a?: number}>> = JSON.parse(cached);
       
       // Check version compatibility
       if (cacheData.version !== CACHE_VERSION) {
@@ -81,6 +83,7 @@ export const offlineStorage = {
         category: a.c,
         city: a.y,
         gender: a.g,
+        active_points: a.a || 0,
       }));
     } catch (error) {
       console.warn('Failed to read offline data:', error);
