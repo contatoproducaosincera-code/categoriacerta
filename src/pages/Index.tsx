@@ -114,8 +114,8 @@ const Index = memo(() => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-3xl mx-auto">
               {[
-                { title: "Iniciante", description: "Sobe com 160 pts", icon: "🎾" },
-                { title: "Categoria D", description: "Sobe com 300 pts", icon: "⭐" },
+                { title: "Iniciante", description: "Sobe com 500 pts ativos", icon: "🎾" },
+                { title: "Categoria D", description: "Sobe com 500 pts ativos", icon: "⭐" },
                 { title: "Categoria C", description: "Categoria máxima", icon: "🏆" },
               ].map((category, index) => (
                 <div
@@ -135,7 +135,7 @@ const Index = memo(() => {
               ))}
             </div>
             <p className="text-sm text-muted-foreground mt-8">
-              💡 Iniciante sobe com 160 pts, Categoria D sobe com 300 pts. Categoria C é a máxima da região!
+              💡 Suba de categoria ao atingir 500 pontos ativos! Pontos históricos são preservados separadamente.
             </p>
           </div>
         </div>

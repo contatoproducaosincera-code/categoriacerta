@@ -222,9 +222,9 @@ const Ranking = () => {
                   </div>
                 </div>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>📊 <strong>160 pontos:</strong> Iniciante → D</p>
-                  <p>📊 <strong>300 pontos:</strong> D → C (categoria máxima)</p>
-                  <p className="text-xs mt-2">💡 Ao subir de categoria, você começa com 0 pontos!</p>
+                  <p>📊 <strong>500 pontos ativos:</strong> Suba para a próxima categoria</p>
+                  <p>📊 <strong>Categoria C:</strong> Categoria máxima da região</p>
+                  <p className="text-xs mt-2">💡 Pontos históricos são preservados. Apenas pontos ativos (novos) contam para subida de categoria!</p>
                 </div>
                 <div className="mt-4 pt-4 border-t border-border">
                   <a 
