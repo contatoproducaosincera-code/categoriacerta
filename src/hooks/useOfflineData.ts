@@ -38,16 +38,41 @@ export function useOfflineAthletes(options: UseOfflineAthletesOptions = {}) {
         throw new Error('Sem conexão e sem dados em cache');
       }
 
-      // Online: fetch from server
+      // Online: fetch from server with calculated points from achievements
       setIsFromCache(false);
-      const { data, error } = await supabase
+      
+      // First, get all athletes
+      const { data: athletesData, error: athletesError } = await supabase
         .from('athletes')
-        .select('id, name, points, category, city, gender')
+        .select('id, name, points, category, city, gender, active_points')
         .order('points', { ascending: false });
 
-      if (error) throw error;
+      if (athletesError) throw athletesError;
 
-      const athletes = data || [];
+      // Then, get sum of achievements for each athlete
+      const { data: achievementSums, error: achievementsError } = await supabase
+        .from('achievements')
+        .select('athlete_id, points_awarded');
+
+      if (achievementsError) throw achievementsError;
+
+      // Calculate total points from achievements for each athlete
+      const pointsByAthlete: Record<string, number> = {};
+      (achievementSums || []).forEach((ach) => {
+        pointsByAthlete[ach.athlete_id] = (pointsByAthlete[ach.athlete_id] || 0) + ach.points_awarded;
+      });
+
+      // Map athletes with calculated points from achievements (historical points)
+      const athletes = (athletesData || []).map((athlete) => ({
+        ...athlete,
+        // Use calculated points from achievements history
+        points: pointsByAthlete[athlete.id] || 0,
+        // Keep active_points for category progression
+        active_points: athlete.active_points || 0,
+      }));
+
+      // Sort by calculated points
+      athletes.sort((a, b) => b.points - a.points);
       
       // Save to cache for offline use
       offlineStorage.saveAthletes(athletes);
