@@ -90,6 +90,7 @@ export type Database = {
       }
       athletes: {
         Row: {
+          active_points: number
           avatar_url: string | null
           category: Database["public"]["Enums"]["category"]
           city: string
@@ -104,6 +105,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          active_points?: number
           avatar_url?: string | null
           category?: Database["public"]["Enums"]["category"]
           city: string
@@ -118,6 +120,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          active_points?: number
           avatar_url?: string | null
           category?: Database["public"]["Enums"]["category"]
           city?: string

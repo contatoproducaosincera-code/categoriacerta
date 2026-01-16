@@ -232,9 +232,9 @@ const HistoricoProgressao = () => {
           <div className="mt-8 max-w-4xl mx-auto bg-accent/30 border border-border rounded-lg p-6">
             <h3 className="font-bold text-lg mb-3">Regras de Progressão</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p>📊 <strong>160 pontos:</strong> Iniciante → D</p>
-              <p>📊 <strong>300 pontos:</strong> D → C (categoria máxima)</p>
-              <p className="text-xs mt-2">💡 Ao subir de categoria, o atleta começa com 0 pontos na nova categoria.</p>
+              <p>📊 <strong>500 pontos ativos:</strong> Suba para a próxima categoria</p>
+              <p>📊 <strong>Categoria C:</strong> Categoria máxima da região</p>
+              <p className="text-xs mt-2">💡 Ao subir de categoria, os pontos ativos são zerados. Pontos históricos são preservados!</p>
               <p className="text-xs">👆 Clique no nome de um atleta para ver os detalhes da promoção.</p>
             </div>
           </div>

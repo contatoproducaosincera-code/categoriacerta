@@ -24,25 +24,24 @@ const Atletas = () => {
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [pointsFilter, setPointsFilter] = useState("all");
 
-  const getCategoryProgress = (points: number, category: string) => {
-    const thresholds = {
-      'Iniciante': { next: 160, nextCategory: 'D' },
-      'D': { next: 300, nextCategory: 'C' },
-      'C': { next: null, nextCategory: null } // Categoria C não pontua (não existe B na região)
-    };
-
-    const threshold = thresholds[category as keyof typeof thresholds];
-    if (!threshold || !threshold.nextCategory || !threshold.next) {
+  // Nova lógica: 500 pontos ATIVOS para subir de categoria
+  // Os pontos exibidos são os históricos, mas a progressão usa pontos ativos
+  const getCategoryProgress = (activePoints: number, category: string) => {
+    const threshold = 500; // Todas as categorias usam 500 pontos ativos para subir
+    
+    // Categoria C é a máxima - não sobe
+    if (category === 'C') {
       return { progress: 100, remaining: 0, nextCategory: null, percentage: 100 };
     }
 
-    const percentage = Math.min((points / threshold.next) * 100, 100);
-    const remaining = Math.max(threshold.next - points, 0);
+    const nextCategory = category === 'Iniciante' ? 'D' : 'C';
+    const percentage = Math.min((activePoints / threshold) * 100, 100);
+    const remaining = Math.max(threshold - activePoints, 0);
 
     return {
       progress: percentage,
       remaining,
-      nextCategory: threshold.nextCategory,
+      nextCategory,
       percentage: Math.round(percentage)
     };
   };
@@ -184,7 +183,7 @@ const Atletas = () => {
 
                   <Select value={pointsFilter} onValueChange={setPointsFilter}>
                     <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Pontuação" />
+                      <SelectValue placeholder="Pontuação Histórica" />
                     </SelectTrigger>
                     <SelectContent className="bg-background z-[100]">
                       <SelectItem value="all">Todas Pontuações</SelectItem>
@@ -254,18 +253,20 @@ const Atletas = () => {
                         <span className="text-sm font-medium text-muted-foreground ml-1">pts</span>
                       </div>
                       {(() => {
-                        const progress = getCategoryProgress(athlete.points, athlete.category);
+                        // Usa active_points para calcular progressão (ou 0 se não existir ainda)
+                        const activePoints = (athlete as any).active_points ?? 0;
+                        const progress = getCategoryProgress(activePoints, athlete.category);
                         return progress.nextCategory ? (
                           <div className="space-y-2 pt-2 border-t">
                             <Progress value={progress.progress} className="h-2.5" />
                             <p className="text-xs text-muted-foreground leading-tight">
-                              <span className="font-bold text-foreground">{progress.remaining} pts</span> para categoria {progress.nextCategory}
+                              <span className="font-bold text-foreground">{progress.remaining} pts ativos</span> para categoria {progress.nextCategory}
                             </p>
                           </div>
                         ) : (
                           <p className="text-xs font-bold text-primary pt-2 border-t flex items-center gap-1">
                             <Trophy className="h-3.5 w-3.5" />
-                            Categoria máxima (não pontua)
+                            Categoria máxima
                           </p>
                         );
                       })()}

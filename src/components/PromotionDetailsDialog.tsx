@@ -101,12 +101,11 @@ const PromotionDetailsDialog = ({
     return <Trophy className={`h-4 w-4 ${colors[position] || "text-muted-foreground"}`} />;
   };
 
+  // Nova regra: 500 pontos ativos para todas as categorias
   const getRequiredPoints = (category: string) => {
-    switch (category) {
-      case "D": return 160;
-      case "C": return 300;
-      default: return 0;
-    }
+    // Categoria C é máxima, não sobe mais
+    if (category === "C") return 0;
+    return 500; // Todas as categorias precisam de 500 pontos ativos
   };
 
   const requiredPoints = getRequiredPoints(newCategory);
@@ -183,13 +182,12 @@ const PromotionDetailsDialog = ({
               <div className="bg-accent/50 rounded-lg p-4 text-sm">
                 <p className="text-muted-foreground">
                   <strong className="text-foreground">{athleteName}</strong> alcançou{" "}
-                  <strong className="text-primary">{pointsAtChange} pontos</strong> na categoria{" "}
-                  <strong>{oldCategory}</strong>, atingindo a meta de{" "}
-                  <strong className="text-green-600">{requiredPoints} pontos</strong> necessários 
+                  <strong className="text-primary">{pointsAtChange} pontos ativos</strong> na categoria{" "}
+                  <strong>{oldCategory}</strong>, atingindo a meta necessária 
                   para subir para a categoria <strong>{newCategory}</strong>.
                 </p>
                 <p className="text-muted-foreground mt-2">
-                  Após a promoção, o atleta iniciou na nova categoria com <strong>0 pontos</strong>.
+                  Após a promoção, os pontos ativos foram zerados. <strong>Pontos históricos são preservados!</strong>
                 </p>
               </div>
             </CardContent>
