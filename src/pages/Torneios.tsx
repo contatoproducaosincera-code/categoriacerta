@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, MapPin, MessageCircle, Trophy, ChevronLeft, ChevronRight, Clock, CheckCircle, Filter, X, Repeat } from "lucide-react";
-import BackButton from "@/components/BackButton";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { format, isFuture, isPast, isToday, parseISO, startOfMonth, endOfMonth, isSameMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -297,9 +296,6 @@ const Torneios = () => {
       
       <section className="py-8 md:py-12 bg-gradient-to-b from-primary/10 to-transparent">
         <div className="container mx-auto px-4">
-          <div className="mb-6">
-            <BackButton />
-          </div>
           
           {/* Header */}
           <div className="text-center mb-8">

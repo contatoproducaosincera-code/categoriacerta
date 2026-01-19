@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Search, MapPin, Trophy, BadgeCheck } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
-import BackButton from "@/components/BackButton";
 import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import QueryErrorBoundary from "@/components/QueryErrorBoundary";
@@ -112,9 +111,6 @@ const Atletas = () => {
         
         <section className="py-12 lg:py-16 bg-gradient-to-b from-primary/10 to-transparent">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-6 lg:mb-8">
-              <BackButton />
-            </div>
             <div className="text-center mb-8 lg:mb-12">
               <div className="flex flex-col items-center gap-2">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-1 lg:mb-2">
