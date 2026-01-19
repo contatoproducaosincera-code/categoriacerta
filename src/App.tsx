@@ -20,7 +20,6 @@ const Feed = lazy(() => import("./pages/Feed"));
 const Offline = lazy(() => import("./pages/Offline"));
 const Waitlist = lazy(() => import("./pages/Waitlist"));
 const HistoricoProgressao = lazy(() => import("./pages/HistoricoProgressao"));
-const ReversaoCategoria = lazy(() => import("./pages/ReversaoCategoria"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
@@ -63,11 +62,6 @@ const App = () => (
                 <Route path="/admin/waitlist" element={
                   <ProtectedRoute>
                     <Waitlist />
-                  </ProtectedRoute>
-                } />
-                <Route path="/admin/reversao-categoria" element={
-                  <ProtectedRoute>
-                    <ReversaoCategoria />
                   </ProtectedRoute>
                 } />
                 <Route path="/auth" element={<Auth />} />
