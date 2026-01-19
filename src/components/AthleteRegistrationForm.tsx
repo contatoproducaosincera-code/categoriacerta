@@ -24,7 +24,7 @@ interface RegistrationForm {
   instagram: string;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 
 const AthleteRegistrationForm = memo(() => {
@@ -120,7 +120,7 @@ const AthleteRegistrationForm = memo(() => {
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('Arquivo muito grande', { description: 'Tamanho máximo: 5MB' });
+      toast.error('Arquivo muito grande', { description: 'Tamanho máximo: 10MB' });
       return;
     }
 
@@ -341,7 +341,7 @@ const AthleteRegistrationForm = memo(() => {
                     {photoPreview ? 'Trocar foto' : 'Escolher foto'}
                   </Button>
                   <span className="text-xs text-muted-foreground">
-                    JPG, JPEG ou PNG (máx. 5MB)
+                    JPG, JPEG ou PNG (máx. 10MB)
                   </span>
                 </div>
                 
