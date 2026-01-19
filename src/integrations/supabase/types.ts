@@ -378,27 +378,33 @@ export type Database = {
       }
       waitlist: {
         Row: {
+          avatar_url: string | null
           city: string
           created_at: string
           first_name: string
           gender: string
           id: string
+          instagram: string | null
           last_name: string
         }
         Insert: {
+          avatar_url?: string | null
           city: string
           created_at?: string
           first_name: string
           gender?: string
           id?: string
+          instagram?: string | null
           last_name: string
         }
         Update: {
+          avatar_url?: string | null
           city?: string
           created_at?: string
           first_name?: string
           gender?: string
           id?: string
+          instagram?: string | null
           last_name?: string
         }
         Relationships: []
