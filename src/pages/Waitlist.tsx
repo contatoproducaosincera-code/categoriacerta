@@ -10,8 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, UserCheck, Trash2, Loader2, Clock, MapPin, Instagram, User } from 'lucide-react';
+import { Search, UserCheck, Trash2, Loader2, Clock, MapPin, Instagram, User, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -37,6 +38,7 @@ const GENDERS: Gender[] = ['Masculino', 'Feminino'];
 const Waitlist = memo(() => {
   const [search, setSearch] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [enlargedPhoto, setEnlargedPhoto] = useState<{ url: string; name: string } | null>(null);
   // Per-athlete category/gender selection
   const [athleteSettings, setAthleteSettings] = useState<Record<string, { category: Category; gender: Gender }>>({});
   
@@ -210,7 +212,13 @@ const Waitlist = memo(() => {
                         <TableRow key={athlete.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10 border">
+                              <Avatar 
+                                className="h-10 w-10 border cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                                onClick={() => athlete.avatar_url && setEnlargedPhoto({ 
+                                  url: athlete.avatar_url, 
+                                  name: `${athlete.first_name} ${athlete.last_name}` 
+                                })}
+                              >
                                 {athlete.avatar_url ? (
                                   <AvatarImage 
                                     src={athlete.avatar_url} 
@@ -314,6 +322,29 @@ const Waitlist = memo(() => {
             )}
           </CardContent>
         </Card>
+        {/* Photo Enlargement Dialog */}
+        <Dialog open={!!enlargedPhoto} onOpenChange={() => setEnlargedPhoto(null)}>
+          <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+            {enlargedPhoto && (
+              <div className="relative">
+                <button
+                  onClick={() => setEnlargedPhoto(null)}
+                  className="absolute top-2 right-2 z-10 bg-black/50 text-white rounded-full p-1.5 hover:bg-black/70 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <img 
+                  src={enlargedPhoto.url} 
+                  alt={enlargedPhoto.name}
+                  className="w-full h-auto max-h-[80vh] object-contain"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                  <p className="text-white font-medium text-lg">{enlargedPhoto.name}</p>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
