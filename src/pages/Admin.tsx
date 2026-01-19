@@ -14,15 +14,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon, Repeat, Clock, RotateCcw } from "lucide-react";
+import { LogOut, Plus, Trophy, UserPlus, Edit, Trash2, Search, Award, Calendar, Users, X, ImageIcon, Repeat, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
-import ImportAthletesDialog from "@/components/ImportAthletesDialog";
 import BackButton from "@/components/BackButton";
 import BulkAddAthletesDialog from "@/components/BulkAddAthletesDialog";
 import { athleteSchema, tournamentSchema, achievementSchema } from "@/lib/validations";
 import { z } from "zod";
-import ImportTutorialDialog from "@/components/ImportTutorialDialog";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import OptimizedAthletesTable from "@/components/admin/OptimizedAthletesTable";
 import TournamentImageUpload from "@/components/admin/TournamentImageUpload";
@@ -624,12 +622,6 @@ const Admin = () => {
                   Lista de Espera
                 </Button>
               </Link>
-              <Link to="/admin/reversao-categoria">
-                <Button variant="outline" className="gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10">
-                  <RotateCcw className="h-4 w-4" />
-                  Reversão de Categorias
-                </Button>
-              </Link>
             </div>
           </div>
 
@@ -764,8 +756,6 @@ const Admin = () => {
                 />
 
                 <BulkAddAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
-                <ImportAthletesDialog onSuccess={() => queryClient.invalidateQueries({ queryKey: ["admin-athletes"] })} />
-                <ImportTutorialDialog />
               </div>
 
               {/* Barra flutuante de ações em massa */}
