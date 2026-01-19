@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
-import BackButton from "@/components/BackButton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -96,9 +95,6 @@ const HistoricoProgressao = () => {
       
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 lg:mb-8">
-            <BackButton />
-          </div>
 
           <div className="text-center mb-10 lg:mb-14">
             <div className="flex items-center justify-center gap-3 mb-4">

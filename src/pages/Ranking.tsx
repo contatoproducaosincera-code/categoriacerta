@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Trophy, Search } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
-import BackButton from "@/components/BackButton";
 import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useOfflineAthletes } from "@/hooks/useOfflineData";
@@ -59,9 +58,6 @@ const Ranking = () => {
       
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 lg:mb-8">
-            <BackButton />
-          </div>
           
           <div className="text-center mb-10 lg:mb-14">
             <div className="flex flex-col items-center gap-2">

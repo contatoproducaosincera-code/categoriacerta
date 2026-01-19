@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
-import BackButton from "@/components/BackButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Medal, Calendar, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -74,9 +73,6 @@ const Feed = () => {
       
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6 lg:mb-8">
-            <BackButton />
-          </div>
           
           <div className="text-center mb-10 lg:mb-14">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 lg:mb-5 flex items-center justify-center gap-3">
