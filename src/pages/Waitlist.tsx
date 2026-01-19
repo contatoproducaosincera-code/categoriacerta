@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
-import { Search, UserCheck, Trash2, Loader2, Clock, MapPin } from 'lucide-react';
+import { Search, UserCheck, Trash2, Loader2, Clock, MapPin, Instagram, User } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -26,6 +27,8 @@ interface WaitlistAthlete {
   city: string;
   gender: string;
   created_at: string;
+  avatar_url: string | null;
+  instagram: string | null;
 }
 
 const CATEGORIES: Category[] = ['Iniciante', 'D', 'C'];
@@ -83,19 +86,22 @@ const Waitlist = memo(() => {
     return waitlist.filter(athlete => 
       athlete.first_name.toLowerCase().includes(searchLower) ||
       athlete.last_name.toLowerCase().includes(searchLower) ||
-      athlete.city.toLowerCase().includes(searchLower)
+      athlete.city.toLowerCase().includes(searchLower) ||
+      (athlete.instagram && athlete.instagram.toLowerCase().includes(searchLower))
     );
   }, [waitlist, debouncedSearch]);
 
   const approveMutation = useMutation({
     mutationFn: async ({ athlete, category, gender }: { athlete: WaitlistAthlete; category: Category; gender: Gender }) => {
-      // Add to athletes table
+      // Add to athletes table with avatar and instagram
       const { error: insertError } = await supabase.from('athletes').insert({
         name: `${athlete.first_name} ${athlete.last_name}`,
         city: athlete.city,
         category,
         gender,
         points: 0,
+        avatar_url: athlete.avatar_url,
+        instagram: athlete.instagram,
       });
       if (insertError) throw insertError;
 
@@ -143,6 +149,10 @@ const Waitlist = memo(() => {
     deleteMutation.mutate(id);
   }, [deleteMutation]);
 
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -163,7 +173,7 @@ const Waitlist = memo(() => {
               <div className="relative max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por nome ou cidade..."
+                  placeholder="Buscar por nome, cidade ou Instagram..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -185,8 +195,9 @@ const Waitlist = memo(() => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nome</TableHead>
+                      <TableHead>Atleta</TableHead>
                       <TableHead>Cidade</TableHead>
+                      <TableHead>Instagram</TableHead>
                       <TableHead>Categoria</TableHead>
                       <TableHead>Gênero</TableHead>
                       <TableHead className="text-right">Ações</TableHead>
@@ -198,10 +209,24 @@ const Waitlist = memo(() => {
                       return (
                         <TableRow key={athlete.id}>
                           <TableCell>
-                            <div>
-                              <div className="font-medium">{athlete.first_name} {athlete.last_name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {format(new Date(athlete.created_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10 border">
+                                {athlete.avatar_url ? (
+                                  <AvatarImage 
+                                    src={athlete.avatar_url} 
+                                    alt={`${athlete.first_name} ${athlete.last_name}`}
+                                    className="object-cover"
+                                  />
+                                ) : null}
+                                <AvatarFallback className="bg-muted text-sm">
+                                  {getInitials(athlete.first_name, athlete.last_name)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{athlete.first_name} {athlete.last_name}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {format(new Date(athlete.created_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
+                                </div>
                               </div>
                             </div>
                           </TableCell>
@@ -210,6 +235,21 @@ const Waitlist = memo(() => {
                               <MapPin className="h-3 w-3" />
                               {athlete.city}
                             </span>
+                          </TableCell>
+                          <TableCell>
+                            {athlete.instagram ? (
+                              <a 
+                                href={`https://instagram.com/${athlete.instagram.replace('@', '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-primary hover:underline text-sm"
+                              >
+                                <Instagram className="h-3 w-3" />
+                                {athlete.instagram}
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">-</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <Select 

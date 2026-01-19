@@ -1,16 +1,16 @@
-import { memo, useState, useCallback } from 'react';
+import { memo, useState, useCallback, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { UserPlus, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { UserPlus, Loader2, CheckCircle, AlertTriangle, Upload, X, Camera, Instagram } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { calculateSimilarity, normalizeString } from '@/lib/nameSimilarity';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 type Gender = 'Masculino' | 'Feminino';
 
@@ -19,11 +19,25 @@ interface RegistrationForm {
   lastName: string;
   city: string;
   gender: Gender;
+  instagram: string;
 }
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 
 const AthleteRegistrationForm = memo(() => {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<RegistrationForm>({ firstName: '', lastName: '', city: '', gender: 'Masculino' });
+  const [form, setForm] = useState<RegistrationForm>({ 
+    firstName: '', 
+    lastName: '', 
+    city: '', 
+    gender: 'Masculino',
+    instagram: ''
+  });
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   
   const fullName = `${form.firstName} ${form.lastName}`.trim();
@@ -88,32 +102,137 @@ const AthleteRegistrationForm = memo(() => {
 
   const { hasDuplicate, matches } = duplicateCheck();
 
+  // Handle file selection
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      toast.error('Formato inválido', { description: 'Use JPG, JPEG ou PNG' });
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Arquivo muito grande', { description: 'Tamanho máximo: 5MB' });
+      return;
+    }
+
+    setPhotoFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  // Remove photo
+  const handleRemovePhoto = useCallback(() => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
+
+  // Upload photo to storage
+  const uploadPhoto = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('waitlist-photos')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (uploadError) {
+      throw new Error('Erro ao fazer upload da foto');
+    }
+
+    const { data } = supabase.storage
+      .from('waitlist-photos')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  };
+
+  // Validate Instagram handle
+  const validateInstagram = (value: string): boolean => {
+    if (!value) return true; // Optional field
+    // Remove @ if present and validate
+    const handle = value.replace('@', '').trim();
+    // Instagram usernames: 1-30 chars, letters, numbers, periods, underscores
+    const instagramRegex = /^[a-zA-Z0-9._]{1,30}$/;
+    return instagramRegex.test(handle);
+  };
+
+  // Format Instagram for storage
+  const formatInstagram = (value: string): string | null => {
+    if (!value.trim()) return null;
+    const handle = value.replace('@', '').trim();
+    return handle ? `@${handle}` : null;
+  };
+
   const registerMutation = useMutation({
     mutationFn: async (data: RegistrationForm) => {
+      if (!photoFile) {
+        throw new Error('Foto de perfil é obrigatória');
+      }
+
+      setIsUploading(true);
+      
+      // Upload photo first
+      const avatarUrl = await uploadPhoto(photoFile);
+      
+      // Then insert waitlist entry
       const { error } = await supabase.from('waitlist').insert({
         first_name: data.firstName.trim(),
         last_name: data.lastName.trim(),
         city: data.city.trim(),
         gender: data.gender,
+        avatar_url: avatarUrl,
+        instagram: formatInstagram(data.instagram),
       });
+      
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Inscrição realizada!', { description: 'Você está na lista de espera.' });
-      setForm({ firstName: '', lastName: '', city: '', gender: 'Masculino' });
+      setForm({ firstName: '', lastName: '', city: '', gender: 'Masculino', instagram: '' });
+      setPhotoFile(null);
+      setPhotoPreview(null);
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ['registration-name-check'] });
     },
-    onError: () => {
-      toast.error('Erro ao realizar inscrição');
+    onError: (error: Error) => {
+      toast.error('Erro ao realizar inscrição', { description: error.message });
     },
+    onSettled: () => {
+      setIsUploading(false);
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!form.firstName.trim() || !form.lastName.trim() || !form.city.trim()) {
-      toast.error('Preencha todos os campos');
+      toast.error('Preencha todos os campos obrigatórios');
+      return;
+    }
+
+    if (!photoFile) {
+      toast.error('Foto de perfil é obrigatória', { description: 'Adicione uma foto para continuar' });
+      return;
+    }
+
+    if (form.instagram && !validateInstagram(form.instagram)) {
+      toast.error('Instagram inválido', { description: 'Use apenas letras, números, pontos e underscores' });
       return;
     }
 
@@ -129,6 +248,8 @@ const AthleteRegistrationForm = memo(() => {
     setForm(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  const isSubmitting = registerMutation.isPending || isUploading;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -137,13 +258,73 @@ const AthleteRegistrationForm = memo(() => {
           Inscreva-se como Atleta
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-display">Inscrição de Atleta</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          {/* Photo Upload Section */}
           <div className="space-y-2">
-            <Label htmlFor="firstName">Nome</Label>
+            <Label className="flex items-center gap-1">
+              Foto de Perfil
+              <span className="text-destructive">*</span>
+            </Label>
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative">
+                <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/50">
+                  {photoPreview ? (
+                    <AvatarImage src={photoPreview} alt="Preview" className="object-cover" />
+                  ) : (
+                    <AvatarFallback className="bg-muted">
+                      <Camera className="h-8 w-8 text-muted-foreground" />
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                {photoPreview && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+              
+              <div className="flex flex-col items-center gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  {photoPreview ? 'Trocar foto' : 'Escolher foto'}
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  JPG, JPEG ou PNG (máx. 5MB)
+                </span>
+              </div>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </div>
+            {!photoFile && (
+              <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                Foto obrigatória para identificação
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="firstName">Nome <span className="text-destructive">*</span></Label>
             <Input
               id="firstName"
               placeholder="Seu nome"
@@ -154,7 +335,7 @@ const AthleteRegistrationForm = memo(() => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="lastName">Sobrenome</Label>
+            <Label htmlFor="lastName">Sobrenome <span className="text-destructive">*</span></Label>
             <Input
               id="lastName"
               placeholder="Seu sobrenome"
@@ -183,7 +364,7 @@ const AthleteRegistrationForm = memo(() => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="city">Cidade</Label>
+              <Label htmlFor="city">Cidade <span className="text-destructive">*</span></Label>
               <Input
                 id="city"
                 placeholder="Sua cidade"
@@ -193,7 +374,7 @@ const AthleteRegistrationForm = memo(() => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Gênero</Label>
+              <Label>Gênero <span className="text-destructive">*</span></Label>
               <Select value={form.gender} onValueChange={(v) => setForm(prev => ({ ...prev, gender: v as Gender }))}>
                 <SelectTrigger className="bg-background">
                   <SelectValue />
@@ -206,13 +387,35 @@ const AthleteRegistrationForm = memo(() => {
             </div>
           </div>
 
+          {/* Instagram Field */}
+          <div className="space-y-2">
+            <Label htmlFor="instagram" className="flex items-center gap-1.5">
+              <Instagram className="h-4 w-4" />
+              Instagram
+              <span className="text-muted-foreground text-xs">(opcional)</span>
+            </Label>
+            <Input
+              id="instagram"
+              placeholder="@seuinstagram"
+              value={form.instagram}
+              onChange={(e) => updateField('instagram', e.target.value)}
+              maxLength={31}
+            />
+            {form.instagram && !validateInstagram(form.instagram) && (
+              <p className="text-xs text-destructive flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                Formato inválido
+              </p>
+            )}
+          </div>
+
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={registerMutation.isPending || (hasDuplicate && matches.some(m => m.similarity >= 95))}
+            disabled={isSubmitting || (hasDuplicate && matches.some(m => m.similarity >= 95)) || !photoFile}
           >
-            {registerMutation.isPending ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</>
+            {isSubmitting ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {isUploading ? 'Enviando foto...' : 'Enviando...'}</>
             ) : (
               'Enviar Inscrição'
             )}
