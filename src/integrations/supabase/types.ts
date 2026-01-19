@@ -386,6 +386,8 @@ export type Database = {
           id: string
           instagram: string | null
           last_name: string
+          questionnaire_responses: Json | null
+          suggested_category: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -396,6 +398,8 @@ export type Database = {
           id?: string
           instagram?: string | null
           last_name: string
+          questionnaire_responses?: Json | null
+          suggested_category?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -406,6 +410,8 @@ export type Database = {
           id?: string
           instagram?: string | null
           last_name?: string
+          questionnaire_responses?: Json | null
+          suggested_category?: string | null
         }
         Relationships: []
       }

@@ -11,8 +11,10 @@ import { UserPlus, Loader2, CheckCircle, AlertTriangle, Upload, X, Camera, Insta
 import { useDebounce } from '@/hooks/useDebounce';
 import { calculateSimilarity, normalizeString } from '@/lib/nameSimilarity';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import CategoryQuestionnaire, { QuestionnaireResponses, SuggestedCategory } from './CategoryQuestionnaire';
 
 type Gender = 'Masculino' | 'Feminino';
+type RegistrationStep = 'form' | 'questionnaire';
 
 interface RegistrationForm {
   firstName: string;
@@ -27,6 +29,7 @@ const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 
 const AthleteRegistrationForm = memo(() => {
   const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<RegistrationStep>('form');
   const [form, setForm] = useState<RegistrationForm>({ 
     firstName: '', 
     lastName: '', 
@@ -37,6 +40,8 @@ const AthleteRegistrationForm = memo(() => {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [questionnaireResponses, setQuestionnaireResponses] = useState<QuestionnaireResponses | null>(null);
+  const [suggestedCategory, setSuggestedCategory] = useState<SuggestedCategory>('Iniciante');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   
@@ -180,7 +185,7 @@ const AthleteRegistrationForm = memo(() => {
   };
 
   const registerMutation = useMutation({
-    mutationFn: async (data: RegistrationForm) => {
+    mutationFn: async (data: { form: RegistrationForm; responses: QuestionnaireResponses; category: SuggestedCategory }) => {
       if (!photoFile) {
         throw new Error('Foto de perfil é obrigatória');
       }
@@ -190,23 +195,23 @@ const AthleteRegistrationForm = memo(() => {
       // Upload photo first
       const avatarUrl = await uploadPhoto(photoFile);
       
-      // Then insert waitlist entry
-      const { error } = await supabase.from('waitlist').insert({
-        first_name: data.firstName.trim(),
-        last_name: data.lastName.trim(),
-        city: data.city.trim(),
-        gender: data.gender,
+      // Then insert waitlist entry with questionnaire data
+      const { error } = await supabase.from('waitlist').insert([{
+        first_name: data.form.firstName.trim(),
+        last_name: data.form.lastName.trim(),
+        city: data.form.city.trim(),
+        gender: data.form.gender,
         avatar_url: avatarUrl,
-        instagram: formatInstagram(data.instagram),
-      });
+        instagram: formatInstagram(data.form.instagram),
+        questionnaire_responses: JSON.parse(JSON.stringify(data.responses)),
+        suggested_category: data.category,
+      }]);
       
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Inscrição realizada!', { description: 'Você está na lista de espera.' });
-      setForm({ firstName: '', lastName: '', city: '', gender: 'Masculino', instagram: '' });
-      setPhotoFile(null);
-      setPhotoPreview(null);
+      resetForm();
       setOpen(false);
       queryClient.invalidateQueries({ queryKey: ['registration-name-check'] });
     },
@@ -218,7 +223,17 @@ const AthleteRegistrationForm = memo(() => {
     }
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const resetForm = useCallback(() => {
+    setForm({ firstName: '', lastName: '', city: '', gender: 'Masculino', instagram: '' });
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setStep('form');
+    setQuestionnaireResponses(null);
+    setSuggestedCategory('Iniciante');
+  }, []);
+
+  // First step: Validate basic form and go to questionnaire
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!form.firstName.trim() || !form.lastName.trim() || !form.city.trim()) {
@@ -241,8 +256,22 @@ const AthleteRegistrationForm = memo(() => {
       return;
     }
 
-    registerMutation.mutate(form);
+    // Move to questionnaire step
+    setStep('questionnaire');
   };
+
+  // Handle questionnaire completion
+  const handleQuestionnaireComplete = useCallback((responses: QuestionnaireResponses, category: SuggestedCategory) => {
+    setQuestionnaireResponses(responses);
+    setSuggestedCategory(category);
+    
+    // Submit the registration with questionnaire data
+    registerMutation.mutate({ form, responses, category });
+  }, [form, registerMutation]);
+
+  const handleBackToForm = useCallback(() => {
+    setStep('form');
+  }, []);
 
   const updateField = useCallback((field: keyof RegistrationForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -251,7 +280,12 @@ const AthleteRegistrationForm = memo(() => {
   const isSubmitting = registerMutation.isPending || isUploading;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen) {
+        resetForm();
+      }
+    }}>
       <DialogTrigger asChild>
         <Button size="lg" className="gap-2 font-semibold">
           <UserPlus className="h-5 w-5" />
@@ -260,167 +294,184 @@ const AthleteRegistrationForm = memo(() => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-display">Inscrição de Atleta</DialogTitle>
+          <DialogTitle className="text-xl font-display">
+            {step === 'form' ? 'Inscrição de Atleta' : 'Avaliação de Categoria'}
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          {/* Photo Upload Section */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1">
-              Foto de Perfil
-              <span className="text-destructive">*</span>
-            </Label>
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative">
-                <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/50">
-                  {photoPreview ? (
-                    <AvatarImage src={photoPreview} alt="Preview" className="object-cover" />
-                  ) : (
-                    <AvatarFallback className="bg-muted">
-                      <Camera className="h-8 w-8 text-muted-foreground" />
-                    </AvatarFallback>
+        
+        {step === 'form' ? (
+          <form onSubmit={handleFormSubmit} className="space-y-4 mt-2">
+            {/* Photo Upload Section */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                Foto de Perfil
+                <span className="text-destructive">*</span>
+              </Label>
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative">
+                  <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/50">
+                    {photoPreview ? (
+                      <AvatarImage src={photoPreview} alt="Preview" className="object-cover" />
+                    ) : (
+                      <AvatarFallback className="bg-muted">
+                        <Camera className="h-8 w-8 text-muted-foreground" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  {photoPreview && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   )}
-                </Avatar>
-                {photoPreview && (
-                  <button
+                </div>
+                
+                <div className="flex flex-col items-center gap-1">
+                  <Button
                     type="button"
-                    onClick={handleRemovePhoto}
-                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="gap-2"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                )}
+                    <Upload className="h-4 w-4" />
+                    {photoPreview ? 'Trocar foto' : 'Escolher foto'}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    JPG, JPEG ou PNG (máx. 5MB)
+                  </span>
+                </div>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
               </div>
-              
-              <div className="flex flex-col items-center gap-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="gap-2"
-                >
-                  <Upload className="h-4 w-4" />
-                  {photoPreview ? 'Trocar foto' : 'Escolher foto'}
-                </Button>
-                <span className="text-xs text-muted-foreground">
-                  JPG, JPEG ou PNG (máx. 5MB)
-                </span>
-              </div>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/jpg,image/png"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-            </div>
-            {!photoFile && (
-              <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                Foto obrigatória para identificação
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="firstName">Nome <span className="text-destructive">*</span></Label>
-            <Input
-              id="firstName"
-              placeholder="Seu nome"
-              value={form.firstName}
-              onChange={(e) => updateField('firstName', e.target.value)}
-              maxLength={50}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Sobrenome <span className="text-destructive">*</span></Label>
-            <Input
-              id="lastName"
-              placeholder="Seu sobrenome"
-              value={form.lastName}
-              onChange={(e) => updateField('lastName', e.target.value)}
-              maxLength={50}
-            />
-          </div>
-
-          {/* Duplicate indicator */}
-          {fullName.length >= 3 && (
-            <div className="text-xs flex items-center gap-1.5">
-              {hasDuplicate ? (
-                <span className={matches.some(m => m.similarity >= 95) ? 'text-destructive' : 'text-amber-600 dark:text-amber-500'}>
-                  <AlertTriangle className="h-3 w-3 inline mr-1" />
-                  Nome parecido: {matches[0]?.name} ({matches[0]?.city})
-                </span>
-              ) : (
-                <span className="text-emerald-600 dark:text-emerald-500">
-                  <CheckCircle className="h-3 w-3 inline mr-1" />
-                  Nome disponível
-                </span>
+              {!photoFile && (
+                <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Foto obrigatória para identificação
+                </p>
               )}
             </div>
-          )}
 
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="city">Cidade <span className="text-destructive">*</span></Label>
+              <Label htmlFor="firstName">Nome <span className="text-destructive">*</span></Label>
               <Input
-                id="city"
-                placeholder="Sua cidade"
-                value={form.city}
-                onChange={(e) => updateField('city', e.target.value)}
-                maxLength={100}
+                id="firstName"
+                placeholder="Seu nome"
+                value={form.firstName}
+                onChange={(e) => updateField('firstName', e.target.value)}
+                maxLength={50}
               />
             </div>
+            
             <div className="space-y-2">
-              <Label>Gênero <span className="text-destructive">*</span></Label>
-              <Select value={form.gender} onValueChange={(v) => setForm(prev => ({ ...prev, gender: v as Gender }))}>
-                <SelectTrigger className="bg-background">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="Masculino">Masculino</SelectItem>
-                  <SelectItem value="Feminino">Feminino</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="lastName">Sobrenome <span className="text-destructive">*</span></Label>
+              <Input
+                id="lastName"
+                placeholder="Seu sobrenome"
+                value={form.lastName}
+                onChange={(e) => updateField('lastName', e.target.value)}
+                maxLength={50}
+              />
             </div>
-          </div>
 
-          {/* Instagram Field */}
-          <div className="space-y-2">
-            <Label htmlFor="instagram" className="flex items-center gap-1.5">
-              <Instagram className="h-4 w-4" />
-              Instagram
-              <span className="text-muted-foreground text-xs">(opcional)</span>
-            </Label>
-            <Input
-              id="instagram"
-              placeholder="@seuinstagram"
-              value={form.instagram}
-              onChange={(e) => updateField('instagram', e.target.value)}
-              maxLength={31}
-            />
-            {form.instagram && !validateInstagram(form.instagram) && (
-              <p className="text-xs text-destructive flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                Formato inválido
-              </p>
+            {/* Duplicate indicator */}
+            {fullName.length >= 3 && (
+              <div className="text-xs flex items-center gap-1.5">
+                {hasDuplicate ? (
+                  <span className={matches.some(m => m.similarity >= 95) ? 'text-destructive' : 'text-amber-600 dark:text-amber-500'}>
+                    <AlertTriangle className="h-3 w-3 inline mr-1" />
+                    Nome parecido: {matches[0]?.name} ({matches[0]?.city})
+                  </span>
+                ) : (
+                  <span className="text-emerald-600 dark:text-emerald-500">
+                    <CheckCircle className="h-3 w-3 inline mr-1" />
+                    Nome disponível
+                  </span>
+                )}
+              </div>
             )}
-          </div>
 
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isSubmitting || (hasDuplicate && matches.some(m => m.similarity >= 95)) || !photoFile}
-          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">Cidade <span className="text-destructive">*</span></Label>
+                <Input
+                  id="city"
+                  placeholder="Sua cidade"
+                  value={form.city}
+                  onChange={(e) => updateField('city', e.target.value)}
+                  maxLength={100}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Gênero <span className="text-destructive">*</span></Label>
+                <Select value={form.gender} onValueChange={(v) => setForm(prev => ({ ...prev, gender: v as Gender }))}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    <SelectItem value="Masculino">Masculino</SelectItem>
+                    <SelectItem value="Feminino">Feminino</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Instagram Field */}
+            <div className="space-y-2">
+              <Label htmlFor="instagram" className="flex items-center gap-1.5">
+                <Instagram className="h-4 w-4" />
+                Instagram
+                <span className="text-muted-foreground text-xs">(opcional)</span>
+              </Label>
+              <Input
+                id="instagram"
+                placeholder="@seuinstagram"
+                value={form.instagram}
+                onChange={(e) => updateField('instagram', e.target.value)}
+                maxLength={31}
+              />
+              {form.instagram && !validateInstagram(form.instagram) && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Formato inválido
+                </p>
+              )}
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={(hasDuplicate && matches.some(m => m.similarity >= 95)) || !photoFile}
+            >
+              Continuar para Avaliação
+            </Button>
+          </form>
+        ) : (
+          <div className="mt-2">
             {isSubmitting ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> {isUploading ? 'Enviando foto...' : 'Enviando...'}</>
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground">
+                  {isUploading ? 'Enviando foto...' : 'Finalizando inscrição...'}
+                </p>
+              </div>
             ) : (
-              'Enviar Inscrição'
+              <CategoryQuestionnaire
+                onComplete={handleQuestionnaireComplete}
+                onBack={handleBackToForm}
+              />
             )}
-          </Button>
-        </form>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
