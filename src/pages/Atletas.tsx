@@ -15,6 +15,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import QueryErrorBoundary from "@/components/QueryErrorBoundary";
 import { useOfflineAthletes, useOfflineAchievements } from "@/hooks/useOfflineData";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import { InstagramWebViewWarning } from "@/components/InstagramWebViewWarning";
 
 const Atletas = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -108,6 +109,10 @@ const Atletas = () => {
     <QueryErrorBoundary>
       <div className="min-h-screen bg-background">
         <Navbar />
+        
+        <div className="container mx-auto px-4 pt-4">
+          <InstagramWebViewWarning />
+        </div>
         
         <section className="py-12 lg:py-16 bg-gradient-to-b from-primary/10 to-transparent">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
