@@ -10,6 +10,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useOfflineAthletes } from "@/hooks/useOfflineData";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import { InstagramWebViewWarning } from "@/components/InstagramWebViewWarning";
 
 const Ranking = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -55,6 +56,10 @@ const Ranking = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      
+      <div className="container mx-auto px-4 pt-4">
+        <InstagramWebViewWarning />
+      </div>
       
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
