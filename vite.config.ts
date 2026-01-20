@@ -85,6 +85,8 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,woff2}'],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/auth/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -115,15 +117,56 @@ export default defineConfig(({ mode }) => ({
             }
           },
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/athletes.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'athletes-api-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              },
+              plugins: [
+                {
+                  handlerDidError: async () => {
+                    return new Response(JSON.stringify([]), {
+                      status: 200,
+                      headers: { 'Content-Type': 'application/json' }
+                    });
+                  }
+                }
+              ]
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'supabase-api-cache',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 // 1 hour
               },
-              networkTimeoutSeconds: 10
+              networkTimeoutSeconds: 8,
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'supabase-storage-cache',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
             }
           },
           {
@@ -132,8 +175,11 @@ export default defineConfig(({ mode }) => ({
             options: {
               cacheName: 'images-cache',
               expiration: {
-                maxEntries: 60,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
               }
             }
           },
@@ -142,10 +188,13 @@ export default defineConfig(({ mode }) => ({
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
-              networkTimeoutSeconds: 10,
+              networkTimeoutSeconds: 8,
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 5 // 5 minutes
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
               }
             }
           }
