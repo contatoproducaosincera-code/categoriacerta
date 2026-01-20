@@ -25,10 +25,28 @@ interface CacheData<T> {
 
 const CACHE_VERSION = 1;
 
+// Check if localStorage is available (may be blocked in private mode on mobile)
+function isLocalStorageAvailable(): boolean {
+  try {
+    const testKey = '__storage_test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    console.warn('localStorage not available:', e);
+    return false;
+  }
+}
+
 // Efficient storage with minimal footprint
 export const offlineStorage = {
   // Save athletes with timestamp
   saveAthletes(athletes: CachedAthlete[]): void {
+    if (!isLocalStorageAvailable()) {
+      console.warn('Cannot save offline data: localStorage unavailable');
+      return;
+    }
+    
     try {
       // Store only essential fields to minimize storage
       const minimalData = athletes.map(a => ({
@@ -58,6 +76,10 @@ export const offlineStorage = {
 
   // Get athletes from cache
   getAthletes(): CachedAthlete[] | null {
+    if (!isLocalStorageAvailable()) {
+      return null;
+    }
+    
     try {
       const cached = localStorage.getItem(STORAGE_KEYS.ATHLETES);
       if (!cached) return null;
@@ -93,8 +115,14 @@ export const offlineStorage = {
 
   // Get last sync timestamp
   getLastSync(): number | null {
-    const timestamp = localStorage.getItem(STORAGE_KEYS.LAST_SYNC);
-    return timestamp ? parseInt(timestamp, 10) : null;
+    if (!isLocalStorageAvailable()) return null;
+    
+    try {
+      const timestamp = localStorage.getItem(STORAGE_KEYS.LAST_SYNC);
+      return timestamp ? parseInt(timestamp, 10) : null;
+    } catch {
+      return null;
+    }
   },
 
   // Check if cache is valid
@@ -113,32 +141,53 @@ export const offlineStorage = {
 
   // Clear all cached data
   clearCache(): void {
-    Object.values(STORAGE_KEYS).forEach(key => {
-      localStorage.removeItem(key);
-    });
+    if (!isLocalStorageAvailable()) return;
+    
+    try {
+      Object.values(STORAGE_KEYS).forEach(key => {
+        localStorage.removeItem(key);
+      });
+    } catch (error) {
+      console.warn('Failed to clear cache:', error);
+    }
   },
 
   // Get storage size in KB
   getStorageSize(): number {
-    let total = 0;
-    Object.values(STORAGE_KEYS).forEach(key => {
-      const item = localStorage.getItem(key);
-      if (item) {
-        total += item.length * 2; // UTF-16 encoding
-      }
-    });
-    return Math.round(total / 1024);
+    if (!isLocalStorageAvailable()) return 0;
+    
+    try {
+      let total = 0;
+      Object.values(STORAGE_KEYS).forEach(key => {
+        const item = localStorage.getItem(key);
+        if (item) {
+          total += item.length * 2; // UTF-16 encoding
+        }
+      });
+      return Math.round(total / 1024);
+    } catch {
+      return 0;
+    }
   },
 };
 
-// Network status detection
+// Network status detection with better mobile support
 export const networkStatus = {
   isOnline(): boolean {
+    // navigator.onLine can be unreliable on some mobile browsers
+    // We assume online if the API is not available
+    if (typeof navigator === 'undefined' || typeof navigator.onLine === 'undefined') {
+      return true;
+    }
     return navigator.onLine;
   },
 
   // Subscribe to network changes
   subscribe(callback: (online: boolean) => void): () => void {
+    if (typeof window === 'undefined') {
+      return () => {};
+    }
+    
     const handleOnline = () => callback(true);
     const handleOffline = () => callback(false);
 

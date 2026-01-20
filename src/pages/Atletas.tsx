@@ -196,14 +196,30 @@ const Atletas = () => {
           {isLoading ? (
             <LoadingSpinner message="Carregando atletas..." />
           ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-red-500 mb-4">Erro ao carregar atletas. Por favor, tente novamente.</p>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-              >
-                Recarregar Página
-              </button>
+            <div className="text-center py-12 px-4">
+              <div className="bg-destructive/10 rounded-lg p-6 max-w-md mx-auto">
+                <p className="text-destructive font-medium mb-2">Erro ao carregar atletas</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {!isOnline 
+                    ? 'Você está offline. Verifique sua conexão com a internet.'
+                    : 'Houve um problema ao buscar os dados. Por favor, tente novamente.'
+                  }
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <button 
+                    onClick={() => refetch()} 
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Tentar Novamente
+                  </button>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
+                  >
+                    Recarregar Página
+                  </button>
+                </div>
+              </div>
             </div>
           ) : !filteredAthletes || filteredAthletes.length === 0 ? (
             <div className="text-center py-12">
