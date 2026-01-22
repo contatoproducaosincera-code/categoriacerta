@@ -128,14 +128,32 @@ const Ranking = () => {
           {isLoading ? (
             <LoadingSpinner message="Carregando ranking..." />
           ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-red-500 mb-4">Erro ao carregar ranking. Por favor, tente novamente.</p>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-              >
-                Recarregar Página
-              </button>
+            <div className="text-center py-12 px-4">
+              <div className="max-w-md mx-auto bg-destructive/10 border border-destructive/20 rounded-lg p-6">
+                <p className="text-destructive font-medium mb-2">
+                  Erro ao carregar ranking
+                </p>
+                <p className="text-muted-foreground text-sm mb-4">
+                  {!isOnline 
+                    ? "Você está offline e não há dados em cache disponíveis."
+                    : "Não foi possível carregar os dados. Verifique sua conexão e tente novamente."
+                  }
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <button 
+                    onClick={() => refetch()} 
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Tentar Novamente
+                  </button>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="px-4 py-2 bg-muted text-muted-foreground rounded-md hover:bg-muted/80 transition-colors"
+                  >
+                    Recarregar Página
+                  </button>
+                </div>
+              </div>
             </div>
           ) : !filteredAthletes || filteredAthletes.length === 0 ? (
             <div className="text-center py-12">
