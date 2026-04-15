@@ -32,7 +32,7 @@ interface WaitlistAthlete {
   instagram: string | null;
 }
 
-const CATEGORIES: Category[] = ['Iniciante', 'D', 'C'];
+const CATEGORIES: Category[] = ['Iniciante', 'D', 'C', 'B'];
 const GENDERS: Gender[] = ['Masculino', 'Feminino'];
 
 const Waitlist = memo(() => {

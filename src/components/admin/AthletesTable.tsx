@@ -18,7 +18,7 @@ interface Athlete {
   name: string;
   email: string | null;
   city: string;
-  category: "C" | "D" | "Iniciante";
+  category: "B" | "C" | "D" | "Iniciante";
   gender: "Masculino" | "Feminino";
   points: number;
   instagram: string | null;

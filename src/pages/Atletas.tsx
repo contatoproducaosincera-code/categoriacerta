@@ -26,11 +26,11 @@ const Atletas = () => {
   const getCategoryProgress = (activePoints: number, category: string) => {
     const threshold = 500;
     
-    if (category === 'C') {
+    if (category === 'B') {
       return { progress: 100, remaining: 0, nextCategory: null, percentage: 100 };
     }
 
-    const nextCategory = category === 'Iniciante' ? 'D' : 'C';
+    const nextCategory = category === 'Iniciante' ? 'D' : category === 'D' ? 'C' : 'B';
     const percentage = Math.min((activePoints / threshold) * 100, 100);
     const remaining = Math.max(threshold - activePoints, 0);
 
@@ -179,6 +179,7 @@ const Atletas = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-background z-[100]">
                       <SelectItem value="all">Todas</SelectItem>
+                      <SelectItem value="B">Cat. B</SelectItem>
                       <SelectItem value="C">Cat. C</SelectItem>
                       <SelectItem value="D">Cat. D</SelectItem>
                       <SelectItem value="Iniciante">Iniciante</SelectItem>
