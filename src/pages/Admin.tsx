@@ -716,11 +716,12 @@ const Admin = () => {
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Iniciante">Iniciante</SelectItem>
-                            <SelectItem value="D">Categoria D</SelectItem>
-                            <SelectItem value="C">Categoria C</SelectItem>
-                          </SelectContent>
+                            <SelectContent>
+                                <SelectItem value="Iniciante">Iniciante</SelectItem>
+                                <SelectItem value="D">Categoria D</SelectItem>
+                                <SelectItem value="C">Categoria C</SelectItem>
+                                <SelectItem value="B">Categoria B</SelectItem>
+                              </SelectContent>
                         </Select>
                       </div>
                       <Button 
@@ -799,6 +800,7 @@ const Admin = () => {
                                 <SelectItem value="Iniciante">Iniciante</SelectItem>
                                 <SelectItem value="D">Categoria D</SelectItem>
                                 <SelectItem value="C">Categoria C</SelectItem>
+                                <SelectItem value="B">Categoria B</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -1066,11 +1068,12 @@ const Admin = () => {
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Iniciante">Iniciante</SelectItem>
-                          <SelectItem value="D">Categoria D</SelectItem>
-                          <SelectItem value="C">Categoria C</SelectItem>
-                        </SelectContent>
+                          <SelectContent>
+                            <SelectItem value="Iniciante">Iniciante</SelectItem>
+                            <SelectItem value="D">Categoria D</SelectItem>
+                            <SelectItem value="C">Categoria C</SelectItem>
+                            <SelectItem value="B">Categoria B</SelectItem>
+                          </SelectContent>
                       </Select>
                     </div>
                     <Button
@@ -1154,13 +1157,14 @@ const Admin = () => {
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Iniciante">Iniciante</SelectItem>
-                          <SelectItem value="D">Categoria D</SelectItem>
-                          <SelectItem value="C">Categoria C</SelectItem>
-                          <SelectItem value="Iniciante + D">Iniciante + D</SelectItem>
-                          <SelectItem value="D + C">D + C</SelectItem>
-                          <SelectItem value="Todas">Todas as Categorias</SelectItem>
+                          <SelectContent>
+                            <SelectItem value="Iniciante">Iniciante</SelectItem>
+                            <SelectItem value="D">Categoria D</SelectItem>
+                            <SelectItem value="C">Categoria C</SelectItem>
+                            <SelectItem value="B">Categoria B</SelectItem>
+                            <SelectItem value="Iniciante + D">Iniciante + D</SelectItem>
+                            <SelectItem value="D + C">D + C</SelectItem>
+                            <SelectItem value="Todas">Todas as Categorias</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1386,6 +1390,7 @@ const Admin = () => {
                                         <SelectItem value="Iniciante">Iniciante</SelectItem>
                                         <SelectItem value="D">Categoria D</SelectItem>
                                         <SelectItem value="C">Categoria C</SelectItem>
+                                        <SelectItem value="B">Categoria B</SelectItem>
                                         <SelectItem value="Iniciante + D">Iniciante + D</SelectItem>
                                         <SelectItem value="D + C">D + C</SelectItem>
                                         <SelectItem value="Todas">Todas as Categorias</SelectItem>

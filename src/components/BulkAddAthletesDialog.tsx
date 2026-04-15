@@ -296,10 +296,11 @@ const BulkAddAthletesDialog = ({ onSuccess }: { onSuccess: () => void }) => {
                         <SelectTrigger id={`category-${athlete.id}`}>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-background z-50">
+                          <SelectContent className="bg-background z-50">
                           <SelectItem value="Iniciante">Iniciante</SelectItem>
                           <SelectItem value="D">Categoria D</SelectItem>
                           <SelectItem value="C">Categoria C</SelectItem>
+                          <SelectItem value="B">Categoria B</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

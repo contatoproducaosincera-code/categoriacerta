@@ -159,6 +159,7 @@ const HistoricoProgressao = () => {
                   <SelectItem value="all">Todas</SelectItem>
                   <SelectItem value="D">Subiu para D</SelectItem>
                   <SelectItem value="C">Subiu para C</SelectItem>
+                  <SelectItem value="B">Subiu para B</SelectItem>
                 </SelectContent>
               </Select>
             </CollapsibleFilters>
