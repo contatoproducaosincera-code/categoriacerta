@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Trophy, Users } from "lucide-react";
+import { Trophy, Users, FileText } from "lucide-react";
 import { memo } from "react";
 
 const HeroSection = memo(() => {
@@ -26,26 +26,37 @@ const HeroSection = memo(() => {
             Conquiste seu lugar no ranking e alcance novos patamares no beach tennis
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center max-w-lg mx-auto px-4">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center max-w-2xl mx-auto px-4">
             <Button 
               size="lg" 
-              className="w-full sm:w-auto text-lg md:text-xl font-bold px-8 md:px-10 py-6 md:py-7 transition-all hover:scale-105 group rounded-xl"
+              className="w-full sm:w-auto text-base md:text-lg font-bold px-6 md:px-8 py-5 md:py-6 transition-all hover:scale-105 group rounded-xl"
               asChild
             >
-              <Link to="/ranking" className="flex items-center justify-center gap-3">
-                <Trophy className="h-6 w-6" aria-hidden="true" />
+              <Link to="/ranking" className="flex items-center justify-center gap-2">
+                <Trophy className="h-5 w-5" aria-hidden="true" />
                 <span>Ver Ranking</span>
               </Link>
             </Button>
             <Button 
               size="lg" 
               variant="outline"
-              className="w-full sm:w-auto text-lg md:text-xl font-bold px-8 md:px-10 py-6 md:py-7 hover:bg-primary/5 transition-all hover:scale-105 group border-2 rounded-xl"
+              className="w-full sm:w-auto text-base md:text-lg font-bold px-6 md:px-8 py-5 md:py-6 hover:bg-primary/5 transition-all hover:scale-105 group border-2 rounded-xl"
               asChild
             >
-              <Link to="/atletas" className="flex items-center justify-center gap-3">
-                <Users className="h-6 w-6" aria-hidden="true" />
+              <Link to="/atletas" className="flex items-center justify-center gap-2">
+                <Users className="h-5 w-5" aria-hidden="true" />
                 <span>Ver Atletas</span>
+              </Link>
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="w-full sm:w-auto text-base md:text-lg font-bold px-6 md:px-8 py-5 md:py-6 hover:bg-primary/5 transition-all hover:scale-105 group border-2 rounded-xl"
+              asChild
+            >
+              <Link to="/regulamento" className="flex items-center justify-center gap-2">
+                <FileText className="h-5 w-5" aria-hidden="true" />
+                <span>Regulamento</span>
               </Link>
             </Button>
           </div>
