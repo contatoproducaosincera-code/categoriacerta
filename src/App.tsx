@@ -45,6 +45,7 @@ const Feed = lazy(() => import("./pages/Feed"));
 const Offline = lazy(() => import("./pages/Offline"));
 const Waitlist = lazy(() => import("./pages/Waitlist"));
 const HistoricoProgressao = lazy(() => import("./pages/HistoricoProgressao"));
+const Regulamento = lazy(() => import("./pages/Regulamento"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
@@ -79,6 +80,7 @@ const App = () => (
                   <Route path="/torneios" element={<Torneios />} />
                   <Route path="/feed" element={<Feed />} />
                   <Route path="/historico-progressao" element={<HistoricoProgressao />} />
+                  <Route path="/regulamento" element={<Regulamento />} />
                   <Route path="/offline" element={<Offline />} />
                   <Route path="/admin" element={
                     <ProtectedRoute>

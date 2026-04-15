@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Trophy, Users, LogIn, LogOut, Home, Award, Calendar, HelpCircle, TrendingUp } from "lucide-react";
+import { Trophy, Users, LogIn, LogOut, Home, Award, Calendar, HelpCircle, TrendingUp, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import MobileMenu from "./MobileMenu";
@@ -26,6 +26,7 @@ const Navbar = memo(() => {
     { to: "/feed", label: "Conquistas", icon: <Trophy className="h-4 w-4" /> },
     { to: "/torneios", label: "Torneios", icon: <Calendar className="h-4 w-4" /> },
     { to: "/historico-progressao", label: "Progressão", icon: <TrendingUp className="h-4 w-4" /> },
+    { to: "/regulamento", label: "Regulamento", icon: <FileText className="h-4 w-4" /> },
   ];
 
   return (
