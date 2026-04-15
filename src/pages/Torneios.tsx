@@ -309,6 +309,7 @@ const Torneios = () => {
                       <SelectItem value="Iniciante">Iniciante</SelectItem>
                       <SelectItem value="D">Cat. D</SelectItem>
                       <SelectItem value="C">Cat. C</SelectItem>
+                      <SelectItem value="B">Cat. B</SelectItem>
                       <SelectItem value="Iniciante + D">Ini + D</SelectItem>
                       <SelectItem value="D + C">D + C</SelectItem>
                       <SelectItem value="Todas">Abertas</SelectItem>

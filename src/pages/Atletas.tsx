@@ -179,6 +179,7 @@ const Atletas = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-background z-[100]">
                       <SelectItem value="all">Todas</SelectItem>
+                      <SelectItem value="B">Cat. B</SelectItem>
                       <SelectItem value="C">Cat. C</SelectItem>
                       <SelectItem value="D">Cat. D</SelectItem>
                       <SelectItem value="Iniciante">Iniciante</SelectItem>
