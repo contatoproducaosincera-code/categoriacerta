@@ -60,7 +60,7 @@ const Admin = () => {
     email: "",
     city: "",
     instagram: "",
-    category: "Iniciante" as "C" | "D" | "Iniciante",
+    category: "Iniciante" as "B" | "C" | "D" | "Iniciante",
     gender: "Masculino" as "Masculino" | "Feminino",
   });
 
@@ -69,7 +69,7 @@ const Admin = () => {
     email: "",
     city: "",
     instagram: "",
-    category: "Iniciante" as "C" | "D" | "Iniciante",
+    category: "Iniciante" as "B" | "C" | "D" | "Iniciante",
     gender: "Masculino" as "Masculino" | "Feminino",
   });
 
