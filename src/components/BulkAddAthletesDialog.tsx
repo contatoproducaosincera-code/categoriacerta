@@ -22,7 +22,7 @@ interface AthleteFormData {
   email: string;
   city: string;
   instagram: string;
-  category: "C" | "D" | "Iniciante";
+  category: "B" | "C" | "D" | "Iniciante";
   gender: "Masculino" | "Feminino";
 }
 
