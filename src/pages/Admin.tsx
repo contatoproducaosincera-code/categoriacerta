@@ -47,7 +47,7 @@ const Admin = () => {
   const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set());
   const [openBulkCategory, setOpenBulkCategory] = useState(false);
   const [openBulkGender, setOpenBulkGender] = useState(false);
-  const [bulkCategory, setBulkCategory] = useState<"C" | "D" | "Iniciante">("Iniciante");
+  const [bulkCategory, setBulkCategory] = useState<"B" | "C" | "D" | "Iniciante">("Iniciante");
   const [bulkGender, setBulkGender] = useState<"Masculino" | "Feminino">("Masculino");
   const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
   const [pendingAthleteSubmit, setPendingAthleteSubmit] = useState(false);
