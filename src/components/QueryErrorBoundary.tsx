@@ -50,7 +50,7 @@ class QueryErrorBoundary extends Component<Props, State> {
               Tentar Novamente
             </Button>
           </div>
-          {process.env.NODE_ENV === 'development' && this.state.error && (
+          {import.meta.env.DEV && this.state.error && (
             <pre className="mt-8 p-4 bg-muted rounded text-xs max-w-2xl overflow-auto">
               {this.state.error.toString()}
             </pre>
