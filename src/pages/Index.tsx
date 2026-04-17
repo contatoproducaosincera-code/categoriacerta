@@ -112,30 +112,31 @@ const Index = memo(() => {
               registrar conquistas e acompanhar a evolução de cada jogador. 
               Sistema de categorias com <strong className="text-foreground">promoção automática baseada em pontos!</strong>
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-12 max-w-4xl mx-auto">
               {[
-                { title: "Iniciante", description: "Sobe com 500 pts ativos", icon: "🎾" },
+                { title: "Iniciante", description: "Sobe com 300 pts ativos", icon: "🎾" },
                 { title: "Categoria D", description: "Sobe com 500 pts ativos", icon: "⭐" },
-                { title: "Categoria C", description: "Categoria máxima", icon: "🏆" },
+                { title: "Categoria C", description: "Sobe com 800 pts ativos", icon: "🏆" },
+                { title: "Categoria B", description: "Categoria máxima", icon: "👑" },
               ].map((category, index) => (
                 <div
                   key={index}
-                  className="p-8 rounded-2xl bg-gradient-to-br from-accent to-accent/50 border-2 border-border hover:shadow-lg transition-all hover:scale-105"
+                  className="p-5 md:p-8 rounded-2xl bg-gradient-to-br from-accent to-accent/50 border-2 border-border hover:shadow-lg transition-all hover:scale-105"
                 >
-                  <div className="text-5xl mb-3">
+                  <div className="text-4xl md:text-5xl mb-3">
                     {category.icon}
                   </div>
-                  <div className="text-2xl font-display font-bold mb-2">
+                  <div className="text-lg md:text-2xl font-display font-bold mb-2">
                     {category.title}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs md:text-sm text-muted-foreground">
                     {category.description}
                   </div>
                 </div>
               ))}
             </div>
-            <p className="text-sm text-muted-foreground mt-8">
-              💡 Suba de categoria ao atingir 500 pontos ativos! Pontos históricos são preservados separadamente.
+            <p className="text-sm text-muted-foreground mt-8 max-w-2xl mx-auto px-4">
+              💡 Suba de categoria conforme sua pontuação ativa: <strong className="text-foreground">300 pts</strong> (Iniciante → D), <strong className="text-foreground">500 pts</strong> (D → C), <strong className="text-foreground">800 pts</strong> (C → B). Pontos históricos são preservados separadamente.
             </p>
           </div>
         </div>
