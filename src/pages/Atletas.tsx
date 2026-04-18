@@ -254,6 +254,7 @@ const Atletas = () => {
                         </span>
                         <Badge 
                           variant={
+                            athlete.category === "B" ? "default" :
                             athlete.category === "C" ? "default" :
                             athlete.category === "D" ? "secondary" : "outline"
                           }

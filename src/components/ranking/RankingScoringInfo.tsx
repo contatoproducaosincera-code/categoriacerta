@@ -27,11 +27,11 @@ export const RankingScoringInfo = () => {
       <div className="space-y-2 text-sm text-muted-foreground bg-background/40 rounded-lg p-3">
         <p className="flex items-start gap-2">
           <span className="flex-shrink-0">📈</span>
-          <span><strong>500 pontos ativos:</strong> Suba de categoria</span>
+          <span><strong>Suba de categoria:</strong> 300 pts (Iniciante → D), 500 pts (D → C), 800 pts (C → B)</span>
         </p>
         <p className="flex items-start gap-2">
-          <span className="flex-shrink-0">🏆</span>
-          <span><strong>Categoria C:</strong> Categoria máxima do ranking</span>
+          <span className="flex-shrink-0">👑</span>
+          <span><strong>Categoria B:</strong> Categoria máxima do ranking</span>
         </p>
         <p className="flex items-start gap-2 text-xs opacity-80">
           <span className="flex-shrink-0">💡</span>

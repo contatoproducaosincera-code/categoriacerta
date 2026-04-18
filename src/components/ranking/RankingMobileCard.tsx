@@ -26,6 +26,7 @@ export const RankingMobileCard = ({ athlete, position }: RankingMobileCardProps)
   };
 
   const getCategoryVariant = () => {
+    if (athlete.category === "B") return "default";
     if (athlete.category === "C") return "default";
     if (athlete.category === "D") return "secondary";
     return "outline";
