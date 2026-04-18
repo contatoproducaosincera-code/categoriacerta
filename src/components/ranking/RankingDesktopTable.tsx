@@ -24,6 +24,7 @@ export const RankingDesktopTable = ({ athletes }: RankingDesktopTableProps) => {
   };
 
   const getCategoryVariant = (category: string) => {
+    if (category === "B") return "default";
     if (category === "C") return "default";
     if (category === "D") return "secondary";
     return "outline";
