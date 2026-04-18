@@ -139,12 +139,16 @@ export default function AthletesTable({
 
     // Agrupar por categoria
     const groups: Record<string, Athlete[]> = {
+      "B": [],
       "C": [],
       "D": [],
       "Iniciante": []
     };
 
     sorted.forEach(athlete => {
+      if (!groups[athlete.category]) {
+        groups[athlete.category] = [];
+      }
       groups[athlete.category].push(athlete);
     });
 
@@ -228,8 +232,8 @@ export default function AthletesTable({
 
       {/* Tabelas agrupadas por categoria */}
       <div className="space-y-6">
-        {(["C", "D", "Iniciante"] as const).map(category => {
-          const categoryAthletes = groupedAthletes[category];
+        {(["B", "C", "D", "Iniciante"] as const).map(category => {
+          const categoryAthletes = groupedAthletes[category] ?? [];
           if (categoryAthletes.length === 0) return null;
 
           return (

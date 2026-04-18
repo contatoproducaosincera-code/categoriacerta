@@ -183,12 +183,16 @@ function OptimizedAthletesTableComponent({
 
     // Group by category
     const groups: Record<string, Athlete[]> = {
+      "B": [],
       "C": [],
       "D": [],
       "Iniciante": []
     };
 
     sorted.forEach(athlete => {
+      if (!groups[athlete.category]) {
+        groups[athlete.category] = [];
+      }
       groups[athlete.category].push(athlete);
     });
 
@@ -282,8 +286,8 @@ function OptimizedAthletesTableComponent({
 
       {/* Grouped tables by category */}
       <div className="space-y-6">
-        {(["C", "D", "Iniciante"] as const).map(category => {
-          const categoryAthletes = groupedAthletes[category];
+        {(["B", "C", "D", "Iniciante"] as const).map(category => {
+          const categoryAthletes = groupedAthletes[category] ?? [];
           if (categoryAthletes.length === 0) return null;
 
           // Limit visible items per category for performance
