@@ -28,7 +28,8 @@ export const athleteSchema = z.object({
   category: z.union([
     z.literal("Iniciante"),
     z.literal("D"),
-    z.literal("C")
+    z.literal("C"),
+    z.literal("B")
   ]),
   
   gender: z.union([
