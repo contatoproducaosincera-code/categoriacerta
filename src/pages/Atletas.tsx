@@ -24,13 +24,23 @@ const Atletas = () => {
   const [pointsFilter, setPointsFilter] = useState("all");
 
   const getCategoryProgress = (activePoints: number, category: string) => {
-    const threshold = 500;
-    
     if (category === 'B') {
       return { progress: 100, remaining: 0, nextCategory: null, percentage: 100 };
     }
 
-    const nextCategory = category === 'Iniciante' ? 'D' : category === 'D' ? 'C' : 'B';
+    const thresholds: Record<string, number> = {
+      'Iniciante': 300,
+      'D': 500,
+      'C': 800,
+    };
+    const nextMap: Record<string, string> = {
+      'Iniciante': 'D',
+      'D': 'C',
+      'C': 'B',
+    };
+
+    const threshold = thresholds[category] ?? 500;
+    const nextCategory = nextMap[category] ?? null;
     const percentage = Math.min((activePoints / threshold) * 100, 100);
     const remaining = Math.max(threshold - activePoints, 0);
 

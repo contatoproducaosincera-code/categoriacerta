@@ -101,10 +101,10 @@ const PromotionDetailsDialog = ({
     return <Trophy className={`h-4 w-4 ${colors[position] || "text-muted-foreground"}`} />;
   };
 
-  // B é a categoria máxima
+  // Limiares de promoção: 300 (Iniciante→D), 500 (D→C), 800 (C→B). B é máxima.
   const getRequiredPoints = (category: string) => {
-    if (category === "B") return 0;
-    return 500;
+    const map: Record<string, number> = { Iniciante: 300, D: 500, C: 800, B: 0 };
+    return map[category] ?? 0;
   };
 
   const requiredPoints = getRequiredPoints(newCategory);
