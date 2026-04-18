@@ -73,17 +73,19 @@ const HistoricoProgressao = () => {
   }, [historyData, searchTerm, categoryFilter]);
 
   const stats = useMemo(() => {
-    if (!historyData) return { total: 0, toD: 0, toC: 0 };
+    if (!historyData) return { total: 0, toD: 0, toC: 0, toB: 0 };
     
     return {
       total: historyData.length,
       toD: historyData.filter(h => h.new_category === "D").length,
       toC: historyData.filter(h => h.new_category === "C").length,
+      toB: historyData.filter(h => h.new_category === "B").length,
     };
   }, [historyData]);
 
   const getCategoryBadgeVariant = (category: string) => {
     switch (category) {
+      case "B": return "default";
       case "C": return "default";
       case "D": return "secondary";
       default: return "outline";

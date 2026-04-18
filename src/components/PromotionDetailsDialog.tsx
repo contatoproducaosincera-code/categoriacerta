@@ -101,11 +101,10 @@ const PromotionDetailsDialog = ({
     return <Trophy className={`h-4 w-4 ${colors[position] || "text-muted-foreground"}`} />;
   };
 
-  // Nova regra: 500 pontos ativos para todas as categorias
+  // B é a categoria máxima
   const getRequiredPoints = (category: string) => {
-    // Categoria C é máxima, não sobe mais
-    if (category === "C") return 0;
-    return 500; // Todas as categorias precisam de 500 pontos ativos
+    if (category === "B") return 0;
+    return 500;
   };
 
   const requiredPoints = getRequiredPoints(newCategory);
