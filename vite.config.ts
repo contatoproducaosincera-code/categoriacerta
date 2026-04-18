@@ -15,24 +15,27 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
-          'query-vendor': ['@tanstack/react-query'],
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-popover',
+          ],
+          'query-vendor': ['@tanstack/react-query', '@tanstack/react-virtual'],
           'supabase-vendor': ['@supabase/supabase-js'],
+          'date-vendor': ['date-fns'],
         },
       },
     },
-    target: 'es2015',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: true,
-        pure_funcs: mode === 'production' ? ['console.log'] : [],
-      },
-    },
+    target: 'es2020',
+    minify: 'esbuild',
     cssMinify: true,
     reportCompressedSize: false,
     chunkSizeWarningLimit: 1000,
+  },
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
   },
   plugins: [
     react(), 
