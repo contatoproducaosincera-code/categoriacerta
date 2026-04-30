@@ -104,7 +104,7 @@ const Feed = () => {
                     athleteCategory={athlete.category}
                   >
                     <Card
-                      className="p-4 text-center cursor-pointer hover:shadow-lg transition-all duration-200"
+                      className="p-4 sm:p-5 text-center cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-0 min-h-[180px] flex flex-col justify-between"
                       style={{
                         background: index === 0 
                           ? 'linear-gradient(145deg, hsl(45 90% 60%), hsl(45 80% 55%))'
@@ -113,23 +113,32 @@ const Feed = () => {
                           : 'linear-gradient(145deg, hsl(25 50% 55%), hsl(25 40% 45%))'
                       }}
                     >
-                      <div className="flex justify-center mb-2">
-                        {index === 0 ? (
-                          <Trophy className="h-10 w-10 text-yellow-100" />
-                        ) : (
-                          <Medal className="h-10 w-10 text-white" />
-                        )}
+                      <div>
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          {index === 0 ? (
+                            <Trophy className="h-8 w-8 text-yellow-100 drop-shadow" />
+                          ) : (
+                            <Medal className="h-8 w-8 text-white drop-shadow" />
+                          )}
+                          <span className="text-3xl font-extrabold text-white drop-shadow-sm">
+                            {index + 1}º
+                          </span>
+                        </div>
+                        <h3 className="text-base sm:text-lg font-bold text-white leading-tight px-1 break-words">
+                          {athlete.name}
+                        </h3>
+                        <p className="text-white/90 text-xs sm:text-sm mt-1 break-words px-1">
+                          📍 {athlete.city}
+                        </p>
                       </div>
-                      <div className="text-3xl font-bold text-white mb-1">
-                        {index + 1}º
-                      </div>
-                      <h3 className="text-base font-bold text-white mb-1 truncate">
-                        {athlete.name}
-                      </h3>
-                      <p className="text-white/90 text-xs mb-1">{athlete.city}</p>
-                      <p className="text-white/90 text-xs mb-2">Cat. {athlete.category}</p>
-                      <div className="text-lg font-bold text-white">
-                        {athlete.points} pts
+                      <div className="mt-3 pt-3 border-t border-white/20 flex items-center justify-between gap-2">
+                        <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">
+                          Cat. {athlete.category}
+                        </Badge>
+                        <div className="text-xl font-extrabold text-white">
+                          {athlete.points}
+                          <span className="text-xs font-medium text-white/80 ml-1">pts</span>
+                        </div>
                       </div>
                     </Card>
                   </AthleteAchievementsDialog>
