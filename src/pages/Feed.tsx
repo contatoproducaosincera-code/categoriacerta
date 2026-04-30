@@ -1,11 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Medal, Calendar, TrendingUp } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { TrendingUp, Trophy, Medal } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -23,36 +21,6 @@ const Feed = () => {
       return data || [];
     },
     staleTime: 60000,
-    gcTime: 300000,
-  });
-
-  const { data: feedItems, isLoading: isLoadingFeed } = useQuery({
-    queryKey: ["recentAchievements"],
-    queryFn: async () => {
-      const { data: achievements, error } = await supabase
-        .from("achievements")
-        .select(`
-          id,
-          tournament_name,
-          position,
-          points_awarded,
-          date,
-          athlete_id,
-          athletes!inner (
-            id,
-            name,
-            category,
-            city,
-            points
-          )
-        `)
-        .order("date", { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      return achievements || [];
-    },
-    staleTime: 30000,
     gcTime: 300000,
   });
 
@@ -151,75 +119,6 @@ const Feed = () => {
             )}
           </div>
 
-          {/* Conquistas Recentes */}
-          <div>
-            <h2 className="text-xl md:text-2xl font-bold text-center mb-4">
-              🎖️ Conquistas Recentes
-            </h2>
-            
-            {isLoadingFeed ? (
-              <LoadingSpinner message="Carregando conquistas..." />
-            ) : !feedItems || feedItems.length === 0 ? (
-              <Card className="max-w-md mx-auto">
-                <CardContent className="py-8 text-center">
-                  <Medal className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Nenhuma conquista recente
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-3 max-w-2xl mx-auto">
-                {feedItems.map((item: any) => (
-                  <Card key={item.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        {/* Trophy icon */}
-                        <div className="flex-shrink-0 mt-0.5">
-                          <Trophy className={`h-5 w-5 ${
-                            item.position === 1 ? 'text-yellow-500' :
-                            item.position === 2 ? 'text-gray-400' :
-                            'text-amber-600'
-                          }`} />
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <h3 className="font-semibold text-sm truncate">
-                              {item.athletes.name}
-                            </h3>
-                            <Badge className={`${getPositionBadge(item.position)} text-xs shrink-0`}>
-                              {item.position}º
-                            </Badge>
-                          </div>
-                          
-                          <p className="text-sm text-foreground mb-1 line-clamp-1">
-                            {item.tournament_name}
-                          </p>
-                          
-                          <div className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <Badge variant="outline" className="text-xs px-1.5">
-                                {item.athletes.category}
-                              </Badge>
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {format(new Date(item.date), "dd/MM/yy")}
-                              </span>
-                            </div>
-                            <span className="font-bold text-primary">
-                              +{item.points_awarded}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </section>
     </div>
