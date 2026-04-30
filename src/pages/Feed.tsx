@@ -1,11 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Medal, Calendar, TrendingUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { Card } from "@/components/ui/card";
+import { TrendingUp } from "lucide-react";
 import AthleteAchievementsDialog from "@/components/AthleteAchievementsDialog";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -23,36 +20,6 @@ const Feed = () => {
       return data || [];
     },
     staleTime: 60000,
-    gcTime: 300000,
-  });
-
-  const { data: feedItems, isLoading: isLoadingFeed } = useQuery({
-    queryKey: ["recentAchievements"],
-    queryFn: async () => {
-      const { data: achievements, error } = await supabase
-        .from("achievements")
-        .select(`
-          id,
-          tournament_name,
-          position,
-          points_awarded,
-          date,
-          athlete_id,
-          athletes!inner (
-            id,
-            name,
-            category,
-            city,
-            points
-          )
-        `)
-        .order("date", { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      return achievements || [];
-    },
-    staleTime: 30000,
     gcTime: 300000,
   });
 
