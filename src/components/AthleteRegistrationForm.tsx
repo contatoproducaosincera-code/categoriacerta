@@ -194,20 +194,32 @@ const AthleteRegistrationForm = memo(() => {
       
       // Upload photo first
       const avatarUrl = await uploadPhoto(photoFile);
-      
-      // Then insert waitlist entry with questionnaire data
-      const { error } = await supabase.from('waitlist').insert([{
-        first_name: data.form.firstName.trim(),
-        last_name: data.form.lastName.trim(),
-        city: data.form.city.trim(),
-        gender: data.form.gender,
-        avatar_url: avatarUrl,
-        instagram: formatInstagram(data.form.instagram),
-        questionnaire_responses: JSON.parse(JSON.stringify(data.responses)),
-        suggested_category: data.category,
-      }]);
-      
-      if (error) throw error;
+
+      // Then insert waitlist entry with questionnaire data.
+      // If insert fails, delete the just-uploaded photo to avoid orphan files.
+      try {
+        const { error } = await supabase.from('waitlist').insert([{
+          first_name: data.form.firstName.trim(),
+          last_name: data.form.lastName.trim(),
+          city: data.form.city.trim(),
+          gender: data.form.gender,
+          avatar_url: avatarUrl,
+          instagram: formatInstagram(data.form.instagram),
+          questionnaire_responses: JSON.parse(JSON.stringify(data.responses)),
+          suggested_category: data.category,
+        }]);
+        if (error) throw error;
+      } catch (insertErr) {
+        try {
+          const path = avatarUrl.split('/waitlist-photos/')[1];
+          if (path) {
+            await supabase.storage.from('waitlist-photos').remove([path]);
+          }
+        } catch (cleanupErr) {
+          console.warn('Failed to cleanup orphan photo:', cleanupErr);
+        }
+        throw insertErr;
+      }
     },
     onSuccess: () => {
       toast.success('Inscrição realizada!', { description: 'Você está na lista de espera.' });
