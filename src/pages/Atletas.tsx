@@ -284,7 +284,7 @@ const Atletas = () => {
                         <span className="text-xs font-normal text-muted-foreground ml-1">pts</span>
                       </div>
                       {(() => {
-                        const activePoints = (athlete as any).active_points ?? 0;
+                        const activePoints = athlete.active_points ?? 0;
                         const progress = getCategoryProgress(activePoints, athlete.category);
                         return progress.nextCategory ? (
                           <div className="space-y-1 pt-2 border-t">

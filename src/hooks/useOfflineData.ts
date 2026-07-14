@@ -164,8 +164,13 @@ export function useOfflineAchievements(athleteIds?: string[]) {
     return networkStatus.subscribe(setIsOnline);
   }, []);
 
+  // Stable key: sorted + joined so array reference changes don't refetch
+  const stableKey = athleteIds && athleteIds.length > 0
+    ? [...athleteIds].sort().join(',')
+    : 'all';
+
   return useQuery({
-    queryKey: ['offline-achievements', athleteIds],
+    queryKey: ['offline-achievements', stableKey],
     queryFn: async () => {
       if (!networkStatus.isOnline()) {
         return []; // Achievements are less critical for offline mode
