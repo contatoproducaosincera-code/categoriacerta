@@ -65,44 +65,29 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <AppErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <SafeEntryPoint>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Suspense fallback={<MinimalSpinner />}>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/atletas" element={<Atletas />} />
-                  <Route path="/ranking" element={<Ranking />} />
-                  <Route path="/torneios" element={<Torneios />} />
-                  <Route path="/feed" element={<Feed />} />
-                  <Route path="/historico-progressao" element={<HistoricoProgressao />} />
-                  <Route path="/regulamento" element={<Regulamento />} />
-                  <Route path="/offline" element={<Offline />} />
-                  <Route path="/admin" element={
-                    <ProtectedRoute>
-                      <Admin />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/admin/waitlist" element={
-                    <ProtectedRoute>
-                      <Waitlist />
-                    </ProtectedRoute>
-                  } />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/signup" element={<Signup />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
-          </TooltipProvider>
-        </SafeEntryPoint>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#000",
+        color: "#fff",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        padding: "24px",
+        textAlign: "center",
+      }}
+    >
+      <div style={{ maxWidth: 520 }}>
+        <h1 style={{ fontSize: "2rem", marginBottom: "1rem", fontWeight: 700 }}>
+          O site morreu 🪦
+        </h1>
+        <p style={{ opacity: 0.75, lineHeight: 1.5 }}>
+          Este site está indisponível até novo aviso. Ninguém pode acessar por
+          link ou qualquer outra forma no momento.
+        </p>
+      </div>
+    </div>
   </AppErrorBoundary>
 );
 
